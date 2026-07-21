@@ -9,9 +9,12 @@ import {
   LogOut, 
   Search, 
   Bell,
-  Stethoscope
+  Stethoscope,
+  Activity,
+  FileText
 } from 'lucide-react';
 import './Dashboard.css'; 
+import './DashboardGrid.css';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -199,12 +202,83 @@ export default function Dashboard() {
             <p className="page-subtitle">ดูภาพรวมและจัดการข้อมูลของหน่วยงานแพทย์</p>
           </div>
 
-          <div className="content-panel">
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>ภาพรวมระบบ (รอพัฒนาในลูปที่ 4)</h2>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-              ในส่วนนี้จะแสดงการ์ดสรุปข้อมูล (เช่น จำนวนแพทย์เวร, เคสฉุกเฉิน) และตารางรายการต่างๆ
-              ระบบออกแบบมารองรับข้อมูลแบบ Real-time แล้ว 
-            </p>
+          {/* Stat Cards Grid */}
+          <div className="dashboard-grid">
+            <div className="stat-card">
+              <div className="stat-icon medic">
+                <Stethoscope size={28} />
+              </div>
+              <div className="stat-info">
+                <div className="stat-title">แพทย์เข้าเวร (Medic)</div>
+                <div className="stat-value">12 นาย</div>
+              </div>
+            </div>
+
+            {profile?.role === 'admin' && (
+              <div className="stat-card">
+                <div className="stat-icon admin">
+                  <Users size={28} />
+                </div>
+                <div className="stat-info">
+                  <div className="stat-title">รออนุมัติสิทธิ์ (Admin)</div>
+                  <div className="stat-value">3 รายการ</div>
+                </div>
+              </div>
+            )}
+
+            <div className="stat-card">
+              <div className="stat-icon docs">
+                <Activity size={28} />
+              </div>
+              <div className="stat-info">
+                <div className="stat-title">เคสฉุกเฉินวันนี้</div>
+                <div className="stat-value">45 เคส</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Activity Table */}
+          <div className="activity-section">
+            <div className="section-header">
+              <h2 className="section-title">เอกสารและประวัติล่าสุด</h2>
+              <button className="view-all-btn">ดูทั้งหมด</button>
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>วันที่/เวลา</th>
+                    <th>ประเภทเอกสาร</th>
+                    <th>ผู้ป่วย / รายละเอียด</th>
+                    <th>ผู้บันทึก</th>
+                    <th>สถานะ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>21 ก.ค. 2026, 14:30</td>
+                    <td>รายงานอุบัติเหตุ (191)</td>
+                    <td>ชายปริศนาถูกรถชน อาการสาหัส</td>
+                    <td>พ.พ. สมชาย ใจดี</td>
+                    <td><span className="status-badge active">กำลังรักษา</span></td>
+                  </tr>
+                  <tr>
+                    <td>21 ก.ค. 2026, 11:15</td>
+                    <td>ใบรับรองแพทย์</td>
+                    <td>ทดสอบ ระบบ</td>
+                    <td>พ.พ. สมชาย ใจดี</td>
+                    <td><span className="status-badge closed">เสร็จสิ้น</span></td>
+                  </tr>
+                  <tr>
+                    <td>20 ก.ค. 2026, 22:40</td>
+                    <td>เบิกจ่ายคลัง (Inventory)</td>
+                    <td>เบิก ผ้าพันแผล x50, ยาชา x20</td>
+                    <td>น.พ. สมเกียรติ</td>
+                    <td><span className="status-badge pending">รออนุมัติ</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </main>
