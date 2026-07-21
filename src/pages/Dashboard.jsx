@@ -679,7 +679,7 @@ export default function Dashboard() {
             {/* Related Links */}
             <div className="related-links-card">
               <h3 className="related-links-title"><Star size={20} color="#f59e0b" fill="#f59e0b" /> แนะนำเว็บไซต์ที่เกี่ยวข้อง</h3>
-              <a href="#" className="related-link-btn">
+              <a href="https://sites.google.com/view/wiptown/medic" target="_blank" rel="noopener noreferrer" className="related-link-btn">
                 <ExternalLink size={18} />
                 กฎหน่วยงานแพทย์ WIP TOWN
               </a>
