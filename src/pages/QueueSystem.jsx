@@ -1,11 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { Users, Edit3 } from 'lucide-react';
+import { Users, Edit3, History, Calendar, X } from 'lucide-react';
 import './QueueSystem.css';
 
 export default function QueueSystem({ profile }) {
   const [liveUsers, setLiveUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Timer & History State
+  const [currentTimeMs, setCurrentTimeMs] = useState(Date.now());
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyData, setHistoryData] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  
+  const getLocalDateString = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  const [startDate, setStartDate] = useState(getLocalDateString());
+  const [endDate, setEndDate] = useState(getLocalDateString());
+
+  // Update current time every second for the live timer
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTimeMs(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTimer = (startTimeString) => {
+    if (!startTimeString) return '';
+    const start = new Date(startTimeString).getTime();
+    const diff = Math.floor((currentTimeMs - start) / 1000);
+    if (diff < 0) return '00:00:00';
+    
+    const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+    const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+    const s = String(diff % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  };
 
   useEffect(() => {
     fetchLiveUsers();
@@ -50,18 +82,52 @@ export default function QueueSystem({ profile }) {
     }
   };
 
-  const handleStatusChange = async (sessionId, newStatus, currentStatus) => {
-    // If the same status is clicked, it unchecks it (sets back to 'available')
+  const handleStatusChange = async (user, newStatus, currentStatus) => {
     const finalStatus = currentStatus === newStatus ? 'available' : newStatus;
     
     try {
+      let updatePayload = { queue_state: finalStatus };
+
+      // If they are STOPPING being a manager
+      if (currentStatus === 'manager' && finalStatus !== 'manager') {
+        if (user.current_manager_log_id) {
+          // Calculate duration
+          const startTime = new Date(user.manager_start_time).getTime();
+          const durationMinutes = Math.floor((Date.now() - startTime) / 60000);
+          
+          await supabase
+            .from('queue_manager_logs')
+            .update({ 
+              end_time: new Date().toISOString(),
+              duration_minutes: durationMinutes
+            })
+            .eq('id', user.current_manager_log_id);
+        }
+        
+        updatePayload.manager_start_time = null;
+        updatePayload.current_manager_log_id = null;
+      }
+
+      // If they are STARTING to be a manager
+      if (finalStatus === 'manager') {
+        const { data: logData, error: logError } = await supabase
+          .from('queue_manager_logs')
+          .insert({ discord_id: user.discord_id })
+          .select('id')
+          .single();
+          
+        if (logError) throw logError;
+        
+        updatePayload.manager_start_time = new Date().toISOString();
+        updatePayload.current_manager_log_id = logData.id;
+      }
+
       const { error } = await supabase
         .from('duty_sessions')
-        .update({ queue_state: finalStatus })
-        .eq('id', sessionId);
+        .update(updatePayload)
+        .eq('id', user.id);
         
       if (error) throw error;
-      // Realtime subscription will update the UI
     } catch (err) {
       alert('Error updating queue status: ' + err.message);
     }
@@ -108,7 +174,7 @@ export default function QueueSystem({ profile }) {
         // Auto-tick "Story" only for the logged-in user to prevent race conditions
         if (isMe && user.story_time && user.queue_state !== 'story') {
           if (currentTimeStr === user.story_time) {
-            handleStatusChange(user.id, 'story', user.queue_state);
+            handleStatusChange(user, 'story', user.queue_state);
           }
         }
       });
@@ -117,15 +183,74 @@ export default function QueueSystem({ profile }) {
     return () => clearInterval(checkTimeInterval);
   }, [liveUsers, profile]);
 
+  const fetchHistory = async () => {
+    if (!startDate || !endDate) return;
+    setLoadingHistory(true);
+    try {
+      const start = new Date(`${startDate}T00:00:00+07:00`).toISOString();
+      const end = new Date(`${endDate}T23:59:59+07:00`).toISOString();
+
+      const { data, error } = await supabase
+        .from('queue_manager_logs')
+        .select('duration_minutes, discord_id')
+        .gte('start_time', start)
+        .lte('start_time', end);
+
+      if (error) throw error;
+
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('discord_id, ic_name');
+
+      if (usersError) throw usersError;
+
+      const userMap = {};
+      usersData.forEach(u => { userMap[u.discord_id] = u.ic_name; });
+
+      const grouped = {};
+      data.forEach(log => {
+        if (!log.duration_minutes) return;
+        if (!grouped[log.discord_id]) grouped[log.discord_id] = 0;
+        grouped[log.discord_id] += log.duration_minutes;
+      });
+
+      const result = Object.keys(grouped).map(did => ({
+        ic_name: userMap[did] || did,
+        total_minutes: grouped[did]
+      })).sort((a, b) => b.total_minutes - a.total_minutes);
+
+      setHistoryData(result);
+    } catch (err) {
+      console.error('Error fetching history:', err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showHistory) {
+      fetchHistory();
+    }
+  }, [showHistory, startDate, endDate]);
+
   if (!profile) return null;
 
   const isAdmin = profile.role === 'admin';
 
   return (
     <div className="queue-container">
-      <div className="queue-header">
-        <h2 className="queue-title"><Users size={24} color="var(--primary-color)" /> จัดการคิวแพทย์ (Medic Queue)</h2>
-        <p className="queue-subtitle">ตารางแสดงสถานะการรับเคสของบุคลากรที่กำลังเข้าเวร</p>
+      <div className="queue-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h2 className="queue-title"><Users size={24} color="var(--primary-color)" /> จัดการคิวแพทย์ (Medic Queue)</h2>
+          <p className="queue-subtitle">ตารางแสดงสถานะการรับเคสของบุคลากรที่กำลังเข้าเวร</p>
+        </div>
+        <button 
+          onClick={() => setShowHistory(true)}
+          className="history-btn"
+        >
+          <History size={18} />
+          ประวัติการรันคิว
+        </button>
       </div>
 
       <div className="queue-card">
@@ -167,7 +292,7 @@ export default function QueueSystem({ profile }) {
                           <input 
                             type="checkbox" 
                             checked={queueState === 'unavailable'}
-                            onChange={() => handleStatusChange(user.id, 'unavailable', queueState)}
+                            onChange={() => handleStatusChange(user, 'unavailable', queueState)}
                             disabled={!canEdit}
                           />
                           <span className="checkmark checkmark-red"></span>
@@ -179,7 +304,7 @@ export default function QueueSystem({ profile }) {
                           <input 
                             type="checkbox" 
                             checked={queueState === 'queued'}
-                            onChange={() => handleStatusChange(user.id, 'queued', queueState)}
+                            onChange={() => handleStatusChange(user, 'queued', queueState)}
                             disabled={!canEdit}
                           />
                           <span className="checkmark checkmark-green"></span>
@@ -187,15 +312,22 @@ export default function QueueSystem({ profile }) {
                       </td>
 
                       <td className="col-manager" style={{ backgroundColor: '#eaf4f4' }}>
-                        <label className={`checkbox-container ${!canEdit ? 'disabled' : ''}`}>
-                          <input 
-                            type="checkbox" 
-                            checked={queueState === 'manager'}
-                            onChange={() => handleStatusChange(user.id, 'manager', queueState)}
-                            disabled={!canEdit}
-                          />
-                          <span className="checkmark checkmark-blue"></span>
-                        </label>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                          <label className={`checkbox-container ${!canEdit ? 'disabled' : ''}`}>
+                            <input 
+                              type="checkbox" 
+                              checked={queueState === 'manager'}
+                              onChange={() => handleStatusChange(user, 'manager', queueState)}
+                              disabled={!canEdit}
+                            />
+                            <span className="checkmark checkmark-blue"></span>
+                          </label>
+                          {queueState === 'manager' && user.manager_start_time && (
+                            <span style={{ fontSize: '0.75rem', color: '#1d3557', fontWeight: 600, fontFamily: 'monospace' }}>
+                              ⏱️ {formatTimer(user.manager_start_time)}
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       <td className="col-story" style={{ backgroundColor: '#f3e8ff' }}>
@@ -203,7 +335,7 @@ export default function QueueSystem({ profile }) {
                           <input 
                             type="checkbox" 
                             checked={queueState === 'story'}
-                            onChange={() => handleStatusChange(user.id, 'story', queueState)}
+                            onChange={() => handleStatusChange(user, 'story', queueState)}
                             disabled={!canEdit}
                           />
                           <span className="checkmark checkmark-purple"></span>
@@ -262,6 +394,70 @@ export default function QueueSystem({ profile }) {
           </table>
         </div>
       </div>
+
+      {showHistory && (
+        <div className="modal-overlay">
+          <div className="modal-content history-modal">
+            <div className="modal-header">
+              <h2><History size={24} color="var(--primary-color)" style={{ marginRight: '8px' }} /> ประวัติหมอรันคิว</h2>
+              <button className="close-btn" onClick={() => setShowHistory(false)}><X size={24} /></button>
+            </div>
+            
+            <div className="history-filters">
+              <div className="filter-group">
+                <Calendar size={18} color="var(--text-secondary)" />
+                <span>จากวันที่:</span>
+                <input 
+                  type="date" 
+                  value={startDate} 
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="date-input"
+                />
+              </div>
+              <div className="filter-group">
+                <span>ถึงวันที่:</span>
+                <input 
+                  type="date" 
+                  value={endDate} 
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="date-input"
+                />
+              </div>
+            </div>
+
+            <div className="history-table-container">
+              <table className="queue-table">
+                <thead>
+                  <tr>
+                    <th style={{ backgroundColor: '#f8f9fa' }}>รายชื่อแพทย์</th>
+                    <th style={{ backgroundColor: '#f8f9fa', textAlign: 'center' }}>เวลาทั้งหมด (นาที)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loadingHistory ? (
+                    <tr><td colSpan="2" style={{ textAlign: 'center', padding: '2rem' }}>กำลังโหลด...</td></tr>
+                  ) : historyData.length > 0 ? (
+                    historyData.map((item, idx) => (
+                      <tr key={idx}>
+                        <td style={{ fontWeight: 600 }}>{item.ic_name}</td>
+                        <td style={{ textAlign: 'center', fontWeight: 'bold', color: '#457b9d' }}>
+                          {item.total_minutes} นาที
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="2" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+                        ไม่มีข้อมูลการรันคิวในช่วงเวลานี้
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
