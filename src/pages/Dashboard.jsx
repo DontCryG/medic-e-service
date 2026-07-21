@@ -234,37 +234,10 @@ export default function Dashboard() {
 
                 <div className="hub-card medic">
                   <div className="hub-icon-wrapper">
-                    <BriefcaseMedical size={32} strokeWidth={1.5} />
-                  </div>
-                  <h3 className="hub-card-title">ระบบเบิกจ่ายคลัง</h3>
-                  <p className="hub-card-desc">จัดการการเบิกจ่ายอุปกรณ์ทางการแพทย์ และยารักษาโรคจากคลังกลาง</p>
-                  <button className="hub-btn">เข้าใช้งาน</button>
-                </div>
-
-                <div className="hub-card medic">
-                  <div className="hub-icon-wrapper">
                     <ClipboardList size={32} strokeWidth={1.5} />
                   </div>
                   <h3 className="hub-card-title">ระบบบันทึกเคสอุบัติเหตุ</h3>
                   <p className="hub-card-desc">บันทึกประวัติการรักษา รายงานอุบัติเหตุ และผู้ป่วยฉุกเฉิน</p>
-                  <button className="hub-btn">เข้าใช้งาน</button>
-                </div>
-
-                <div className="hub-card medic">
-                  <div className="hub-icon-wrapper">
-                    <UserPlus size={32} strokeWidth={1.5} />
-                  </div>
-                  <h3 className="hub-card-title">ทำทะเบียนประวัติผู้ป่วย</h3>
-                  <p className="hub-card-desc">สร้างและแก้ไขข้อมูลประวัติผู้ป่วยใหม่ลงในระบบส่วนกลางของโรงพยาบาล</p>
-                  <button className="hub-btn">เข้าใช้งาน</button>
-                </div>
-
-                <div className="hub-card medic">
-                  <div className="hub-icon-wrapper">
-                    <Ban size={32} strokeWidth={1.5} />
-                  </div>
-                  <h3 className="hub-card-title">ระบบยกเลิกเคสรักษา</h3>
-                  <p className="hub-card-desc">ยกเลิกเคสการรักษาที่ผิดพลาด หรือส่งต่อเคสให้แพทย์ผู้เชี่ยวชาญอื่น</p>
                   <button className="hub-btn">เข้าใช้งาน</button>
                 </div>
 
@@ -292,15 +265,6 @@ export default function Dashboard() {
                     </div>
                     <h3 className="hub-card-title">ระบบจัดการคำร้อง</h3>
                     <p className="hub-card-desc">ตรวจสอบ อนุมัติ และจัดการคำร้องต่างๆ ที่ถูกส่งเข้ามาจากบุคลากร</p>
-                    <button className="hub-btn">เข้าสู่ระบบ</button>
-                  </div>
-
-                  <div className="hub-card admin">
-                    <div className="hub-icon-wrapper">
-                      <FileCheck2 size={32} strokeWidth={1.5} />
-                    </div>
-                    <h3 className="hub-card-title">ตรวจสอบประวัติเบิกจ่าย</h3>
-                    <p className="hub-card-desc">เรียกดูรายงานการเบิกจ่ายคลังย้อนหลังทั้งหมดของหน่วยงานแพทย์</p>
                     <button className="hub-btn">เข้าสู่ระบบ</button>
                   </div>
 
