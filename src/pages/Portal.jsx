@@ -7,7 +7,7 @@ export default function Portal() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'discord',
       options: {
-        redirectTo: window.location.origin + '/dashboard', // Adjust as needed for local vs prod
+        redirectTo: window.location.origin + '/#/dashboard', 
       }
     });
     
