@@ -222,6 +222,18 @@ export default function QueueSystem({ profile }) {
 
   const confirmStoryMoney = async () => {
     if (!storyModalUser) return;
+    
+    if (!storyAgencySearchA.trim() && !storyAgencySearchB.trim()) {
+      Swal.fire({
+        title: 'แจ้งเตือน',
+        text: 'กรุณาระบุสังกัดอย่างน้อย 1 ฝั่ง',
+        icon: 'warning',
+        confirmButtonColor: '#7c3aed',
+        customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title' }
+      });
+      return;
+    }
+
     const { user, finalStatus } = storyModalUser;
     
     setStoryModalUser(null);
@@ -875,7 +887,13 @@ export default function QueueSystem({ profile }) {
             </div>
 
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button onClick={confirmStoryMoney} style={{ flex: 1, padding: '0.75rem', fontSize: '1.05rem', backgroundColor: '#7c3aed', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.2s' }} onMouseOver={e => e.target.style.transform = 'translateY(-1px)'} onMouseOut={e => e.target.style.transform = 'none'}>
+              <button 
+                onClick={confirmStoryMoney} 
+                disabled={!storyAgencySearchA.trim() && !storyAgencySearchB.trim()}
+                style={{ flex: 1, padding: '0.75rem', fontSize: '1.05rem', backgroundColor: (!storyAgencySearchA.trim() && !storyAgencySearchB.trim()) ? '#cbd5e1' : '#7c3aed', color: 'white', border: 'none', borderRadius: '8px', cursor: (!storyAgencySearchA.trim() && !storyAgencySearchB.trim()) ? 'not-allowed' : 'pointer', fontWeight: 500, transition: 'all 0.2s' }} 
+                onMouseOver={e => { if (storyAgencySearchA.trim() || storyAgencySearchB.trim()) e.target.style.transform = 'translateY(-1px)' }} 
+                onMouseOut={e => e.target.style.transform = 'none'}
+              >
                 ยืนยัน
               </button>
               <button onClick={cancelStoryMoney} style={{ flex: 1, padding: '0.75rem', fontSize: '1.05rem', backgroundColor: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.2s' }} onMouseOver={e => e.target.style.backgroundColor = '#e2e8f0'} onMouseOut={e => e.target.style.backgroundColor = '#f1f5f9'}>
