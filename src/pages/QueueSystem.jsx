@@ -133,7 +133,17 @@ export default function QueueSystem({ profile }) {
           showCancelButton: true,
           cancelButtonText: 'ยกเลิก',
           confirmButtonText: 'ยืนยัน',
-          allowOutsideClick: false
+          allowOutsideClick: false,
+          buttonsStyling: false,
+          customClass: {
+            popup: 'custom-swal-popup',
+            title: 'custom-swal-title',
+            htmlContainer: 'custom-swal-text',
+            input: 'custom-swal-input',
+            confirmButton: 'custom-swal-confirm',
+            cancelButton: 'custom-swal-cancel',
+            actions: 'custom-swal-actions'
+          }
         });
 
         if (peopleCount) {
@@ -147,14 +157,28 @@ export default function QueueSystem({ profile }) {
           
           if (adjError) {
             console.error('Error adding story money:', adjError);
-            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกเงินสตอรี่ได้', 'error');
+            Swal.fire({
+              title: 'ข้อผิดพลาด',
+              text: 'ไม่สามารถบันทึกเงินสตอรี่ได้',
+              icon: 'error',
+              buttonsStyling: false,
+              customClass: {
+                popup: 'custom-swal-popup',
+                title: 'custom-swal-title',
+                confirmButton: 'custom-swal-confirm'
+              }
+            });
           } else {
             Swal.fire({
               title: 'สำเร็จ!',
               text: `บันทึกเงินสตอรี่ ${amount.toLocaleString()} บาทแล้ว`,
               icon: 'success',
               timer: 2000,
-              showConfirmButton: false
+              showConfirmButton: false,
+              customClass: {
+                popup: 'custom-swal-popup',
+                title: 'custom-swal-title'
+              }
             });
           }
         }
