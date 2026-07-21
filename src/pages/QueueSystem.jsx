@@ -20,6 +20,15 @@ export default function QueueSystem({ profile }) {
   const [storyModalUser, setStoryModalUser] = useState(null);
   const [storyPeopleCount, setStoryPeopleCount] = useState('1');
   const [isStoryDropdownOpen, setIsStoryDropdownOpen] = useState(false);
+  const [agencies, setAgencies] = useState([]);
+  const [storyAgencySearch, setStoryAgencySearch] = useState('');
+  const [selectedStoryAgency, setSelectedStoryAgency] = useState('');
+
+  const [showCaseHistory, setShowCaseHistory] = useState(false);
+  const [caseHistoryData, setCaseHistoryData] = useState([]);
+  const [loadingCaseHistory, setLoadingCaseHistory] = useState(false);
+  const [caseStartDate, setCaseStartDate] = useState(getLocalDateString());
+  const [caseEndDate, setCaseEndDate] = useState(getLocalDateString());
   
   const getLocalDateString = () => {
     const d = new Date();
@@ -74,6 +83,59 @@ export default function QueueSystem({ profile }) {
       supabase.removeChannel(subscription);
     };
   }, []);
+
+  useEffect(() => {
+    fetchAgencies();
+  }, []);
+
+  const fetchAgencies = async () => {
+    try {
+      const { data } = await supabase.from('app_settings').select('*').eq('setting_key', 'agencies_list').single();
+      if (data && data.setting_value) {
+        const parsed = JSON.parse(data.setting_value);
+        const migrated = parsed.map(item => {
+          if (typeof item === 'string') return { name: item, category: 'Gang' };
+          return item;
+        });
+        setAgencies(migrated);
+      } else {
+        setAgencies([]);
+      }
+    } catch (err) {
+      console.error('Error fetching agencies:', err);
+      setAgencies([]);
+    }
+  };
+
+  useEffect(() => {
+    if (showCaseHistory) {
+      fetchCaseHistory();
+    }
+  }, [showCaseHistory, caseStartDate, caseEndDate]);
+
+  const fetchCaseHistory = async () => {
+    setLoadingCaseHistory(true);
+    try {
+      const start = new Date(caseStartDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(caseEndDate);
+      end.setHours(23, 59, 59, 999);
+
+      const { data, error } = await supabase
+        .from('story_logs')
+        .select('*')
+        .gte('created_at', start.toISOString())
+        .lte('created_at', end.toISOString())
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setCaseHistoryData(data || []);
+    } catch (err) {
+      console.error('Error fetching case history:', err);
+    } finally {
+      setLoadingCaseHistory(false);
+    }
+  };
 
   const fetchLiveUsers = async () => {
     try {
@@ -164,13 +226,23 @@ export default function QueueSystem({ profile }) {
     setStoryModalUser(null);
     
     const amount = storyPeopleCount === '1' ? 200000 : 100000;
+    const reasonText = selectedStoryAgency ? `จบสตอรี่ (${selectedStoryAgency})` : 'จบสตอรี่';
     try {
       const { error: adjError } = await supabase.from('salary_adjustments').insert({
         discord_id: user.discord_id,
         type: 'bonus',
         amount: amount,
-        reason: 'เงินสตอรี่'
+        reason: reasonText
       });
+      
+      if (selectedStoryAgency) {
+        await supabase.from('story_logs').insert({
+          medic_discord_id: user.discord_id,
+          medic_ic_name: user.users?.ic_name || 'Unknown',
+          agency_name: selectedStoryAgency,
+          people_count: parseInt(storyPeopleCount)
+        });
+      }
       
       if (adjError) {
         console.error('Error adding story money:', adjError);
@@ -527,6 +599,14 @@ export default function QueueSystem({ profile }) {
               <h2><History size={24} color="var(--primary-color)" style={{ marginRight: '8px' }} /> ประวัติหมอรันคิว</h2>
               <button className="close-btn" onClick={() => setShowHistory(false)}><X size={24} /></button>
             </div>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+              <button className="history-btn" onClick={() => setShowCaseHistory(true)} style={{ backgroundColor: '#457b9d' }}>
+                <History size={18} /> ประวัติรันคิวเคส
+              </button>
+              <button className="history-btn" onClick={() => setShowHistory(true)}>
+                <History size={18} /> ประวัติหมอรันคิว
+              </button>
+            </div>
             
             <div className="history-filters">
               <div className="filter-group">
@@ -594,6 +674,91 @@ export default function QueueSystem({ profile }) {
         </div>
       )}
 
+      {showCaseHistory && (
+        <div className="modal-overlay">
+          <div className="modal-content history-modal">
+            <div className="modal-header">
+              <h2><History size={24} color="#457b9d" style={{ marginRight: '8px' }} /> ประวัติรันคิวเคส (สตอรี่)</h2>
+              <button className="close-btn" onClick={() => setShowCaseHistory(false)}><X size={24} /></button>
+            </div>
+            
+            <div className="history-filters">
+              <div className="filter-group">
+                <Calendar size={18} color="var(--text-secondary)" />
+                <span>จากวันที่:</span>
+                <DatePicker 
+                  selected={caseStartDate ? new Date(caseStartDate) : new Date()}
+                  onChange={(date) => {
+                    if (date) {
+                      const d = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                      setCaseStartDate(d);
+                    }
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  className="date-input custom-datepicker"
+                />
+              </div>
+              <div className="filter-group">
+                <span>ถึงวันที่:</span>
+                <DatePicker 
+                  selected={caseEndDate ? new Date(caseEndDate) : new Date()}
+                  onChange={(date) => {
+                    if (date) {
+                      const d = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                      setCaseEndDate(d);
+                    }
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  className="date-input custom-datepicker"
+                />
+              </div>
+            </div>
+
+            <div className="history-table-container">
+              <table className="history-table">
+                <thead>
+                  <tr>
+                    <th style={{ backgroundColor: '#f8f9fa', fontWeight: 600, color: '#334155' }}>เวลา</th>
+                    <th style={{ backgroundColor: '#f8f9fa', fontWeight: 600, color: '#334155' }}>ชื่อแพทย์</th>
+                    <th style={{ backgroundColor: '#457b9d', color: 'white', textAlign: 'center', fontWeight: 600 }}>สังกัดที่ไปช่วย</th>
+                    <th style={{ backgroundColor: '#457b9d', color: 'white', textAlign: 'center', fontWeight: 600 }}>จำนวนคน</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loadingCaseHistory ? (
+                    <tr><td colSpan="4" style={{ textAlign: 'center', padding: '2rem' }}>กำลังโหลด...</td></tr>
+                  ) : caseHistoryData.length > 0 ? (
+                    caseHistoryData.map((item, idx) => {
+                      const d = new Date(item.created_at);
+                      return (
+                        <tr key={idx}>
+                          <td style={{ color: '#64748b' }}>
+                            {d.toLocaleDateString('th-TH')} {String(d.getHours()).padStart(2, '0')}:{String(d.getMinutes()).padStart(2, '0')}
+                          </td>
+                          <td style={{ fontWeight: 600 }}>{item.medic_ic_name}</td>
+                          <td style={{ textAlign: 'center', fontWeight: 'bold', color: '#0f172a' }}>
+                            {item.agency_name || '-'}
+                          </td>
+                          <td style={{ textAlign: 'center', fontWeight: 'bold', color: '#457b9d' }}>
+                            {item.people_count === 1 ? '1 คน' : 'มากกว่า 1 คน'}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan="4" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+                        ไม่มีข้อมูลการไปช่วยสตอรี่ในช่วงเวลานี้
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Story Dropdown Modal */}
       {storyModalUser && (
         <div className="modal-overlay">
@@ -603,7 +768,7 @@ export default function QueueSystem({ profile }) {
               <p style={{ color: '#64748b', fontSize: '1.1rem' }}>สตอรี่ที่คุณเพิ่งไป มีคนไปทั้งหมดกี่คน?</p>
             </div>
             
-            <div className="story-custom-dropdown" style={{ marginBottom: '2.5rem' }}>
+            <div className="story-custom-dropdown" style={{ marginBottom: '1.5rem' }}>
               <div 
                 className={`story-dropdown-selected ${isStoryDropdownOpen ? 'open' : ''}`}
                 onClick={() => setIsStoryDropdownOpen(!isStoryDropdownOpen)}
@@ -619,6 +784,42 @@ export default function QueueSystem({ profile }) {
                   <div className={`story-dropdown-option ${storyPeopleCount === '2' ? 'selected' : ''}`} onClick={() => { setStoryPeopleCount('2'); setIsStoryDropdownOpen(false); }}>
                     ไปมากกว่า 1 คน (โบนัส 100,000)
                   </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ marginBottom: '2.5rem', textAlign: 'left' }}>
+              <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '0.5rem', fontWeight: 500 }}>สังกัดที่ไปช่วยสตอรี่ (ถ้ามี)</p>
+              <input 
+                type="text" 
+                placeholder="พิมพ์เพื่อค้นหาหรือระบุสังกัด..." 
+                value={storyAgencySearch}
+                onChange={e => {
+                  setStoryAgencySearch(e.target.value);
+                  setSelectedStoryAgency(e.target.value);
+                }}
+                className="modal-input"
+                style={{ width: '100%', padding: '0.75rem', marginBottom: '0.5rem' }}
+              />
+              {agencies.length > 0 && storyAgencySearch && !agencies.find(a => a.name.toLowerCase() === storyAgencySearch.toLowerCase()) && (
+                <div style={{ maxHeight: '120px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
+                  {agencies.filter(a => a.name.toLowerCase().includes(storyAgencySearch.toLowerCase())).map((ag, idx) => (
+                    <div 
+                      key={idx} 
+                      onClick={() => {
+                        setStoryAgencySearch(ag.name);
+                        setSelectedStoryAgency(ag.name);
+                      }}
+                      style={{ padding: '0.5rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                      onMouseOver={e => e.currentTarget.style.backgroundColor = '#e2e8f0'}
+                      onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <span style={{ fontWeight: 500 }}>{ag.name}</span>
+                      <span className={`agency-tag ${ag.category?.toLowerCase() === 'family' ? 'family' : 'gang'}`} style={{ fontSize: '0.65rem', padding: '0.15rem 0.5rem' }}>
+                        {ag.category || 'Gang'}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
