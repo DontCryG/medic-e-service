@@ -80,6 +80,7 @@
 
 /* Header */
 .dashboard-header {
+  flex-shrink: 0;
   height: 80px;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
