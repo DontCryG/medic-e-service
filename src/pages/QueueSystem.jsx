@@ -426,11 +426,11 @@ export default function QueueSystem({ profile }) {
             </div>
 
             <div className="history-table-container">
-              <table className="queue-table">
+              <table className="history-table">
                 <thead>
                   <tr>
-                    <th style={{ backgroundColor: '#f8f9fa' }}>รายชื่อแพทย์</th>
-                    <th style={{ backgroundColor: '#f8f9fa', textAlign: 'center' }}>เวลาทั้งหมด (นาที)</th>
+                    <th style={{ backgroundColor: '#f8f9fa', fontWeight: 600 }}>รายชื่อแพทย์</th>
+                    <th style={{ backgroundColor: '#f8f9fa', textAlign: 'center', fontWeight: 600 }}>เวลาทั้งหมด (นาที)</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -222,7 +222,8 @@
 
 .history-filters {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
   margin-bottom: 24px;
   align-items: center;
   background-color: #f8f9fa;
@@ -237,6 +238,7 @@
   gap: 8px;
   font-weight: 500;
   color: #495057;
+  white-space: nowrap;
 }
 
 .date-input {
@@ -258,6 +260,19 @@
   overflow-y: auto;
   border: 1px solid #e9ecef;
   border-radius: 8px;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 100%;
+}
+
+.history-table th,
+.history-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
 }
 
 .remark-input:hover:not(:disabled) {
