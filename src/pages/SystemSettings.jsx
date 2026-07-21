@@ -537,9 +537,10 @@ export default function SystemSettings({ profile }) {
                           <th>ลำดับ</th>
                           <th>ชื่อ-สกุล (IC)</th>
                           <th>ตำแหน่ง</th>
-                          {(reportCategory === 'all' || reportCategory === 'ic') && <th>ชั่วโมงเข้าเวร</th>}
+                          {(reportCategory === 'all' || reportCategory === 'ic' || reportCategory === 'oc') && <th>ชั่วโมงเข้าเวร</th>}
                           {reportCategory === 'all' && <th>รายการปรับปรุง (+/-)</th>}
                           {reportCategory === 'bonus' && <th>รายการโบนัส/อื่นๆ</th>}
+                          {reportCategory === 'oc' && <th>เงิน OC</th>}
                           <th>ยอดสุทธิที่ต้องจ่าย</th>
                         </tr>
                       </thead>
@@ -549,7 +550,7 @@ export default function SystemSettings({ profile }) {
                             <td style={{textAlign: 'center'}}>{i + 1}</td>
                             <td>{d.name}</td>
                             <td>{d.position}</td>
-                            {(reportCategory === 'all' || reportCategory === 'ic') && (
+                            {(reportCategory === 'all' || reportCategory === 'ic' || reportCategory === 'oc') && (
                               <td style={{textAlign: 'center'}}>{formatHours(d.hours)}</td>
                             )}
                             {reportCategory === 'all' && (
@@ -575,6 +576,11 @@ export default function SystemSettings({ profile }) {
                                   {d.coin_agency > 0 ? <span style={{color: '#f59e0b'}}>เหรียญ Agency: {d.coin_agency} เหรียญ</span> : null}
                                   {d.bonus === 0 && d.gacha_ic === 0 && d.gacha_promote === 0 && d.coin_agency === 0 ? '-' : null}
                                 </div>
+                              </td>
+                            )}
+                            {reportCategory === 'oc' && (
+                              <td style={{textAlign: 'right'}}>
+                                <span style={{color: '#7c3aed', fontWeight: 'bold'}}>+{formatCurrency(d.ocMoney)}</span>
                               </td>
                             )}
                             <td style={{textAlign: 'right', fontWeight: 'bold'}}>{formatCurrency(d.categoryPayout)}</td>
@@ -610,15 +616,7 @@ export default function SystemSettings({ profile }) {
             {/* POSITIONS TAB */}
             {activeTab === 'positions' && (
               <div className="animate-fade-in" style={{ maxWidth: '600px' }}>
-                <p style={{ color: '#64748b', marginBottom: '2rem' }}>เพิ่มหรือลบตำแหน่งในระบบ เพื่อให้ไปแสดงผลในหน้ารายชื่อและหน้าคำนวณเงินเดือน</p>
-                
-                <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-                  <input type="text" className="modal-input" placeholder="ชื่อตำแหน่งใหม่" value={newPosition} onChange={e => setNewPosition(e.target.value)} />
-                  <input type="number" className="modal-input" placeholder="เรทเริ่มต้น (บาท)" value={newRate} onChange={e => setNewRate(e.target.value)} style={{ width: '150px' }} />
-                  <button className="export-btn" style={{ padding: '0.75rem 1.5rem', borderRadius: '12px' }} onClick={handleAddPosition}>
-                    <PlusCircle size={18} /> เพิ่ม
-                  </button>
-                </div>
+                <p style={{ color: '#64748b', marginBottom: '2rem' }}>ลบตำแหน่งในระบบ</p>
 
                 <div className="position-list">
                   {positions.map(pos => (
