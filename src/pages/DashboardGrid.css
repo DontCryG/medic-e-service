@@ -3,88 +3,96 @@
 .hub-container {
   display: flex;
   flex-direction: column;
-  gap: 3rem;
-  padding-bottom: 2rem;
+  gap: 3.5rem;
+  padding: 1rem 0 3rem 0;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .hub-section {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  align-items: center; /* Center the grid */
 }
 
 .hub-section-title {
   text-align: center;
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
 }
 
 .hub-section-title.medic {
-  color: #581c87; /* Dark Purple */
+  color: #4c1d95; /* Deep Purple */
 }
 
 .hub-section-title.admin {
-  color: #c2410c; /* Dark Orange */
+  color: #9a3412; /* Deep Orange/Rust */
 }
 
 .hub-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 1.5rem;
+  width: 100%;
 }
 
 .hub-card {
-  background: white;
+  background: #ffffff;
   border-radius: 20px;
-  padding: 2rem 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  border: 1px solid rgba(0,0,0,0.03);
+  border: none; /* เอากรอบนอกออกตามที่ขอ */
+  width: 100%;
+  max-width: 290px; /* Keep them consistently sized */
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .hub-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(126, 34, 206, 0.08);
+  box-shadow: 0 10px 35px rgba(126, 34, 206, 0.08);
 }
 
 .hub-icon-wrapper {
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
+  width: 68px;
+  height: 68px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .hub-card.medic .hub-icon-wrapper {
-  background: rgba(126, 34, 206, 0.08);
-  color: #7e22ce;
+  background: #f3e8ff; /* Very light purple */
+  color: #9333ea;
 }
 
 .hub-card.admin .hub-icon-wrapper {
-  background: rgba(234, 88, 12, 0.1);
+  background: #ffedd5; /* Very light orange */
   color: #ea580c;
 }
 
 .hub-card-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 0.75rem;
 }
 
 .hub-card-desc {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.6;
   margin-bottom: 2rem;
   flex: 1; /* Pushes the button to the bottom */
+  padding: 0 0.5rem;
 }
 
 .hub-btn {
@@ -93,8 +101,8 @@
   color: white;
   border: none;
   border-radius: 12px;
-  padding: 0.875rem;
-  font-size: 0.95rem;
+  padding: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
@@ -107,14 +115,15 @@
 
 /* Related Links Card */
 .related-links-card {
-  background: white;
+  background: #ffffff;
   border-radius: 20px;
-  padding: 1.5rem;
+  padding: 2rem;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.03);
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
+  border: none;
 }
 
 .related-links-title {
@@ -122,26 +131,27 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 800;
   color: #0f172a;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .related-link-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(126, 34, 206, 0.06);
+  background: #f3e8ff;
   color: #7e22ce;
   text-decoration: none;
-  padding: 0.75rem 1.5rem;
+  padding: 0.875rem 2rem;
   border-radius: 12px;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.95rem;
   transition: all 0.2s;
+  border: none;
 }
 
 .related-link-btn:hover {
-  background: rgba(126, 34, 206, 0.12);
+  background: #e9d5ff;
 }
