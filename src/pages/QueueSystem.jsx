@@ -166,9 +166,11 @@ export default function QueueSystem({ profile }) {
     
     const checkTimeInterval = setInterval(() => {
       const now = new Date();
-      const currentHours = now.getHours().toString().padStart(2, '0');
-      const currentMinutes = now.getMinutes().toString().padStart(2, '0');
-      const currentTimeStr = `${currentHours}:${currentMinutes}`;
+      
+      // Force current time string to be in Thai timezone (Asia/Bangkok)
+      const options = { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', hour12: false };
+      // Use 'en-GB' to get consistent 24-hour format "HH:mm"
+      const currentTimeStr = new Intl.DateTimeFormat('en-GB', options).format(now);
 
       liveUsers.forEach(user => {
         const isMe = user.discord_id === profile.discord_id;
