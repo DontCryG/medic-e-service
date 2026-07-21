@@ -22,7 +22,8 @@ import {
   UserPlus,
   Ban,
   Banknote,
-  CalendarDays
+  CalendarDays,
+  Trash2
 } from 'lucide-react';
 import './Dashboard.css'; 
 import './DashboardGrid.css';
@@ -166,6 +167,14 @@ export default function Dashboard() {
     setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
     try {
       await supabase.from('notifications').update({ is_read: true }).eq('discord_id', profile.discord_id).eq('is_read', false);
+    } catch(e) {}
+  };
+
+  const deleteNotification = async (e, id) => {
+    e.stopPropagation();
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    try {
+      await supabase.from('notifications').delete().eq('id', id);
     } catch(e) {}
   };
 
@@ -487,18 +496,42 @@ export default function Dashboard() {
                         display: 'flex',
                         gap: '1rem',
                         cursor: 'pointer',
-                        transition: 'background 0.2s'
+                        transition: 'background 0.2s',
+                        position: 'relative'
                       }}
                       onMouseOver={(e) => e.currentTarget.style.background = '#f1f5f9'}
                       onMouseOut={(e) => e.currentTarget.style.background = notif.unread ? '#f8fafc' : 'white'}
                       onClick={() => markAsRead(notif.id)}
                       >
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: notif.unread ? '#3b82f6' : 'transparent', marginTop: '6px', flexShrink: 0 }}></div>
-                        <div>
+                        <div style={{ flex: 1, paddingRight: '1.5rem' }}>
                           <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>{notif.title}</div>
                           <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', lineHeight: 1.4 }}>{notif.desc}</div>
                           <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{notif.time}</div>
                         </div>
+                        <button 
+                          onClick={(e) => deleteNotification(e, notif.id)}
+                          style={{
+                            position: 'absolute',
+                            right: '1rem',
+                            top: '1rem',
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#94a3b8',
+                            cursor: 'pointer',
+                            padding: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '6px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseOver={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.background = '#fee2e2'; }}
+                          onMouseOut={(e) => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.background = 'transparent'; }}
+                          title="ลบการแจ้งเตือน"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     )) : (
                       <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
