@@ -382,7 +382,7 @@ export default function SystemSettings({ profile }) {
                     <label style={{ marginRight: '0.5rem', fontWeight: 600 }}>หมวดหมู่:</label>
                     <select className="settings-input" style={{ width: '200px' }} value={reportCategory} onChange={e => setReportCategory(e.target.value)}>
                       <option value="all">สรุปยอดรวมทั้งหมด (ALL)</option>
-                      <option value="ic">สรุปหมวดเงินเดือน IC</option>
+                      <option value="ic">สรุปหมวดเงิน IC</option>
                       <option value="oc">สรุปหมวดเงิน OC</option>
                       <option value="story">สรุปหมวดเงินดูสตอรี่</option>
                       <option value="bonus">สรุปหมวดเงินโบนัส</option>
@@ -403,7 +403,7 @@ export default function SystemSettings({ profile }) {
                     <div className="pdf-header">
                       <h1 className="pdf-title">
                         {reportCategory === 'all' ? 'รายงานสรุปค่าตอบแทนบุคลากรทางการแพทย์' : 
-                         reportCategory === 'ic' ? 'รายงานสรุปหมวดเงินเดือน IC' :
+                         reportCategory === 'ic' ? 'รายงานสรุปหมวดเงิน IC' :
                          reportCategory === 'oc' ? 'รายงานสรุปหมวดเงิน OC' :
                          reportCategory === 'bonus' ? 'รายงานสรุปหมวดเงินโบนัส' :
                          'รายงานสรุปหมวดเงินดูสตอรี่'}
@@ -421,7 +421,6 @@ export default function SystemSettings({ profile }) {
                           <th>ตำแหน่ง</th>
                           {(reportCategory === 'all' || reportCategory === 'ic') && <th>ชั่วโมงเข้าเวร</th>}
                           {reportCategory === 'all' && <th>รายการปรับปรุง (+/-)</th>}
-                          {reportCategory === 'ic' && <th>โบนัส (+)/หัก (-)</th>}
                           {reportCategory === 'bonus' && <th>รายการโบนัส/อื่นๆ</th>}
                           <th>ยอดสุทธิที่ต้องจ่าย</th>
                         </tr>
@@ -446,14 +445,6 @@ export default function SystemSettings({ profile }) {
                                   {d.storyMoney > 0 ? <span style={{color: '#0284c7'}}>+{formatCurrency(d.storyMoney)} (สตอรี่)</span> : null}
                                   {d.ocMoney > 0 ? <span style={{color: '#7c3aed'}}>+{formatCurrency(d.ocMoney)} (OC)</span> : null}
                                   {d.bonus === 0 && d.deduction === 0 && d.storyMoney === 0 && d.ocMoney === 0 && d.gacha_ic === 0 && d.gacha_promote === 0 && d.coin_agency === 0 ? '-' : null}
-                                </div>
-                              </td>
-                            )}
-                            {reportCategory === 'ic' && (
-                              <td style={{textAlign: 'right'}}>
-                                <div style={{display: 'flex', flexDirection: 'column', fontSize: '0.85rem'}}>
-                                  {d.deduction > 0 ? <span style={{color: '#e11d48'}}>-{formatCurrency(d.deduction)} (หัก)</span> : null}
-                                  {d.deduction === 0 ? '-' : null}
                                 </div>
                               </td>
                             )}
