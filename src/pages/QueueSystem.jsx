@@ -367,7 +367,7 @@ export default function QueueSystem({ profile }) {
               ) : liveUsers.length > 0 ? (
                 liveUsers.map((user) => {
                   const isMe = user.discord_id === profile.discord_id;
-                  const canEdit = isMe || isAdmin;
+                  const canEdit = true; // Allow all medics to manage queue for others
                   const queueState = user.queue_state || 'available';
 
                   return (
