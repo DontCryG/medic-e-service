@@ -160,20 +160,53 @@ export default function Dashboard() {
             <LayoutDashboard size={20} />
             <span>กระดานหลัก</span>
           </div>
+          
+          <div className="nav-divider" style={{ margin: '1rem 0', borderBottom: '1px solid var(--border)', opacity: 0.5 }}></div>
+          <div style={{ padding: '0 1.25rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', letterSpacing: '0.5px' }}>MEDIC SERVICES</div>
+          
           <div 
-            className={`nav-item ${activeTab === 'personnel' ? 'active' : ''}`}
-            onClick={() => setActiveTab('personnel')}
+            className={`nav-item ${activeTab === 'general' ? 'active' : ''}`}
+            onClick={() => setActiveTab('general')}
           >
-            <Users size={20} />
-            <span>จัดการบุคลากร</span>
+            <LayoutGrid size={20} />
+            <span>ศูนย์กลางบริการทั่วไป</span>
           </div>
           <div 
-            className={`nav-item ${activeTab === 'treatment' ? 'active' : ''}`}
-            onClick={() => setActiveTab('treatment')}
+            className={`nav-item ${activeTab === 'duty' ? 'active' : ''}`}
+            onClick={() => setActiveTab('duty')}
           >
-            <Stethoscope size={20} />
-            <span>ข้อมูลการรักษา</span>
+            <Clock size={20} />
+            <span>ระบบเข้าเวรออกเวร</span>
           </div>
+          <div 
+            className={`nav-item ${activeTab === 'accident' ? 'active' : ''}`}
+            onClick={() => setActiveTab('accident')}
+          >
+            <ClipboardList size={20} />
+            <span>ระบบบันทึกเคสอุบัติเหตุ</span>
+          </div>
+
+          {profile?.role === 'admin' && (
+            <>
+              <div className="nav-divider" style={{ margin: '1rem 0', borderBottom: '1px solid var(--border)', opacity: 0.5 }}></div>
+              <div style={{ padding: '0 1.25rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', letterSpacing: '0.5px' }}>ADMIN ONLY</div>
+              
+              <div 
+                className={`nav-item ${activeTab === 'personnel' ? 'active' : ''}`}
+                onClick={() => setActiveTab('personnel')}
+              >
+                <Users size={20} />
+                <span>ระบบจัดการบุคลากรแพทย์</span>
+              </div>
+              <div 
+                className={`nav-item ${activeTab === 'requests' ? 'active' : ''}`}
+                onClick={() => setActiveTab('requests')}
+              >
+                <UserCog size={20} />
+                <span>ระบบจัดการคำร้อง</span>
+              </div>
+            </>
+          )}
           
           <div style={{ marginTop: 'auto' }}>
             <div className="nav-item">
@@ -231,7 +264,7 @@ export default function Dashboard() {
                   </div>
                   <h3 className="hub-card-title">ศูนย์กลางบริการทั่วไป</h3>
                   <p className="hub-card-desc">กระดานรวมบริการ และสรุปภาพรวมการทำงานของบุคลากรทางการแพทย์</p>
-                  <button className="hub-btn">เข้าใช้งาน</button>
+                  <button className="hub-btn" onClick={() => setActiveTab('general')}>เข้าใช้งาน</button>
                 </div>
 
                 <div className="hub-card medic">
@@ -240,7 +273,7 @@ export default function Dashboard() {
                   </div>
                   <h3 className="hub-card-title">ระบบเข้าเวรออกเวร</h3>
                   <p className="hub-card-desc">บันทึกการลงเวลาปฏิบัติงาน และตรวจสอบตารางเวรของแพทย์แต่ละท่าน</p>
-                  <button className="hub-btn">เข้าใช้งาน</button>
+                  <button className="hub-btn" onClick={() => setActiveTab('duty')}>เข้าใช้งาน</button>
                 </div>
 
                 <div className="hub-card medic">
@@ -249,7 +282,7 @@ export default function Dashboard() {
                   </div>
                   <h3 className="hub-card-title">ระบบบันทึกเคสอุบัติเหตุ</h3>
                   <p className="hub-card-desc">บันทึกประวัติการรักษา รายงานอุบัติเหตุ และผู้ป่วยฉุกเฉิน</p>
-                  <button className="hub-btn">เข้าใช้งาน</button>
+                  <button className="hub-btn" onClick={() => setActiveTab('accident')}>เข้าใช้งาน</button>
                 </div>
 
               </div>
@@ -267,7 +300,7 @@ export default function Dashboard() {
                     </div>
                     <h3 className="hub-card-title">ระบบจัดการบุคลากรแพทย์</h3>
                     <p className="hub-card-desc">ฐานข้อมูลทะเบียนประวัติ และปรับเปลี่ยนสิทธิ์ (Role) เจ้าหน้าที่</p>
-                    <button className="hub-btn">เข้าสู่ระบบ</button>
+                    <button className="hub-btn" onClick={() => setActiveTab('personnel')}>เข้าสู่ระบบ</button>
                   </div>
 
                   <div className="hub-card admin">
@@ -276,7 +309,7 @@ export default function Dashboard() {
                     </div>
                     <h3 className="hub-card-title">ระบบจัดการคำร้อง</h3>
                     <p className="hub-card-desc">ตรวจสอบ อนุมัติ และจัดการคำร้องต่างๆ ที่ถูกส่งเข้ามาจากบุคลากร</p>
-                    <button className="hub-btn">เข้าสู่ระบบ</button>
+                    <button className="hub-btn" onClick={() => setActiveTab('requests')}>เข้าสู่ระบบ</button>
                   </div>
 
                 </div>
@@ -295,26 +328,65 @@ export default function Dashboard() {
             </div>
           )}
 
-          {activeTab === 'personnel' && (
+          {activeTab === 'general' && (
             <div className="hub-container animate-fade-in">
               <div className="hub-section">
-                <h2 className="hub-section-title medic">ระบบจัดการบุคลากรทางการแพทย์</h2>
+                <h2 className="hub-section-title medic">ศูนย์กลางบริการทั่วไป</h2>
                 <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', textAlign: 'center', width: '100%', boxShadow: '0 10px 40px -10px rgba(124, 58, 237, 0.1)' }}>
-                  <Users size={48} color="#7c3aed" style={{ marginBottom: '1rem' }} />
-                  <h3>หน้าจัดการบุคลากร</h3>
+                  <LayoutGrid size={48} color="#7c3aed" style={{ marginBottom: '1rem' }} />
+                  <h3>ศูนย์กลางบริการทั่วไป</h3>
                   <p style={{ color: '#64748b' }}>(กำลังอยู่ในระหว่างการพัฒนาในลูปต่อไป)</p>
                 </div>
               </div>
             </div>
           )}
 
-          {activeTab === 'treatment' && (
+          {activeTab === 'duty' && (
             <div className="hub-container animate-fade-in">
               <div className="hub-section">
-                <h2 className="hub-section-title medic">ระบบข้อมูลการรักษา (Treatment Data)</h2>
+                <h2 className="hub-section-title medic">ระบบเข้าเวรออกเวร</h2>
                 <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', textAlign: 'center', width: '100%', boxShadow: '0 10px 40px -10px rgba(124, 58, 237, 0.1)' }}>
-                  <Stethoscope size={48} color="#7c3aed" style={{ marginBottom: '1rem' }} />
-                  <h3>หน้าข้อมูลการรักษา</h3>
+                  <Clock size={48} color="#7c3aed" style={{ marginBottom: '1rem' }} />
+                  <h3>ระบบเข้าเวรออกเวร</h3>
+                  <p style={{ color: '#64748b' }}>(กำลังอยู่ในระหว่างการพัฒนาในลูปต่อไป)</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'accident' && (
+            <div className="hub-container animate-fade-in">
+              <div className="hub-section">
+                <h2 className="hub-section-title medic">ระบบบันทึกเคสอุบัติเหตุ</h2>
+                <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', textAlign: 'center', width: '100%', boxShadow: '0 10px 40px -10px rgba(124, 58, 237, 0.1)' }}>
+                  <ClipboardList size={48} color="#7c3aed" style={{ marginBottom: '1rem' }} />
+                  <h3>ระบบบันทึกเคสอุบัติเหตุ</h3>
+                  <p style={{ color: '#64748b' }}>(กำลังอยู่ในระหว่างการพัฒนาในลูปต่อไป)</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'personnel' && (
+            <div className="hub-container animate-fade-in">
+              <div className="hub-section">
+                <h2 className="hub-section-title admin">ระบบจัดการบุคลากรแพทย์</h2>
+                <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', textAlign: 'center', width: '100%', boxShadow: '0 10px 40px -10px rgba(234, 88, 12, 0.1)' }}>
+                  <Users size={48} color="#ea580c" style={{ marginBottom: '1rem' }} />
+                  <h3 style={{ color: '#ea580c' }}>หน้าจัดการบุคลากร</h3>
+                  <p style={{ color: '#64748b' }}>(กำลังอยู่ในระหว่างการพัฒนาในลูปต่อไป)</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'requests' && (
+            <div className="hub-container animate-fade-in">
+              <div className="hub-section">
+                <h2 className="hub-section-title admin">ระบบจัดการคำร้อง</h2>
+                <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', textAlign: 'center', width: '100%', boxShadow: '0 10px 40px -10px rgba(234, 88, 12, 0.1)' }}>
+                  <UserCog size={48} color="#ea580c" style={{ marginBottom: '1rem' }} />
+                  <h3 style={{ color: '#ea580c' }}>ระบบจัดการคำร้อง</h3>
                   <p style={{ color: '#64748b' }}>(กำลังอยู่ในระหว่างการพัฒนาในลูปต่อไป)</p>
                 </div>
               </div>
