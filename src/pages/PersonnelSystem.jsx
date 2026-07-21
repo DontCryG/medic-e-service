@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { Users, Search, Edit2, Trash2, X, ShieldAlert } from 'lucide-react';
+import { Users, Search, Edit2, Trash2, X, ShieldAlert, ChevronDown } from 'lucide-react';
 import './PersonnelSystem.css';
 
 export default function PersonnelSystem({ profile }) {
@@ -14,6 +14,7 @@ export default function PersonnelSystem({ profile }) {
   const [editRole, setEditRole] = useState('');
   const [editPosition, setEditPosition] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (profile?.role === 'admin') {
@@ -240,18 +241,31 @@ export default function PersonnelSystem({ profile }) {
 
             <div className="modal-form-group">
               <label>ตำแหน่ง (Position)</label>
-              <select 
-                className="modal-select"
-                value={editPosition}
-                onChange={(e) => setEditPosition(e.target.value)}
-              >
-                <option value="ผู้อำนวยการ">ผู้อำนวยการ</option>
-                <option value="รองผู้อำนวยการ">รองผู้อำนวยการ</option>
-                <option value="เลขานุการ">เลขานุการ</option>
-                <option value="แพทย์ชำนาญการ">แพทย์ชำนาญการ</option>
-                <option value="แพทย์">แพทย์</option>
-                <option value="นักเรียนแพทย์">นักเรียนแพทย์</option>
-              </select>
+              <div className="custom-dropdown">
+                <div 
+                  className={`dropdown-selected ${isDropdownOpen ? 'open' : ''}`}
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  {editPosition || 'เลือกตำแหน่ง...'}
+                  <ChevronDown size={18} style={{ transition: 'transform 0.2s', transform: isDropdownOpen ? 'rotate(180deg)' : 'none' }} />
+                </div>
+                {isDropdownOpen && (
+                  <div className="dropdown-options">
+                    {['ผู้อำนวยการ', 'รองผู้อำนวยการ', 'เลขานุการ', 'แพทย์ชำนาญการ', 'แพทย์', 'นักเรียนแพทย์'].map(pos => (
+                      <div 
+                        key={pos} 
+                        className={`dropdown-option ${editPosition === pos ? 'selected' : ''}`}
+                        onClick={() => {
+                          setEditPosition(pos);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        {pos}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {editRole === 'user' && (
