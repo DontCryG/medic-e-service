@@ -198,6 +198,24 @@ export default function PersonnelSystem({ profile }) {
     }
   };
 
+  const calculateTotalDuration = () => {
+    if (!dutyClockIn || !dutyClockOut) return null;
+    const diff = dutyClockOut.getTime() - dutyClockIn.getTime();
+    if (diff <= 0) return <span style={{ color: '#ef4444' }}>เวลาออกเวรต้องอยู่หลังเวลาเข้าเวร</span>;
+
+    const breakMs = (parseInt(dutyBreakMinutes) || 0) * 60000;
+    const netMs = Math.max(0, diff - breakMs);
+
+    const hours = Math.floor(netMs / (1000 * 60 * 60));
+    const minutes = Math.floor((netMs % (1000 * 60 * 60)) / (1000 * 60));
+
+    return (
+      <div style={{ padding: '0.75rem', background: '#dcfce7', color: '#166534', borderRadius: '8px', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+        <strong>รวมเวลาสุทธิ:</strong> {hours} ชั่วโมง {minutes} นาที
+      </div>
+    );
+  };
+
   if (!profile || profile.role !== 'admin') return null;
 
   return (
@@ -452,7 +470,7 @@ export default function PersonnelSystem({ profile }) {
                 />
               </div>
 
-              <div className="form-group" style={{ marginBottom: '2rem' }}>
+              <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                 <label className="modal-label">เวลาพักรวม (นาที)</label>
                 <input 
                   type="number" 
@@ -462,6 +480,7 @@ export default function PersonnelSystem({ profile }) {
                   onChange={(e) => setDutyBreakMinutes(e.target.value)}
                   placeholder="0"
                 />
+                {calculateTotalDuration()}
               </div>
 
               <div className="modal-actions">
