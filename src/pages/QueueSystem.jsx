@@ -20,6 +20,14 @@ export default function QueueSystem({ profile }) {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
 
+  const timeStringToDate = (timeStr) => {
+    if (!timeStr) return null;
+    const [hours, minutes] = timeStr.split(':');
+    const d = new Date();
+    d.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    return d;
+  };
+
   const [startDate, setStartDate] = useState(getLocalDateString());
   const [endDate, setEndDate] = useState(getLocalDateString());
 
@@ -352,16 +360,25 @@ export default function QueueSystem({ profile }) {
 
                       <td className="col-story-time" style={{ backgroundColor: '#f9f5ff' }}>
                         <div className="remark-input-container">
-                          <input 
-                            type="time" 
-                            className="remark-input time-input"
-                            defaultValue={user.story_time || ''}
-                            disabled={!canEdit}
-                            onBlur={(e) => {
-                              if (e.target.value !== user.story_time) {
-                                handleStoryTimeChange(user.id, e.target.value);
+                          <DatePicker
+                            selected={user.story_time ? timeStringToDate(user.story_time) : null}
+                            onChange={(date) => {
+                              if (date) {
+                                const timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                                handleStoryTimeChange(user.id, timeStr);
+                              } else {
+                                handleStoryTimeChange(user.id, null);
                               }
                             }}
+                            showTimeSelect
+                            showTimeSelectOnly
+                            timeIntervals={5}
+                            timeCaption="เวลา"
+                            dateFormat="HH:mm"
+                            timeFormat="HH:mm"
+                            placeholderText="--:--"
+                            className="remark-input time-input"
+                            disabled={!canEdit}
                           />
                         </div>
                       </td>
