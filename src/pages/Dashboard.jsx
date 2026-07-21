@@ -21,7 +21,8 @@ import {
   UserCog,
   UserPlus,
   Ban,
-  FileCheck2
+  FileCheck2,
+  Banknote
 } from 'lucide-react';
 import './Dashboard.css'; 
 import './DashboardGrid.css';
@@ -205,6 +206,13 @@ export default function Dashboard() {
                 <UserCog size={20} />
                 <span>ระบบจัดการคำร้อง</span>
               </div>
+              <div 
+                className={`nav-item ${activeTab === 'salary' ? 'active' : ''}`}
+                onClick={() => setActiveTab('salary')}
+              >
+                <Banknote size={20} />
+                <span>ระบบคำนวณเงินเดือน</span>
+              </div>
             </>
           )}
           
@@ -312,6 +320,15 @@ export default function Dashboard() {
                     <button className="hub-btn" onClick={() => setActiveTab('requests')}>เข้าสู่ระบบ</button>
                   </div>
 
+                  <div className="hub-card admin">
+                    <div className="hub-icon-wrapper">
+                      <Banknote size={32} strokeWidth={1.5} />
+                    </div>
+                    <h3 className="hub-card-title">ระบบคำนวณเงินเดือน</h3>
+                    <p className="hub-card-desc">คำนวณรายได้ สรุปยอดเงินเดือน โบนัส และค่าตอบแทนพิเศษของบุคลากร</p>
+                    <button className="hub-btn" onClick={() => setActiveTab('salary')}>เข้าสู่ระบบ</button>
+                  </div>
+
                 </div>
               </div>
             )}
@@ -387,6 +404,19 @@ export default function Dashboard() {
                 <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', textAlign: 'center', width: '100%', boxShadow: '0 10px 40px -10px rgba(234, 88, 12, 0.1)' }}>
                   <UserCog size={48} color="#ea580c" style={{ marginBottom: '1rem' }} />
                   <h3 style={{ color: '#ea580c' }}>ระบบจัดการคำร้อง</h3>
+                  <p style={{ color: '#64748b' }}>(กำลังอยู่ในระหว่างการพัฒนาในลูปต่อไป)</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'salary' && (
+            <div className="hub-container animate-fade-in">
+              <div className="hub-section">
+                <h2 className="hub-section-title admin">ระบบคำนวณเงินเดือน</h2>
+                <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', textAlign: 'center', width: '100%', boxShadow: '0 10px 40px -10px rgba(234, 88, 12, 0.1)' }}>
+                  <Banknote size={48} color="#ea580c" style={{ marginBottom: '1rem' }} />
+                  <h3 style={{ color: '#ea580c' }}>ระบบคำนวณเงินเดือน</h3>
                   <p style={{ color: '#64748b' }}>(กำลังอยู่ในระหว่างการพัฒนาในลูปต่อไป)</p>
                 </div>
               </div>
