@@ -21,6 +21,8 @@ export default function SalarySystem({ profile }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [editRates, setEditRates] = useState([]);
   const [savingRates, setSavingRates] = useState(false);
+  const [newPositionName, setNewPositionName] = useState('');
+  const [newHourlyRate, setNewHourlyRate] = useState('');
 
   // Adjustments Modal
   const [adjModalUser, setAdjModalUser] = useState(null); // User object currently viewing
@@ -215,6 +217,52 @@ export default function SalarySystem({ profile }) {
       fetchRatesAndData(); // Recalculate
     } catch (error) {
       alert('เกิดข้อผิดพลาดในการบันทึก: ' + error.message);
+    } finally {
+      setSavingRates(false);
+    }
+  };
+
+  const handleAddRate = async () => {
+    if (!newPositionName || !newHourlyRate) {
+      alert('กรุณากรอกชื่อตำแหน่งและเรทเงินเดือนให้ครบถ้วน');
+      return;
+    }
+    setSavingRates(true);
+    try {
+      const { error } = await supabase
+        .from('salary_rates')
+        .insert([{ 
+          position_name: newPositionName, 
+          hourly_rate: Number(newHourlyRate) 
+        }]);
+      
+      if (error) throw error;
+      
+      setNewPositionName('');
+      setNewHourlyRate('');
+      alert('เพิ่มตำแหน่งใหม่สำเร็จ');
+      fetchRatesAndData();
+    } catch (error) {
+      alert('เกิดข้อผิดพลาด: ' + error.message);
+    } finally {
+      setSavingRates(false);
+    }
+  };
+
+  const handleDeleteRate = async (id, name) => {
+    if (!window.confirm(`คุณแน่ใจหรือไม่ที่จะลบตำแหน่ง "${name}"?`)) return;
+    
+    setSavingRates(true);
+    try {
+      const { error } = await supabase
+        .from('salary_rates')
+        .delete()
+        .eq('id', id);
+        
+      if (error) throw error;
+      fetchRatesAndData();
+    } catch (error) {
+      alert('เกิดข้อผิดพลาด: ' + error.message);
     } finally {
       setSavingRates(false);
     }
@@ -473,10 +521,37 @@ export default function SalarySystem({ profile }) {
             </p>
 
             <div className="rate-list">
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <input 
+                  type="text" 
+                  className="modal-input" 
+                  placeholder="ชื่อตำแหน่งใหม่ (เช่น ผู้อำนวยการแพทย์)" 
+                  value={newPositionName}
+                  onChange={(e) => setNewPositionName(e.target.value)}
+                  style={{ flex: 2, marginBottom: 0 }}
+                />
+                <input 
+                  type="number" 
+                  className="modal-input" 
+                  placeholder="เรท (บ./ชม.)" 
+                  value={newHourlyRate}
+                  onChange={(e) => setNewHourlyRate(e.target.value)}
+                  style={{ flex: 1, marginBottom: 0 }}
+                />
+                <button 
+                  className="adj-add-btn" 
+                  onClick={handleAddRate} 
+                  disabled={savingRates}
+                  style={{ padding: '0 1rem', width: 'auto' }}
+                >
+                  <PlusCircle size={18} /> เพิ่ม
+                </button>
+              </div>
+
               {editRates.length > 0 ? editRates.map((rate, index) => (
                 <div key={rate.id} className="rate-item">
                   <span className="rate-item-name">{rate.position_name}</span>
-                  <div className="rate-input-group">
+                  <div className="rate-input-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <input 
                       type="number"
                       className="rate-input"
@@ -487,13 +562,19 @@ export default function SalarySystem({ profile }) {
                         setEditRates(newRates);
                       }}
                     />
-                    <span style={{ color: '#64748b', fontSize: '0.9rem' }}>บ./ชม.</span>
+                    <span style={{ color: '#64748b', fontSize: '0.9rem', marginRight: '0.5rem' }}>บ./ชม.</span>
+                    <button 
+                      onClick={() => handleDeleteRate(rate.id, rate.position_name)}
+                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                      title="ลบตำแหน่งนี้"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
               )) : (
-                <div style={{ padding: '2rem', textAlign: 'center', color: '#ef4444', background: '#fef2f2', borderRadius: '12px' }}>
-                  <strong>ยังไม่มีฐานข้อมูลตำแหน่ง</strong><br/>
-                  กรุณารันคำสั่ง SQL ที่ได้รับ เพื่อสร้างตาราง salary_rates ก่อน
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b', background: '#f8fafc', borderRadius: '12px' }}>
+                  ยังไม่มีฐานข้อมูลตำแหน่ง กรุณาเพิ่มตำแหน่งด้านบน
                 </div>
               )}
             </div>
