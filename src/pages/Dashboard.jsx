@@ -41,6 +41,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [announcement, setAnnouncement] = useState(null);
 
   const menuItems = [
     { id: 'dashboard', label: 'กระดานหลัก' },
@@ -79,6 +80,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     checkUser();
+    fetchAnnouncement();
     
     // Subscribe to realtime changes for this user's profile
     let subscription;
