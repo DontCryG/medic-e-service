@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { Settings, Calculator, Filter, CalendarDays, DollarSign, Clock, Users, X, Save, PlusCircle, Trash2, Pencil } from 'lucide-react';
+import { Settings, Calculator, Filter, CalendarDays, DollarSign, Clock, Users, X, Save, PlusCircle, Trash2, Pencil, ChevronDown } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './SalarySystem.css';
@@ -26,6 +26,7 @@ export default function SalarySystem({ profile }) {
   const [adjModalUser, setAdjModalUser] = useState(null); // User object currently viewing
   const [userAdjustments, setUserAdjustments] = useState([]);
   const [adjType, setAdjType] = useState('bonus');
+  const [isAdjTypeDropdownOpen, setIsAdjTypeDropdownOpen] = useState(false);
   const [adjAmount, setAdjAmount] = useState('');
   const [adjReason, setAdjReason] = useState('');
   const [savingAdj, setSavingAdj] = useState(false);
@@ -514,14 +515,38 @@ export default function SalarySystem({ profile }) {
             <div className="adj-form">
               <div className="modal-form-group">
                 <label>ประเภทรายการ</label>
-                <select className="modal-select" value={adjType} onChange={e => {
-                  setAdjType(e.target.value);
-                  setAdjAmount(''); // Reset input when changing type
-                }}>
-                  <option value="bonus">บวกโบนัส (+)</option>
-                  <option value="deduction">หักเงิน (-)</option>
-                  <option value="story">บวกค่าดูสตอรี่ (ครั้งละ 250,000)</option>
-                </select>
+                <div className="custom-dropdown">
+                  <div 
+                    className={`dropdown-selected ${isAdjTypeDropdownOpen ? 'open' : ''}`}
+                    onClick={() => setIsAdjTypeDropdownOpen(!isAdjTypeDropdownOpen)}
+                  >
+                    {adjType === 'bonus' ? 'บวกโบนัส (+)' :
+                     adjType === 'deduction' ? 'หักเงิน (-)' :
+                     'บวกค่าดูสตอรี่ (ครั้งละ 250,000)'}
+                    <ChevronDown size={18} style={{ transition: 'transform 0.2s', transform: isAdjTypeDropdownOpen ? 'rotate(180deg)' : 'none' }} />
+                  </div>
+                  {isAdjTypeDropdownOpen && (
+                    <div className="dropdown-options">
+                      {[
+                        { value: 'bonus', label: 'บวกโบนัส (+)' },
+                        { value: 'deduction', label: 'หักเงิน (-)' },
+                        { value: 'story', label: 'บวกค่าดูสตอรี่ (ครั้งละ 250,000)' }
+                      ].map(opt => (
+                        <div 
+                          key={opt.value} 
+                          className={`dropdown-option ${adjType === opt.value ? 'selected' : ''}`}
+                          onClick={() => {
+                            setAdjType(opt.value);
+                            setAdjAmount(''); // Reset input when changing type
+                            setIsAdjTypeDropdownOpen(false);
+                          }}
+                        >
+                          {opt.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="modal-form-group">
                 <label>{adjType === 'story' ? 'จำนวนครั้ง (ครั้ง)' : 'จำนวนเงิน (บาท)'}</label>
