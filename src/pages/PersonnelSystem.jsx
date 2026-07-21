@@ -162,7 +162,7 @@ export default function PersonnelSystem({ profile }) {
           discord_id: addingDutyUser.discord_id,
           clock_in: dutyClockIn.toISOString(),
           clock_out: dutyClockOut.toISOString(),
-          total_break_minutes: parseInt(dutyBreakMinutes) || 0,
+          total_break_minutes: 0,
           status: 'completed'
         }]);
 
@@ -203,8 +203,7 @@ export default function PersonnelSystem({ profile }) {
     const diff = dutyClockOut.getTime() - dutyClockIn.getTime();
     if (diff <= 0) return <span style={{ color: '#ef4444' }}>เวลาออกเวรต้องอยู่หลังเวลาเข้าเวร</span>;
 
-    const breakMs = (parseInt(dutyBreakMinutes) || 0) * 60000;
-    const netMs = Math.max(0, diff - breakMs);
+    const netMs = Math.max(0, diff);
 
     const hours = Math.floor(netMs / (1000 * 60 * 60));
     const minutes = Math.floor((netMs % (1000 * 60 * 60)) / (1000 * 60));
@@ -471,15 +470,6 @@ export default function PersonnelSystem({ profile }) {
               </div>
 
               <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                <label className="modal-label">เวลาพักรวม (นาที)</label>
-                <input 
-                  type="number" 
-                  min="0"
-                  className="modal-select" 
-                  value={dutyBreakMinutes}
-                  onChange={(e) => setDutyBreakMinutes(e.target.value)}
-                  placeholder="0"
-                />
                 {calculateTotalDuration()}
               </div>
 
