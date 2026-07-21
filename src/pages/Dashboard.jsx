@@ -169,7 +169,7 @@ export default function Dashboard() {
             onClick={() => setActiveTab('general')}
           >
             <LayoutGrid size={20} />
-            <span>ศูนย์กลางบริการทั่วไป</span>
+            <span>ระบบรันคิวแพทย์</span>
           </div>
           <div 
             className={`nav-item ${activeTab === 'duty' ? 'active' : ''}`}
@@ -262,8 +262,8 @@ export default function Dashboard() {
                   <div className="hub-icon-wrapper">
                     <LayoutGrid size={32} strokeWidth={1.5} />
                   </div>
-                  <h3 className="hub-card-title">ศูนย์กลางบริการทั่วไป</h3>
-                  <p className="hub-card-desc">กระดานรวมบริการ และสรุปภาพรวมการทำงานของบุคลากรทางการแพทย์</p>
+                  <h3 className="hub-card-title">ระบบรันคิวแพทย์</h3>
+                  <p className="hub-card-desc">ระบบจัดการคิวผู้ป่วย จัดลำดับการเข้ารับการรักษา และการเรียกคิวเข้าห้องตรวจ</p>
                   <button className="hub-btn" onClick={() => setActiveTab('general')}>เข้าใช้งาน</button>
                 </div>
 
@@ -331,10 +331,10 @@ export default function Dashboard() {
           {activeTab === 'general' && (
             <div className="hub-container animate-fade-in">
               <div className="hub-section">
-                <h2 className="hub-section-title medic">ศูนย์กลางบริการทั่วไป</h2>
+                <h2 className="hub-section-title medic">ระบบรันคิวแพทย์</h2>
                 <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', textAlign: 'center', width: '100%', boxShadow: '0 10px 40px -10px rgba(124, 58, 237, 0.1)' }}>
                   <LayoutGrid size={48} color="#7c3aed" style={{ marginBottom: '1rem' }} />
-                  <h3>ศูนย์กลางบริการทั่วไป</h3>
+                  <h3>ระบบรันคิวแพทย์</h3>
                   <p style={{ color: '#64748b' }}>(กำลังอยู่ในระหว่างการพัฒนาในลูปต่อไป)</p>
                 </div>
               </div>
