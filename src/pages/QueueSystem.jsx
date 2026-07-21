@@ -21,8 +21,8 @@ export default function QueueSystem({ profile }) {
   const [storyPeopleCount, setStoryPeopleCount] = useState('1');
   const [isStoryDropdownOpen, setIsStoryDropdownOpen] = useState(false);
   const [agencies, setAgencies] = useState([]);
-  const [storyAgencySearch, setStoryAgencySearch] = useState('');
-  const [selectedStoryAgency, setSelectedStoryAgency] = useState('');
+  const [storyAgencySearchA, setStoryAgencySearchA] = useState('');
+  const [storyAgencySearchB, setStoryAgencySearchB] = useState('');
 
   const [showCaseHistory, setShowCaseHistory] = useState(false);
   const [caseHistoryData, setCaseHistoryData] = useState([]);
@@ -227,7 +227,17 @@ export default function QueueSystem({ profile }) {
     setStoryModalUser(null);
     
     const amount = storyPeopleCount === '1' ? 200000 : 100000;
-    const reasonText = selectedStoryAgency ? `จบสตอรี่ (${selectedStoryAgency})` : 'จบสตอรี่';
+    
+    let finalAgencyText = '';
+    if (storyAgencySearchA && storyAgencySearchB) {
+      finalAgencyText = `${storyAgencySearchA} vs ${storyAgencySearchB}`;
+    } else if (storyAgencySearchA) {
+      finalAgencyText = storyAgencySearchA;
+    } else if (storyAgencySearchB) {
+      finalAgencyText = storyAgencySearchB;
+    }
+
+    const reasonText = finalAgencyText ? `จบสตอรี่ (${finalAgencyText})` : 'จบสตอรี่';
     try {
       const { error: adjError } = await supabase.from('salary_adjustments').insert({
         discord_id: user.discord_id,
@@ -236,11 +246,11 @@ export default function QueueSystem({ profile }) {
         reason: reasonText
       });
       
-      if (selectedStoryAgency) {
+      if (finalAgencyText) {
         await supabase.from('story_logs').insert({
           medic_discord_id: user.discord_id,
           medic_ic_name: user.users?.ic_name || 'Unknown',
-          agency_name: selectedStoryAgency,
+          agency_name: finalAgencyText,
           people_count: parseInt(storyPeopleCount)
         });
       }
@@ -791,38 +801,68 @@ export default function QueueSystem({ profile }) {
 
             <div style={{ marginBottom: '2.5rem', textAlign: 'left' }}>
               <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '0.5rem', fontWeight: 500 }}>สังกัดที่ไปช่วยสตอรี่ (ถ้ามี)</p>
-              <input 
-                type="text" 
-                placeholder="พิมพ์เพื่อค้นหาหรือระบุสังกัด..." 
-                value={storyAgencySearch}
-                onChange={e => {
-                  setStoryAgencySearch(e.target.value);
-                  setSelectedStoryAgency(e.target.value);
-                }}
-                className="modal-input"
-                style={{ width: '100%', padding: '0.75rem', marginBottom: '0.5rem' }}
-              />
-              {agencies.length > 0 && storyAgencySearch && !agencies.find(a => a.name.toLowerCase() === storyAgencySearch.toLowerCase()) && (
-                <div style={{ maxHeight: '120px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
-                  {agencies.filter(a => a.name.toLowerCase().includes(storyAgencySearch.toLowerCase())).map((ag, idx) => (
-                    <div 
-                      key={idx} 
-                      onClick={() => {
-                        setStoryAgencySearch(ag.name);
-                        setSelectedStoryAgency(ag.name);
-                      }}
-                      style={{ padding: '0.5rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                      onMouseOver={e => e.currentTarget.style.backgroundColor = '#e2e8f0'}
-                      onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                      <span style={{ fontWeight: 500 }}>{ag.name}</span>
-                      <span className={`agency-tag ${ag.category?.toLowerCase() === 'family' ? 'family' : 'gang'}`} style={{ fontSize: '0.65rem', padding: '0.15rem 0.5rem' }}>
-                        {ag.category || 'Gang'}
-                      </span>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ flex: 1, position: 'relative' }}>
+                  <input 
+                    type="text" 
+                    placeholder="ฝั่งที่ 1..." 
+                    value={storyAgencySearchA}
+                    onChange={e => setStoryAgencySearchA(e.target.value)}
+                    className="modal-input"
+                    style={{ width: '100%', padding: '0.75rem' }}
+                  />
+                  {agencies.length > 0 && storyAgencySearchA && !agencies.find(a => a.name.toLowerCase() === storyAgencySearchA.toLowerCase()) && agencies.filter(a => a.name.toLowerCase().includes(storyAgencySearchA.toLowerCase())).length > 0 && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, maxHeight: '120px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: '#f8fafc', marginTop: '4px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                      {agencies.filter(a => a.name.toLowerCase().includes(storyAgencySearchA.toLowerCase())).map((ag, idx) => (
+                        <div 
+                          key={`agA-${idx}`} 
+                          onClick={() => setStoryAgencySearchA(ag.name)}
+                          style={{ padding: '0.5rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                          onMouseOver={e => e.currentTarget.style.backgroundColor = '#e2e8f0'}
+                          onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <span style={{ fontWeight: 500 }}>{ag.name}</span>
+                          <span className={`agency-tag ${ag.category?.toLowerCase() === 'family' ? 'family' : 'gang'}`} style={{ fontSize: '0.65rem', padding: '0.15rem 0.5rem' }}>
+                            {ag.category || 'Gang'}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
+
+                <span style={{ fontWeight: 600, color: '#94a3b8' }}>vs</span>
+
+                <div style={{ flex: 1, position: 'relative' }}>
+                  <input 
+                    type="text" 
+                    placeholder="ฝั่งที่ 2..." 
+                    value={storyAgencySearchB}
+                    onChange={e => setStoryAgencySearchB(e.target.value)}
+                    className="modal-input"
+                    style={{ width: '100%', padding: '0.75rem' }}
+                  />
+                  {agencies.length > 0 && storyAgencySearchB && !agencies.find(a => a.name.toLowerCase() === storyAgencySearchB.toLowerCase()) && agencies.filter(a => a.name.toLowerCase().includes(storyAgencySearchB.toLowerCase())).length > 0 && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, maxHeight: '120px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: '#f8fafc', marginTop: '4px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                      {agencies.filter(a => a.name.toLowerCase().includes(storyAgencySearchB.toLowerCase())).map((ag, idx) => (
+                        <div 
+                          key={`agB-${idx}`} 
+                          onClick={() => setStoryAgencySearchB(ag.name)}
+                          style={{ padding: '0.5rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                          onMouseOver={e => e.currentTarget.style.backgroundColor = '#e2e8f0'}
+                          onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <span style={{ fontWeight: 500 }}>{ag.name}</span>
+                          <span className={`agency-tag ${ag.category?.toLowerCase() === 'family' ? 'family' : 'gang'}`} style={{ fontSize: '0.65rem', padding: '0.15rem 0.5rem' }}>
+                            {ag.category || 'Gang'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '1rem' }}>
