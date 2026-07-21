@@ -377,15 +377,18 @@ export default function SystemSettings({ profile }) {
         { setting_key: 'announcement_active', setting_value: announcementActive ? 'true' : 'false' }
       ]);
       
-      if (announcementActive && announcementText && notifyAll) {
-        const { data: usersData } = await supabase.from('users').select('discord_id');
+      if (announcementText && notifyAll) {
+        const { data: usersData, error: userError } = await supabase.from('users').select('discord_id');
+        if (userError) throw userError;
+        
         if (usersData && usersData.length > 0) {
           const notifications = usersData.map(u => ({
             discord_id: u.discord_id,
             title: '📣 ประกาศอัปเดตระบบ',
             message: announcementText
           }));
-          await supabase.from('notifications').insert(notifications);
+          const { error: notifError } = await supabase.from('notifications').insert(notifications);
+          if (notifError) throw notifError;
         }
         setNotifyAll(false); // Reset after sending
       }
