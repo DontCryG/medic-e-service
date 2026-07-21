@@ -48,6 +48,7 @@ export default function Dashboard() {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const notifRef = useRef(null);
+  const searchRef = useRef(null);
 
   const menuItems = [
     { id: 'dashboard', label: 'กระดานหลัก' },
@@ -137,6 +138,10 @@ export default function Dashboard() {
     const handleClickOutside = (event) => {
       if (notifRef.current && !notifRef.current.contains(event.target)) {
         setIsNotifOpen(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchQuery('');
+        setSearchResults([]);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -393,7 +398,7 @@ export default function Dashboard() {
       <main className="dashboard-main">
         {/* Header */}
         <header className="dashboard-header">
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative' }} ref={searchRef}>
             <div className="header-search">
               <Search size={18} color="var(--text-secondary)" />
               <input 
