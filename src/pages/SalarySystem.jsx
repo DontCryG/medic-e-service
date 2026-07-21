@@ -207,6 +207,16 @@ export default function SalarySystem({ profile }) {
 
       const finalSalaryData = [];
       
+      const getOcRate = (position) => {
+        if (!position) return 0;
+        if (position.includes('ผอ') || position.includes('ผู้อำนวยการ')) return 25;
+        if (position.includes('รอง')) return 25;
+        if (position.includes('เลขา')) return 20;
+        if (position.includes('ชำนาญการ')) return 15;
+        if (position.includes('แพทย์')) return 10;
+        return 0;
+      };
+
       Object.keys(userWorkData).forEach(discordId => {
         const user = userMap[discordId];
         if (!user) return; // Ignore if user deleted
@@ -216,8 +226,15 @@ export default function SalarySystem({ profile }) {
         const hourlyRate = ratesMap[user.position] || 0;
         const basePayout = totalHours * hourlyRate;
         
+        let ocMoney = 0;
+        const floorHours = Math.floor(totalHours);
+        if (floorHours >= 30) {
+          const ocRate = getOcRate(user.position);
+          ocMoney = (floorHours - 29) * ocRate;
+        }
+        
         const adj = userAdjData[discordId] || { bonus: 0, deduction: 0, storyMoney: 0 };
-        const payout = basePayout + adj.bonus + adj.storyMoney - adj.deduction;
+        const payout = basePayout + adj.bonus + adj.storyMoney + ocMoney - adj.deduction;
         
         totalPayout += payout;
 
@@ -234,6 +251,7 @@ export default function SalarySystem({ profile }) {
           bonus: adj.bonus,
           deduction: adj.deduction,
           storyMoney: adj.storyMoney,
+          ocMoney: ocMoney,
           payout: Math.max(0, payout) // Don't allow negative payout
         });
       });
@@ -512,6 +530,7 @@ export default function SalarySystem({ profile }) {
                   <th>โบนัสรันคิว (ชม.)</th>
                   <th>ยอดเข้าเวร</th>
                   <th>เงินสตอรี่</th>
+                  <th>เงิน OC</th>
                   <th>รายการปรับปรุง</th>
                   <th>ยอดสุทธิที่ต้องจ่าย</th>
                   <th>จัดการ</th>
@@ -555,6 +574,9 @@ export default function SalarySystem({ profile }) {
                     <td style={{ color: '#059669', fontWeight: 'bold' }}>
                       {data.storyMoney > 0 ? `+${formatCurrency(data.storyMoney)}` : '-'}
                     </td>
+                    <td style={{ color: '#0ea5e9', fontWeight: 'bold' }}>
+                      {data.ocMoney > 0 ? `+${formatCurrency(data.ocMoney)}` : '-'}
+                    </td>
                     <td>
                       {data.bonus === 0 && data.deduction === 0 ? (
                         <span style={{ color: '#cbd5e1' }}>-</span>
@@ -574,7 +596,7 @@ export default function SalarySystem({ profile }) {
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                    <td colSpan="10" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
                       ไม่มีข้อมูลการเข้าเวรในช่วงเวลาที่เลือก
                     </td>
                   </tr>
