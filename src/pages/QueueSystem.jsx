@@ -27,13 +27,14 @@ export default function QueueSystem({ profile }) {
   const [showCaseHistory, setShowCaseHistory] = useState(false);
   const [caseHistoryData, setCaseHistoryData] = useState([]);
   const [loadingCaseHistory, setLoadingCaseHistory] = useState(false);
-  const [caseStartDate, setCaseStartDate] = useState(getLocalDateString());
-  const [caseEndDate, setCaseEndDate] = useState(getLocalDateString());
   
   const getLocalDateString = () => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
+
+  const [caseStartDate, setCaseStartDate] = useState(getLocalDateString());
+  const [caseEndDate, setCaseEndDate] = useState(getLocalDateString());
 
   const timeStringToDate = (timeStr) => {
     if (!timeStr) return null;
