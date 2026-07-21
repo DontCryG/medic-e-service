@@ -383,7 +383,12 @@ export default function SystemSettings({ profile }) {
                   </div>
                   <div className="filter-group">
                     <label style={{ marginRight: '0.5rem', fontWeight: 600 }}>หมวดหมู่:</label>
-                    <select className="settings-input" style={{ width: '200px' }} value={reportCategory} onChange={e => setReportCategory(e.target.value)}>
+                    <select 
+                      className="modal-input" 
+                      style={{ width: '220px', cursor: 'pointer', appearance: 'auto' }} 
+                      value={reportCategory} 
+                      onChange={e => setReportCategory(e.target.value)}
+                    >
                       <option value="all">สรุปยอดรวมทั้งหมด (ALL)</option>
                       <option value="ic">สรุปหมวดเงิน IC</option>
                       <option value="oc">สรุปหมวดเงิน OC</option>
