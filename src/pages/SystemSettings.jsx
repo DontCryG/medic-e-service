@@ -27,6 +27,7 @@ export default function SystemSettings({ profile }) {
   // === General Settings State ===
   const [announcementText, setAnnouncementText] = useState('');
   const [announcementActive, setAnnouncementActive] = useState(true);
+  const [notifyAll, setNotifyAll] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
 
   useEffect(() => {
@@ -214,6 +215,20 @@ export default function SystemSettings({ profile }) {
         { setting_key: 'announcement_text', setting_value: announcementText },
         { setting_key: 'announcement_active', setting_value: announcementActive ? 'true' : 'false' }
       ]);
+      
+      if (announcementActive && announcementText && notifyAll) {
+        const { data: usersData } = await supabase.from('users').select('discord_id');
+        if (usersData && usersData.length > 0) {
+          const notifications = usersData.map(u => ({
+            discord_id: u.discord_id,
+            title: '📣 ประกาศอัปเดตระบบ',
+            message: announcementText
+          }));
+          await supabase.from('notifications').insert(notifications);
+        }
+        setNotifyAll(false); // Reset after sending
+      }
+
       alert('บันทึกการตั้งค่าเรียบร้อยแล้ว');
     } catch (err) {
       alert('Error: ' + err.message);
@@ -383,10 +398,23 @@ export default function SystemSettings({ profile }) {
                   <label className="toggle-switch">
                     <input type="checkbox" style={{ display: 'none' }} checked={announcementActive} onChange={e => setAnnouncementActive(e.target.checked)} />
                     <span className="toggle-slider"></span>
-                    <span style={{ fontWeight: 600, color: '#1e293b' }}>เปิดใช้งานป้ายประกาศ</span>
+                    <span style={{ fontWeight: 600, color: '#1e293b' }}>เปิดใช้งานป้ายประกาศหน้าแรก</span>
                   </label>
 
-                  <div style={{ marginTop: '1rem' }}>
+                  <div style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <input 
+                      type="checkbox" 
+                      id="notify-all" 
+                      checked={notifyAll} 
+                      onChange={e => setNotifyAll(e.target.checked)}
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                    <label htmlFor="notify-all" style={{ fontWeight: 500, color: '#0f172a', cursor: 'pointer' }}>
+                      ส่งการแจ้งเตือนนี้ไปยังบุคลากรทุกคน 🔔
+                    </label>
+                  </div>
+
+                  <div style={{ marginTop: '1.5rem' }}>
                     <button className="export-btn" style={{ background: '#10b981' }} onClick={handleSaveSettings} disabled={savingSettings}>
                       <Save size={18} /> {savingSettings ? 'กำลังบันทึก...' : 'บันทึกการตั้งค่า'}
                     </button>
