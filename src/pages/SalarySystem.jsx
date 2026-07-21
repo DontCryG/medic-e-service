@@ -160,16 +160,19 @@ export default function SalarySystem({ profile }) {
       
       adjustments.forEach(adj => {
         if (!userAdjData[adj.discord_id]) {
-          userAdjData[adj.discord_id] = { bonus: 0, deduction: 0, storyMoney: 0 };
+          userAdjData[adj.discord_id] = { bonus: 0, deduction: 0, storyMoney: 0, gacha_ic: 0, gacha_promote: 0, coin_agency: 0 };
         }
         if (adj.type === 'bonus') {
-          if (adj.reason === 'เงินสตอรี่') {
+          if (adj.reason === 'ดูสตอรี่') {
             userAdjData[adj.discord_id].storyMoney += Number(adj.amount);
           } else {
             userAdjData[adj.discord_id].bonus += Number(adj.amount);
           }
         }
         if (adj.type === 'deduction') userAdjData[adj.discord_id].deduction += Number(adj.amount);
+        if (adj.type === 'gacha_ic') userAdjData[adj.discord_id].gacha_ic += Number(adj.amount);
+        if (adj.type === 'gacha_promote') userAdjData[adj.discord_id].gacha_promote += Number(adj.amount);
+        if (adj.type === 'coin_agency') userAdjData[adj.discord_id].coin_agency += Number(adj.amount);
       });
       
       let totalPayout = 0;
@@ -234,7 +237,7 @@ export default function SalarySystem({ profile }) {
           ocMoney = (floorHours - 29) * ocRate;
         }
         
-        const adj = userAdjData[discordId] || { bonus: 0, deduction: 0, storyMoney: 0 };
+        const adj = userAdjData[discordId] || { bonus: 0, deduction: 0, storyMoney: 0, gacha_ic: 0, gacha_promote: 0, coin_agency: 0 };
         const payout = basePayout + adj.bonus + adj.storyMoney + ocMoney - adj.deduction;
         
         totalPayout += payout;
@@ -253,6 +256,9 @@ export default function SalarySystem({ profile }) {
           bonus: adj.bonus,
           deduction: adj.deduction,
           storyMoney: adj.storyMoney,
+          gacha_ic: adj.gacha_ic,
+          gacha_promote: adj.gacha_promote,
+          coin_agency: adj.coin_agency,
           ocMoney: ocMoney,
           payout: Math.max(0, payout) // Don't allow negative payout
         });
@@ -399,8 +405,8 @@ export default function SalarySystem({ profile }) {
       try {
         await supabase.from('notifications').insert([{
           discord_id: adjModalUser.discord_id,
-          title: `แจ้งเตือน${finalType === 'bonus' ? 'โบนัส' : 'หักเงิน'}`,
-          message: `คุณได้รับ${finalType === 'bonus' ? 'โบนัส' : 'การหักเงิน'} จำนวน ${new Intl.NumberFormat('th-TH').format(finalAmount)} บาท\nสาเหตุ: ${finalReason}`
+          title: `แจ้งเตือนรายการปรับปรุง`,
+          message: `คุณได้รับรายการใหม่: ${finalType}\nจำนวน: ${finalAmount}\nสาเหตุ: ${finalReason}`
         }]);
       } catch (notifError) {
         console.error('Error sending notification:', notifError);
@@ -543,7 +549,7 @@ export default function SalarySystem({ profile }) {
                   <th>ยอดเข้าเวร</th>
                   <th>เงินสตอรี่</th>
                   <th>เงิน OC</th>
-                  <th>รายการปรับปรุง</th>
+                  <th>โบนัส/รายการอื่นๆ</th>
                   <th>ยอดสุทธิที่ต้องจ่าย</th>
                   <th>จัดการ</th>
                 </tr>
@@ -590,12 +596,15 @@ export default function SalarySystem({ profile }) {
                       {data.ocMoney > 0 ? `+${formatCurrency(data.ocMoney)}` : '-'}
                     </td>
                     <td>
-                      {data.bonus === 0 && data.deduction === 0 ? (
+                      {data.bonus === 0 && data.deduction === 0 && data.gacha_ic === 0 && data.gacha_promote === 0 && data.coin_agency === 0 ? (
                         <span style={{ color: '#cbd5e1' }}>-</span>
                       ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.9rem' }}>
-                          {data.bonus > 0 && <span className="adj-val-positive">+{formatCurrency(data.bonus)}</span>}
-                          {data.deduction > 0 && <span className="adj-val-negative">-{formatCurrency(data.deduction)}</span>}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.9rem', textAlign: 'left' }}>
+                          {data.bonus > 0 && <span className="adj-val-positive">โบนัส: +{formatCurrency(data.bonus)}</span>}
+                          {data.gacha_ic > 0 && <span style={{ color: '#8b5cf6', fontWeight: 600 }}>กาชา IC: {data.gacha_ic} ลูก</span>}
+                          {data.gacha_promote > 0 && <span style={{ color: '#ec4899', fontWeight: 600 }}>กาชา Promote: {data.gacha_promote} ลูก</span>}
+                          {data.coin_agency > 0 && <span style={{ color: '#f59e0b', fontWeight: 600 }}>เหรียญ Agency: {data.coin_agency} เหรียญ</span>}
+                          {data.deduction > 0 && <span className="adj-val-negative">หัก: -{formatCurrency(data.deduction)}</span>}
                         </div>
                       )}
                     </td>
@@ -706,7 +715,7 @@ export default function SalarySystem({ profile }) {
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: '600px' }}>
             <div className="modal-header">
-              <h2>รายการโบนัส / หักเงินเดือน</h2>
+              <h2>รายการโบนัส / ปรับปรุงเงิน</h2>
               <button className="close-btn" onClick={() => setAdjModalUser(null)}><X size={20} /></button>
             </div>
 
@@ -730,14 +739,19 @@ export default function SalarySystem({ profile }) {
                     className={`dropdown-selected ${isAdjTypeDropdownOpen ? 'open' : ''}`}
                     onClick={() => setIsAdjTypeDropdownOpen(!isAdjTypeDropdownOpen)}
                   >
-                    {adjType === 'bonus' ? 'บวกโบนัส (+)' : 'หักเงิน (-)'}
+                    {adjType === 'bonus' ? 'บวกโบนัส (+)' : 
+                     adjType === 'gacha_ic' ? 'กาชา IC' :
+                     adjType === 'gacha_promote' ? 'กาชา Promote' :
+                     adjType === 'coin_agency' ? 'เหรียญ Agency' : 'เลือกประเภท'}
                     <ChevronDown size={18} style={{ transition: 'transform 0.2s', transform: isAdjTypeDropdownOpen ? 'rotate(180deg)' : 'none' }} />
                   </div>
                   {isAdjTypeDropdownOpen && (
                     <div className="dropdown-options">
                       {[
                         { value: 'bonus', label: 'บวกโบนัส (+)' },
-                        { value: 'deduction', label: 'หักเงิน (-)' }
+                        { value: 'gacha_ic', label: 'กาชา IC' },
+                        { value: 'gacha_promote', label: 'กาชา Promote' },
+                        { value: 'coin_agency', label: 'เหรียญ Agency' }
                       ].map(opt => (
                         <div 
                           key={opt.value} 
@@ -756,7 +770,7 @@ export default function SalarySystem({ profile }) {
                 </div>
               </div>
               <div className="modal-form-group">
-                <label>จำนวนเงิน (บาท)</label>
+                <label>จำนวน{adjType === 'gacha_ic' || adjType === 'gacha_promote' ? ' (ลูก)' : adjType === 'coin_agency' ? ' (เหรียญ)' : ' (บาท)'}</label>
                 <input type="number" className="modal-input" placeholder="0" value={adjAmount} onChange={e => setAdjAmount(e.target.value)} />
               </div>
               <div className="modal-form-group adj-form-full">
@@ -776,20 +790,23 @@ export default function SalarySystem({ profile }) {
                 <div key={adj.id} className="adj-item">
                   <div>
                     <div className="adj-reason">
-                      {adj.type === 'bonus' ? '🌟 ' : '⚠️ '}
+                      {adj.type === 'bonus' ? 'รับ ' : ''}
+                      {adj.type === 'gacha_ic' ? 'กาชา IC ' : adj.type === 'gacha_promote' ? 'กาชา Promote ' : adj.type === 'coin_agency' ? 'เหรียญ Agency ' : ''}
                       {adj.reason}
                     </div>
                     <div className="adj-date">{new Date(adj.created_at).toLocaleDateString('th-TH')}</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div className={`adj-amount ${adj.type}`}>
-                      {adj.type === 'bonus' ? '+' : '-'}{formatCurrency(adj.amount)}
+                    <div className={`adj-amount ${adj.type}`} style={{ fontWeight: 'bold' }}>
+                      {adj.type === 'bonus' ? `+${formatCurrency(adj.amount)}` : 
+                       adj.type === 'gacha_ic' || adj.type === 'gacha_promote' ? `${adj.amount} ลูก` :
+                       adj.type === 'coin_agency' ? `${adj.amount} เหรียญ` : adj.amount}
                     </div>
                     <button className="delete-adj-btn" onClick={() => handleDeleteAdj(adj.id)} title="ลบรายการนี้"><Trash2 size={16} /></button>
                   </div>
                 </div>
               )) : (
-                <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>ไม่มีรายการโบนัสหรือหักเงิน</div>
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>ไม่มีรายการเพิ่ม/ปรับปรุง</div>
               )}
             </div>
 
