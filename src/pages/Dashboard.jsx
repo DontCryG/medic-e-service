@@ -13,12 +13,17 @@ import {
   Activity,
   FileText,
   LayoutGrid,
+  Users,
+  Settings,
   Star,
   ExternalLink,
   Clock,
   BriefcaseMedical,
   ClipboardList,
-  UserCog
+  UserCog,
+  UserPlus,
+  Ban,
+  FileCheck2
 } from 'lucide-react';
 import './Dashboard.css'; 
 import './DashboardGrid.css';
@@ -213,7 +218,7 @@ export default function Dashboard() {
                 
                 <div className="hub-card medic">
                   <div className="hub-icon-wrapper">
-                    <LayoutGrid size={28} />
+                    <LayoutGrid size={32} strokeWidth={1.5} />
                   </div>
                   <h3 className="hub-card-title">ศูนย์กลางบริการทั่วไป</h3>
                   <p className="hub-card-desc">กระดานรวมบริการ และสรุปภาพรวมการทำงานของบุคลากรทางการแพทย์</p>
@@ -222,7 +227,7 @@ export default function Dashboard() {
 
                 <div className="hub-card medic">
                   <div className="hub-icon-wrapper">
-                    <Clock size={28} />
+                    <Clock size={32} strokeWidth={1.5} />
                   </div>
                   <h3 className="hub-card-title">ระบบเข้าเวรออกเวร</h3>
                   <p className="hub-card-desc">บันทึกการลงเวลาปฏิบัติงาน และตรวจสอบตารางเวรของแพทย์แต่ละท่าน</p>
@@ -231,7 +236,7 @@ export default function Dashboard() {
 
                 <div className="hub-card medic">
                   <div className="hub-icon-wrapper">
-                    <BriefcaseMedical size={28} />
+                    <BriefcaseMedical size={32} strokeWidth={1.5} />
                   </div>
                   <h3 className="hub-card-title">ระบบเบิกจ่ายคลัง</h3>
                   <p className="hub-card-desc">จัดการการเบิกจ่ายอุปกรณ์ทางการแพทย์ และยารักษาโรคจากคลังกลาง</p>
@@ -240,10 +245,28 @@ export default function Dashboard() {
 
                 <div className="hub-card medic">
                   <div className="hub-icon-wrapper">
-                    <ClipboardList size={28} />
+                    <ClipboardList size={32} strokeWidth={1.5} />
                   </div>
                   <h3 className="hub-card-title">ระบบบันทึกเคสอุบัติเหตุ</h3>
                   <p className="hub-card-desc">บันทึกประวัติการรักษา รายงานอุบัติเหตุ และผู้ป่วยฉุกเฉิน</p>
+                  <button className="hub-btn">เข้าใช้งาน</button>
+                </div>
+
+                <div className="hub-card medic">
+                  <div className="hub-icon-wrapper">
+                    <UserPlus size={32} strokeWidth={1.5} />
+                  </div>
+                  <h3 className="hub-card-title">ทำทะเบียนประวัติผู้ป่วย</h3>
+                  <p className="hub-card-desc">สร้างและแก้ไขข้อมูลประวัติผู้ป่วยใหม่ลงในระบบส่วนกลางของโรงพยาบาล</p>
+                  <button className="hub-btn">เข้าใช้งาน</button>
+                </div>
+
+                <div className="hub-card medic">
+                  <div className="hub-icon-wrapper">
+                    <Ban size={32} strokeWidth={1.5} />
+                  </div>
+                  <h3 className="hub-card-title">ระบบยกเลิกเคสรักษา</h3>
+                  <p className="hub-card-desc">ยกเลิกเคสการรักษาที่ผิดพลาด หรือส่งต่อเคสให้แพทย์ผู้เชี่ยวชาญอื่น</p>
                   <button className="hub-btn">เข้าใช้งาน</button>
                 </div>
 
@@ -258,7 +281,7 @@ export default function Dashboard() {
                   
                   <div className="hub-card admin">
                     <div className="hub-icon-wrapper">
-                      <Users size={28} />
+                      <Users size={32} strokeWidth={1.5} />
                     </div>
                     <h3 className="hub-card-title">ระบบจัดการสมาชิกสภา</h3>
                     <p className="hub-card-desc">ฐานข้อมูลทะเบียนประวัติ และปรับเปลี่ยนสิทธิ์ (Role) เจ้าหน้าที่</p>
@@ -267,10 +290,19 @@ export default function Dashboard() {
 
                   <div className="hub-card admin">
                     <div className="hub-icon-wrapper">
-                      <UserCog size={28} />
+                      <UserCog size={32} strokeWidth={1.5} />
                     </div>
                     <h3 className="hub-card-title">ระบบจัดการคำร้อง</h3>
-                    <p className="hub-card-desc">ตรวจสอบ อนุมัติ และจัดการคำร้องต่างๆ ที่ถูกส่งเข้ามา</p>
+                    <p className="hub-card-desc">ตรวจสอบ อนุมัติ และจัดการคำร้องต่างๆ ที่ถูกส่งเข้ามาจากบุคลากร</p>
+                    <button className="hub-btn">เข้าสู่ระบบ</button>
+                  </div>
+
+                  <div className="hub-card admin">
+                    <div className="hub-icon-wrapper">
+                      <FileCheck2 size={32} strokeWidth={1.5} />
+                    </div>
+                    <h3 className="hub-card-title">ตรวจสอบประวัติเบิกจ่าย</h3>
+                    <p className="hub-card-desc">เรียกดูรายงานการเบิกจ่ายคลังย้อนหลังทั้งหมดของหน่วยงานแพทย์</p>
                     <button className="hub-btn">เข้าสู่ระบบ</button>
                   </div>
 

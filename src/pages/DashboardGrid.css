@@ -1,25 +1,31 @@
-/* Portal Hub Style Dashboard (Loop 4) */
+/* Portal Hub Style Dashboard - Redesign */
+
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+
+.dashboard-content {
+  font-family: 'Kanit', sans-serif;
+}
 
 .hub-container {
   display: flex;
   flex-direction: column;
-  gap: 3.5rem;
-  padding: 1rem 0 3rem 0;
-  max-width: 1400px;
+  gap: 4rem;
+  padding: 1rem 2rem 4rem 2rem;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
 .hub-section {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  align-items: center; /* Center the grid */
+  gap: 2rem;
+  align-items: center;
 }
 
 .hub-section-title {
   text-align: center;
-  font-size: 1.15rem;
-  font-weight: 800;
+  font-size: 1.35rem;
+  font-weight: 700;
   margin-bottom: 0.5rem;
 }
 
@@ -28,71 +34,83 @@
 }
 
 .hub-section-title.admin {
-  color: #9a3412; /* Deep Orange/Rust */
+  color: #c2410c; /* Deep Orange */
 }
 
+/* 3 Columns Grid exactly like the reference */
 .hub-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
   width: 100%;
 }
 
+/* Responsive grid for smaller screens */
+@media (max-width: 1024px) {
+  .hub-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .hub-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .hub-card {
   background: #ffffff;
-  border-radius: 20px;
-  padding: 2.5rem 1.5rem 1.5rem 1.5rem;
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.03);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  border: none; /* เอากรอบนอกออกตามที่ขอ */
-  width: 100%;
-  max-width: 290px; /* Keep them consistently sized */
+  border: none;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
 }
 
 .hub-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 35px rgba(126, 34, 206, 0.08);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
 }
 
 .hub-icon-wrapper {
-  width: 68px;
-  height: 68px;
-  border-radius: 20px;
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
 }
 
 .hub-card.medic .hub-icon-wrapper {
-  background: #f3e8ff; /* Very light purple */
-  color: #9333ea;
+  background: #f5f3ff;
+  color: #7c3aed;
 }
 
 .hub-card.admin .hub-icon-wrapper {
-  background: #ffedd5; /* Very light orange */
+  background: #fff7ed;
   color: #ea580c;
 }
 
 .hub-card-title {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: #1e293b;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #0f172a;
   margin-bottom: 0.75rem;
 }
 
 .hub-card-desc {
-  font-size: 0.8rem;
-  color: #64748b;
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  flex: 1; /* Pushes the button to the bottom */
-  padding: 0 0.5rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin-bottom: 2.5rem;
+  font-weight: 400;
+  flex-grow: 1;
 }
 
 .hub-btn {
@@ -101,12 +119,12 @@
   color: white;
   border: none;
   border-radius: 12px;
-  padding: 0.85rem;
-  font-size: 0.9rem;
-  font-weight: 600;
+  padding: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
   transition: background 0.2s;
-  font-family: inherit;
+  font-family: 'Kanit', sans-serif;
 }
 
 .hub-btn:hover {
@@ -116,14 +134,12 @@
 /* Related Links Card */
 .related-links-card {
   background: #ffffff;
-  border-radius: 20px;
-  padding: 2rem;
+  border-radius: 24px;
+  padding: 2.5rem;
   text-align: center;
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.03);
-  max-width: 800px;
-  margin: 0 auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
   width: 100%;
-  border: none;
+  border: 1px solid #f8fafc;
 }
 
 .related-links-title {
@@ -131,27 +147,28 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-size: 1.05rem;
-  font-weight: 800;
+  font-size: 1.15rem;
+  font-weight: 600;
   color: #0f172a;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .related-link-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: #f3e8ff;
-  color: #7e22ce;
+  background: #f5f3ff;
+  color: #7c3aed;
   text-decoration: none;
-  padding: 0.875rem 2rem;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 0.95rem;
+  padding: 1rem 2.5rem;
+  border-radius: 14px;
+  font-weight: 500;
+  font-size: 1rem;
   transition: all 0.2s;
   border: none;
+  font-family: 'Kanit', sans-serif;
 }
 
 .related-link-btn:hover {
-  background: #e9d5ff;
+  background: #ede9fe;
 }
