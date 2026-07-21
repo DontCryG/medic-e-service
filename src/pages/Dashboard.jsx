@@ -21,9 +21,9 @@ import {
   UserCog,
   UserPlus,
   Ban,
-  FileCheck2,
   Banknote,
   CalendarDays
+} from 'lucide-react';
 import './Dashboard.css'; 
 import './DashboardGrid.css';
 import DutySystem from './DutySystem';
