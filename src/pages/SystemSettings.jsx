@@ -445,9 +445,6 @@ export default function SystemSettings({ profile }) {
           <button className={`settings-tab-btn ${activeTab === 'reports' ? 'active reports' : ''}`} onClick={() => setActiveTab('reports')}>
             <FileText size={18} /> รายงาน (PDF)
           </button>
-          <button className={`settings-tab-btn ${activeTab === 'positions' ? 'active positions' : ''}`} onClick={() => setActiveTab('positions')}>
-            <Briefcase size={18} /> จัดการตำแหน่ง
-          </button>
           <button className={`settings-tab-btn ${activeTab === 'agencies' ? 'active agencies' : ''}`} onClick={() => setActiveTab('agencies')}>
             <Building size={18} /> จัดการสังกัด
           </button>
@@ -616,25 +613,7 @@ export default function SystemSettings({ profile }) {
               </div>
             )}
 
-            {/* POSITIONS TAB */}
-            {activeTab === 'positions' && (
-              <div className="animate-fade-in" style={{ maxWidth: '600px' }}>
-                <p style={{ color: '#64748b', marginBottom: '2rem' }}>ลบตำแหน่งในระบบ</p>
 
-                <div className="position-list">
-                  {positions.map(pos => (
-                    <div key={pos.id} className="position-item">
-                      <div>
-                        <div className="position-name">{pos.position_name}</div>
-                        <div style={{ fontSize: '0.85rem', color: '#64748b' }}>เรทปัจจุบัน: {pos.hourly_rate} บ./ชม.</div>
-                      </div>
-                      <button className="delete-adj-btn" onClick={() => handleDeletePosition(pos.id)}><Trash2 size={18} /></button>
-                    </div>
-                  ))}
-                  {positions.length === 0 && <div style={{textAlign: 'center', color: '#94a3b8', padding: '2rem'}}>ยังไม่มีข้อมูลตำแหน่ง</div>}
-                </div>
-              </div>
-            )}
 
             {/* AGENCIES TAB */}
             {activeTab === 'agencies' && (
