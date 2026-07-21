@@ -15,6 +15,7 @@ export default function PersonnelSystem({ profile }) {
   const [editPosition, setEditPosition] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (profile?.role === 'admin') {
@@ -228,15 +229,37 @@ export default function PersonnelSystem({ profile }) {
 
             <div className="modal-form-group">
               <label>สิทธิ์การใช้งาน (Role)</label>
-              <select 
-                className="modal-select"
-                value={editRole}
-                onChange={(e) => setEditRole(e.target.value)}
-              >
-                <option value="user">User (รออนุมัติ / โดนตัดสิทธิ์)</option>
-                <option value="medic">Medic (แพทย์ทั่วไป)</option>
-                <option value="admin">Admin (ผู้ดูแลระบบ)</option>
-              </select>
+              <div className="custom-dropdown">
+                <div 
+                  className={`dropdown-selected ${isRoleDropdownOpen ? 'open' : ''}`}
+                  onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
+                >
+                  {editRole === 'admin' ? 'Admin (ผู้ดูแลระบบ)' : 
+                   editRole === 'medic' ? 'Medic (แพทย์ทั่วไป)' : 
+                   'User (รออนุมัติ / โดนตัดสิทธิ์)'}
+                  <ChevronDown size={18} style={{ transition: 'transform 0.2s', transform: isRoleDropdownOpen ? 'rotate(180deg)' : 'none' }} />
+                </div>
+                {isRoleDropdownOpen && (
+                  <div className="dropdown-options">
+                    {[
+                      { value: 'user', label: 'User (รออนุมัติ / โดนตัดสิทธิ์)' },
+                      { value: 'medic', label: 'Medic (แพทย์ทั่วไป)' },
+                      { value: 'admin', label: 'Admin (ผู้ดูแลระบบ)' }
+                    ].map(role => (
+                      <div 
+                        key={role.value} 
+                        className={`dropdown-option ${editRole === role.value ? 'selected' : ''}`}
+                        onClick={() => {
+                          setEditRole(role.value);
+                          setIsRoleDropdownOpen(false);
+                        }}
+                      >
+                        {role.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="modal-form-group">
