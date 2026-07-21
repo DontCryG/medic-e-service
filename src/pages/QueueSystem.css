@@ -1,0 +1,209 @@
+.queue-container {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.queue-header {
+  margin-bottom: 2rem;
+}
+
+.queue-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.queue-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.queue-card {
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+}
+
+.queue-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.queue-table th {
+  padding: 1rem;
+  text-align: center;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-color);
+  font-size: 0.95rem;
+}
+
+.queue-table th.col-name {
+  text-align: left;
+}
+
+.queue-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+  text-align: center;
+}
+
+.queue-table td.col-name {
+  text-align: left;
+}
+
+.row-me {
+  background-color: rgba(124, 58, 237, 0.05);
+}
+
+.badge-me {
+  font-size: 0.75rem;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 12px;
+  margin-left: 0.5rem;
+  font-weight: 500;
+}
+
+/* Checkbox Styles */
+.checkbox-container {
+  display: inline-flex;
+  position: relative;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  width: 24px;
+  height: 24px;
+  justify-content: center;
+  align-items: center;
+}
+
+.checkbox-container.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 24px;
+  width: 24px;
+  background-color: transparent;
+  border: 2px solid var(--border-color);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.checkbox-container:hover input ~ .checkmark {
+  border-color: #aaa;
+}
+
+/* Red Checkmark */
+.checkbox-container input:checked ~ .checkmark-red {
+  background-color: #e63946;
+  border-color: #e63946;
+}
+
+/* Green Checkmark */
+.checkbox-container input:checked ~ .checkmark-green {
+  background-color: #2a9d8f;
+  border-color: #2a9d8f;
+}
+
+/* Blue Checkmark */
+.checkbox-container input:checked ~ .checkmark-blue {
+  background-color: #457b9d;
+  border-color: #457b9d;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-container .checkmark:after {
+  left: 8px;
+  top: 4px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+/* Remark Input */
+.remark-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.remark-input {
+  width: 100%;
+  padding: 8px 30px 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background-color: transparent;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.remark-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: var(--bg-body);
+}
+
+.remark-input:hover:not(:disabled) {
+  border-color: var(--border-color);
+  background-color: var(--bg-body);
+}
+
+.remark-input:disabled {
+  color: var(--text-secondary);
+}
+
+.edit-icon {
+  position: absolute;
+  right: 8px;
+  color: var(--text-secondary);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.remark-input-container:hover .edit-icon {
+  opacity: 1;
+}
+
+.remark-input:focus ~ .edit-icon {
+  opacity: 0;
+}

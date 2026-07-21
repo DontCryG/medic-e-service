@@ -29,6 +29,7 @@ import './Dashboard.css';
 import './DashboardGrid.css';
 import DutySystem from './DutySystem';
 import LeaveSystem from './LeaveSystem';
+import QueueSystem from './QueueSystem';
 import RequestManagement from './RequestManagement';
 import PersonnelSystem from './PersonnelSystem';
 import SalarySystem from './SalarySystem';
@@ -689,16 +690,7 @@ export default function Dashboard() {
           )}
 
           {activeTab === 'general' && (
-            <div className="hub-container animate-fade-in">
-              <div className="hub-section">
-                <h2 className="hub-section-title medic">ระบบรันคิวแพทย์</h2>
-                <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', textAlign: 'center', width: '100%', boxShadow: '0 10px 40px -10px rgba(124, 58, 237, 0.1)' }}>
-                  <LayoutGrid size={48} color="#7c3aed" style={{ marginBottom: '1rem' }} />
-                  <h3>ระบบรันคิวแพทย์</h3>
-                  <p style={{ color: '#64748b' }}>(กำลังอยู่ในระหว่างการพัฒนาในลูปต่อไป)</p>
-                </div>
-              </div>
-            </div>
+            <QueueSystem profile={profile} />
           )}
 
           {activeTab === 'duty' && (
