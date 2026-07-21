@@ -21,9 +21,7 @@ import {
   UserCog,
   UserPlus,
   Ban,
-  Banknote,
-  CalendarDays,
-  Megaphone
+  CalendarDays
 } from 'lucide-react';
 import './Dashboard.css'; 
 import './DashboardGrid.css';
@@ -406,7 +404,7 @@ export default function Dashboard() {
               {announcement && (
                 <div style={{ background: '#fffbeb', borderLeft: '4px solid #f59e0b', padding: '1.25rem 1.5rem', borderRadius: '0 12px 12px 0', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                   <div style={{ background: '#fef3c7', padding: '0.75rem', borderRadius: '50%', color: '#d97706' }}>
-                    <Megaphone size={24} />
+                    <Bell size={24} />
                   </div>
                   <div>
                     <h4 style={{ margin: '0 0 0.25rem 0', color: '#92400e', fontSize: '1.05rem' }}>ประกาศจากผู้ดูแลระบบ</h4>

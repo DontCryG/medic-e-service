@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
-import { Settings, FileText, Briefcase, Megaphone, Download, CalendarDays, PlusCircle, Trash2, Save, Printer } from 'lucide-react';
+import { Settings, FileText, Briefcase, Bell, Download, CalendarDays, PlusCircle, Trash2, Save } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import html2canvas from 'html2canvas';
@@ -245,7 +245,7 @@ export default function SystemSettings({ profile }) {
             <Briefcase size={18} /> จัดการตำแหน่ง
           </button>
           <button className={`settings-tab-btn ${activeTab === 'general' ? 'active general' : ''}`} onClick={() => setActiveTab('general')}>
-            <Megaphone size={18} /> ประกาศ & ทั่วไป
+            <Bell size={18} /> ประกาศ & ทั่วไป
           </button>
         </div>
       </div>
