@@ -129,6 +129,7 @@ export default function SalarySystem({ profile }) {
       const sessions = sessionsRes.data;
       
       // Some installations might not have the table yet
+      const adjustments = adjRes.error ? [] : adjRes.data; 
       const queueLogs = queueRes.error ? [] : queueRes.data;
 
       // Calculate Queue Manager Bonus
