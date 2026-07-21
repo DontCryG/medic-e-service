@@ -215,7 +215,7 @@
   transform: translateY(-1px);
 }
 
-.history-modal {
+.modal-content.history-modal {
   max-width: 800px;
   width: 90%;
 }
