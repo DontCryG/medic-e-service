@@ -325,7 +325,11 @@ export default function SystemSettings({ profile }) {
       categoryPayout = d.payout;
     }
     return { ...d, categoryPayout };
-  }).filter(d => reportCategory === 'all' || d.categoryPayout > 0);
+  }).filter(d => {
+    if (reportCategory === 'all') return true;
+    if (reportCategory === 'bonus') return d.bonus > 0 || d.gacha_ic > 0 || d.gacha_promote > 0 || d.coin_agency > 0;
+    return d.categoryPayout > 0;
+  });
   
   const categoryTotalPayout = filteredReportData.reduce((sum, d) => sum + d.categoryPayout, 0);
 
@@ -418,6 +422,7 @@ export default function SystemSettings({ profile }) {
                           {(reportCategory === 'all' || reportCategory === 'ic') && <th>ชั่วโมงเข้าเวร</th>}
                           {reportCategory === 'all' && <th>รายการปรับปรุง (+/-)</th>}
                           {reportCategory === 'ic' && <th>โบนัส (+)/หัก (-)</th>}
+                          {reportCategory === 'bonus' && <th>รายการโบนัส/อื่นๆ</th>}
                           <th>ยอดสุทธิที่ต้องจ่าย</th>
                         </tr>
                       </thead>
@@ -449,6 +454,17 @@ export default function SystemSettings({ profile }) {
                                 <div style={{display: 'flex', flexDirection: 'column', fontSize: '0.85rem'}}>
                                   {d.deduction > 0 ? <span style={{color: '#e11d48'}}>-{formatCurrency(d.deduction)} (หัก)</span> : null}
                                   {d.deduction === 0 ? '-' : null}
+                                </div>
+                              </td>
+                            )}
+                            {reportCategory === 'bonus' && (
+                              <td style={{textAlign: 'right'}}>
+                                <div style={{display: 'flex', flexDirection: 'column', fontSize: '0.85rem'}}>
+                                  {d.bonus > 0 ? <span style={{color: '#059669'}}>+{formatCurrency(d.bonus)} (โบนัส)</span> : null} 
+                                  {d.gacha_ic > 0 ? <span style={{color: '#8b5cf6'}}>กาชา IC: {d.gacha_ic} ลูก</span> : null} 
+                                  {d.gacha_promote > 0 ? <span style={{color: '#ec4899'}}>กาชา Promote: {d.gacha_promote} ลูก</span> : null} 
+                                  {d.coin_agency > 0 ? <span style={{color: '#f59e0b'}}>เหรียญ Agency: {d.coin_agency} เหรียญ</span> : null}
+                                  {d.bonus === 0 && d.gacha_ic === 0 && d.gacha_promote === 0 && d.coin_agency === 0 ? '-' : null}
                                 </div>
                               </td>
                             )}
