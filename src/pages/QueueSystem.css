@@ -222,20 +222,21 @@
 
 .history-filters {
   display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
+  flex-wrap: nowrap;
+  gap: 10px;
   margin-bottom: 24px;
   align-items: center;
   background-color: #f8f9fa;
-  padding: 16px;
+  padding: 12px;
   border-radius: 8px;
   border: 1px solid #e9ecef;
+  overflow-x: auto;
 }
 
 .filter-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-weight: 500;
   color: #495057;
   white-space: nowrap;
