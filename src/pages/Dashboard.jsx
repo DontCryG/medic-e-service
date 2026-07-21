@@ -13,8 +13,6 @@ import {
   Activity,
   FileText,
   LayoutGrid,
-  Users,
-  Settings,
   Star,
   ExternalLink,
   Clock,
