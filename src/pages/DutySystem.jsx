@@ -361,21 +361,32 @@ export default function DutySystem({ profile }) {
                   <th>วันที่เข้าเวร</th>
                   <th>เวลาออกเวร</th>
                   <th>พักเบรก (นาที)</th>
-                  <th>รวมเวลา (ชม.)</th>
+                  <th>รวมเวลา</th>
                 </tr>
               </thead>
               <tbody>
                 {history.length > 0 ? history.map(log => {
                   const start = new Date(log.clock_in).getTime();
                   const end = new Date(log.clock_out).getTime();
-                  const diffHours = ((end - start) / 3600000) - (log.total_break_minutes / 60);
+                  
+                  const diffMs = end - start;
+                  const totalMinutes = Math.floor(diffMs / 60000) - log.total_break_minutes;
+                  const displayMinutes = Math.max(0, totalMinutes);
+                  const hours = Math.floor(displayMinutes / 60);
+                  const minutes = displayMinutes % 60;
+                  
+                  let formattedTime = '';
+                  if (hours > 0) {
+                    formattedTime += `${hours} ชม. `;
+                  }
+                  formattedTime += `${minutes} นาที`;
                   
                   return (
                     <tr key={log.id}>
                       <td>{formatDateString(log.clock_in)}</td>
                       <td>{new Date(log.clock_out).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</td>
                       <td>{log.total_break_minutes}</td>
-                      <td style={{ fontWeight: 600 }}>{diffHours > 0 ? diffHours.toFixed(1) : '0.0'}</td>
+                      <td style={{ fontWeight: 600 }}>{formattedTime}</td>
                     </tr>
                   )
                 }) : (
