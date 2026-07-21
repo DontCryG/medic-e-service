@@ -1,0 +1,255 @@
+/* DutySystem.css */
+.duty-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  animation: fade-in 0.4s ease-out;
+}
+
+/* Action Panel */
+.duty-action-panel {
+  background: white;
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 10px 40px -10px rgba(124, 58, 237, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid rgba(124, 58, 237, 0.1);
+}
+
+.duty-user-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.duty-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 700;
+  box-shadow: 0 8px 16px rgba(124, 58, 237, 0.25);
+}
+
+.duty-details h2 {
+  font-size: 1.5rem;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+.duty-details p {
+  color: #64748b;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.duty-timer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #7c3aed;
+  background: #f3e8ff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  width: fit-content;
+}
+
+.duty-timer.break {
+  color: #ea580c;
+  background: #ffedd5;
+}
+
+.duty-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.duty-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  color: white;
+}
+
+.duty-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-clock-in {
+  background: #10b981;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+.btn-clock-in:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-2px);
+}
+
+.btn-break {
+  background: #f59e0b;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+.btn-break:hover:not(:disabled) {
+  background: #d97706;
+  transform: translateY(-2px);
+}
+
+.btn-clock-out {
+  background: #ef4444;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+.btn-clock-out:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-2px);
+}
+
+/* Two Columns Layout */
+.duty-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 2rem;
+}
+
+/* Live Status / History Cards */
+.duty-card {
+  background: white;
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.duty-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.duty-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.live-badge {
+  background: #fee2e2;
+  color: #ef4444;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* Tables */
+.duty-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.duty-table th {
+  text-align: left;
+  padding: 1rem;
+  color: #64748b;
+  font-weight: 500;
+  border-bottom: 2px solid #f1f5f9;
+  font-size: 0.9rem;
+}
+
+.duty-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.duty-table tr:last-child td {
+  border-bottom: none;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.status-badge.on_duty {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.status-badge.on_break {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-badge.completed {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.filter-input {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-family: inherit;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.filter-input:focus {
+  border-color: #7c3aed;
+}
+
+@media (max-width: 1024px) {
+  .duty-content-grid {
+    grid-template-columns: 1fr;
+  }
+  .duty-action-panel {
+    flex-direction: column;
+    gap: 2rem;
+    text-align: center;
+  }
+  .duty-user-info {
+    flex-direction: column;
+  }
+  .duty-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+  .duty-btn {
+    justify-content: center;
+  }
+}

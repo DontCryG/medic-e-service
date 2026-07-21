@@ -24,9 +24,9 @@ import {
   FileCheck2,
   Banknote,
   CalendarDays
-} from 'lucide-react';
 import './Dashboard.css'; 
 import './DashboardGrid.css';
+import DutySystem from './DutySystem';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -459,16 +459,7 @@ export default function Dashboard() {
           )}
 
           {activeTab === 'duty' && (
-            <div className="hub-container animate-fade-in">
-              <div className="hub-section">
-                <h2 className="hub-section-title medic">ระบบเข้าเวรออกเวร</h2>
-                <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', textAlign: 'center', width: '100%', boxShadow: '0 10px 40px -10px rgba(124, 58, 237, 0.1)' }}>
-                  <Clock size={48} color="#7c3aed" style={{ marginBottom: '1rem' }} />
-                  <h3>ระบบเข้าเวรออกเวร</h3>
-                  <p style={{ color: '#64748b' }}>(กำลังอยู่ในระหว่างการพัฒนาในลูปต่อไป)</p>
-                </div>
-              </div>
-            </div>
+            <DutySystem profile={profile} />
           )}
 
           {activeTab === 'accident' && (
