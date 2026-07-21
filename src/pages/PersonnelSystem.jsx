@@ -16,10 +16,12 @@ export default function PersonnelSystem({ profile }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
+  const [availablePositions, setAvailablePositions] = useState([]);
 
   useEffect(() => {
     if (profile?.role === 'admin') {
       fetchUsers();
+      fetchPositions();
       
       const subscription = supabase
         .channel('admin-personnel')
@@ -47,6 +49,17 @@ export default function PersonnelSystem({ profile }) {
       console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPositions = async () => {
+    try {
+      const { data } = await supabase.from('salary_rates').select('position_name').order('position_name');
+      if (data) {
+        setAvailablePositions(data.map(p => p.position_name));
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -274,7 +287,7 @@ export default function PersonnelSystem({ profile }) {
                 </div>
                 {isDropdownOpen && (
                   <div className="dropdown-options">
-                    {['ผู้อำนวยการ', 'รองผู้อำนวยการ', 'เลขานุการ', 'แพทย์ชำนาญการ', 'แพทย์', 'นักเรียนแพทย์'].map(pos => (
+                    {availablePositions.length > 0 ? availablePositions.map(pos => (
                       <div 
                         key={pos} 
                         className={`dropdown-option ${editPosition === pos ? 'selected' : ''}`}
@@ -285,7 +298,9 @@ export default function PersonnelSystem({ profile }) {
                       >
                         {pos}
                       </div>
-                    ))}
+                    )) : (
+                      <div className="dropdown-option">กำลังโหลดตำแหน่ง...</div>
+                    )}
                   </div>
                 )}
               </div>

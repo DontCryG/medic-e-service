@@ -22,7 +22,8 @@ import {
   UserPlus,
   Ban,
   Banknote,
-  CalendarDays
+  CalendarDays,
+  Megaphone
 } from 'lucide-react';
 import './Dashboard.css'; 
 import './DashboardGrid.css';
@@ -31,6 +32,7 @@ import LeaveSystem from './LeaveSystem';
 import RequestManagement from './RequestManagement';
 import PersonnelSystem from './PersonnelSystem';
 import SalarySystem from './SalarySystem';
+import SystemSettings from './SystemSettings';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -102,6 +104,27 @@ export default function Dashboard() {
       if (subscription) supabase.removeChannel(subscription);
     };
   }, []);
+
+  const fetchAnnouncement = async () => {
+    try {
+      const { data } = await supabase.from('app_settings').select('*');
+      if (data) {
+        let text = '';
+        let active = false;
+        data.forEach(item => {
+          if (item.setting_key === 'announcement_text') text = item.setting_value;
+          if (item.setting_key === 'announcement_active') active = item.setting_value === 'true';
+        });
+        if (active && text) {
+          setAnnouncement(text);
+        } else {
+          setAnnouncement(null);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const checkUser = async () => {
     try {
@@ -264,10 +287,15 @@ export default function Dashboard() {
           )}
           
           <div style={{ marginTop: 'auto' }}>
-            <div className="nav-item">
-              <Settings size={20} />
-              <span>ตั้งค่าระบบ</span>
-            </div>
+            {profile?.role === 'admin' && (
+              <div 
+                className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
+                onClick={() => setActiveTab('settings')}
+              >
+                <Settings size={20} />
+                <span>ตั้งค่าระบบ & รายงาน</span>
+              </div>
+            )}
             <div className="nav-item" onClick={handleLogout} style={{ color: '#ef4444', marginTop: '0.5rem' }}>
               <LogOut size={20} />
               <span>ออกจากระบบ</span>
@@ -374,6 +402,19 @@ export default function Dashboard() {
           
           {activeTab === 'dashboard' && (
             <div className="hub-container animate-fade-in">
+              
+              {announcement && (
+                <div style={{ background: '#fffbeb', borderLeft: '4px solid #f59e0b', padding: '1.25rem 1.5rem', borderRadius: '0 12px 12px 0', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                  <div style={{ background: '#fef3c7', padding: '0.75rem', borderRadius: '50%', color: '#d97706' }}>
+                    <Megaphone size={24} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: '0 0 0.25rem 0', color: '#92400e', fontSize: '1.05rem' }}>ประกาศจากผู้ดูแลระบบ</h4>
+                    <p style={{ margin: 0, color: '#b45309', whiteSpace: 'pre-wrap' }}>{announcement}</p>
+                  </div>
+                </div>
+              )}
+
             {/* Medic Section */}
             <div className="hub-section">
               <h2 className="hub-section-title medic">ระบบปฏิบัติการแพทย์ (Medic Services)</h2>
@@ -489,6 +530,10 @@ export default function Dashboard() {
 
           {activeTab === 'salary' && (
             <SalarySystem profile={profile} />
+          )}
+
+          {activeTab === 'settings' && (
+            <SystemSettings profile={profile} />
           )}
 
         </div>
