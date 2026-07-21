@@ -401,7 +401,7 @@ export default function SystemSettings({ profile }) {
     }
   };
 
-  const formatCurrency = (amt) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(amt);
+  const formatCurrency = (amt) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amt);
   const formatHours = (h) => {
     const hh = Math.floor(h);
     const mm = Math.round((h - hh) * 60);

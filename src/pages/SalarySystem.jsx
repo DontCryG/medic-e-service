@@ -437,7 +437,7 @@ export default function SalarySystem({ profile }) {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(amount);
+    return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
   };
 
   const formatHours = (hours) => {
