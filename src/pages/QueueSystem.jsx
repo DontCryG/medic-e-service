@@ -93,6 +93,30 @@ export default function QueueSystem({ profile }) {
     }
   };
 
+  useEffect(() => {
+    if (!profile) return;
+    
+    const checkTimeInterval = setInterval(() => {
+      const now = new Date();
+      const currentHours = now.getHours().toString().padStart(2, '0');
+      const currentMinutes = now.getMinutes().toString().padStart(2, '0');
+      const currentTimeStr = `${currentHours}:${currentMinutes}`;
+
+      liveUsers.forEach(user => {
+        const isMe = user.discord_id === profile.discord_id;
+        
+        // Auto-tick "Story" only for the logged-in user to prevent race conditions
+        if (isMe && user.story_time && user.queue_state !== 'story') {
+          if (currentTimeStr === user.story_time) {
+            handleStatusChange(user.id, 'story', user.queue_state);
+          }
+        }
+      });
+    }, 10000); // Check every 10 seconds
+
+    return () => clearInterval(checkTimeInterval);
+  }, [liveUsers, profile]);
+
   if (!profile) return null;
 
   const isAdmin = profile.role === 'admin';
@@ -130,7 +154,12 @@ export default function QueueSystem({ profile }) {
                   return (
                     <tr key={user.id} className={isMe ? 'row-me' : ''}>
                       <td className="col-name">
-                        <div style={{ fontWeight: 600 }}>{user.users?.ic_name} {isMe && <span className="badge-me">(คุณ)</span>}</div>
+                        <div style={{ 
+                          fontWeight: 600,
+                          color: queueState === 'story' ? '#e63946' : 'inherit'
+                        }}>
+                          {user.users?.ic_name} {isMe && <span className="badge-me">(คุณ)</span>}
+                        </div>
                       </td>
                       
                       <td className="col-unavailable" style={{ backgroundColor: '#ffeaeb' }}>
@@ -187,8 +216,7 @@ export default function QueueSystem({ profile }) {
                             type="time" 
                             className="remark-input time-input"
                             defaultValue={user.story_time || ''}
-                            disabled={!canEdit || queueState !== 'story'}
-                            style={{ opacity: queueState !== 'story' ? 0.4 : 1 }}
+                            disabled={!canEdit}
                             onBlur={(e) => {
                               if (e.target.value !== user.story_time) {
                                 handleStoryTimeChange(user.id, e.target.value);
