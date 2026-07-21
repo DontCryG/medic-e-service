@@ -35,6 +35,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [avatarUrl, setAvatarUrl] = useState('');
 
   const menuItems = [
     { id: 'dashboard', label: 'กระดานหลัก' },
@@ -109,6 +110,10 @@ export default function Dashboard() {
 
       const user = session.user;
       const discordId = user.user_metadata.provider_id || user.id;
+      
+      if (user.user_metadata?.avatar_url) {
+        setAvatarUrl(user.user_metadata.avatar_url);
+      }
 
       const { data, error } = await supabase
         .from('users')
@@ -349,8 +354,12 @@ export default function Dashboard() {
                 <div className="user-name">{profile?.ic_name}</div>
                 <div className="user-role">{profile?.position}</div>
               </div>
-              <div className="user-avatar">
-                {getInitial(profile?.ic_name)}
+              <div className="user-avatar" style={{ padding: avatarUrl ? 0 : undefined, overflow: 'hidden' }}>
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  getInitial(profile?.ic_name)
+                )}
               </div>
             </div>
           </div>
@@ -459,7 +468,7 @@ export default function Dashboard() {
           )}
 
           {activeTab === 'duty' && (
-            <DutySystem profile={profile} />
+            <DutySystem profile={profile} avatarUrl={avatarUrl} />
           )}
 
           {activeTab === 'accident' && (

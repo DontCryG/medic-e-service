@@ -5,7 +5,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './DutySystem.css';
 
-export default function DutySystem({ profile }) {
+export default function DutySystem({ profile, avatarUrl }) {
   const [currentSession, setCurrentSession] = useState(null);
   const [liveUsers, setLiveUsers] = useState([]);
   const [history, setHistory] = useState([]);
@@ -254,8 +254,12 @@ export default function DutySystem({ profile }) {
       {/* Control Panel */}
       <div className="duty-action-panel">
         <div className="duty-user-info">
-          <div className="duty-avatar">
-            {getInitial(profile.ic_name)}
+          <div className="duty-avatar" style={{ padding: avatarUrl ? 0 : undefined, overflow: 'hidden' }}>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              getInitial(profile.ic_name)
+            )}
           </div>
           <div className="duty-details">
             <h2>{profile.ic_name}</h2>
