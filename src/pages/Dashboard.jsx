@@ -33,6 +33,43 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+
+  const menuItems = [
+    { id: 'dashboard', label: 'กระดานหลัก' },
+    { id: 'general', label: 'ระบบรันคิวแพทย์' },
+    { id: 'duty', label: 'ระบบเข้าเวรออกเวร' },
+    { id: 'accident', label: 'ระบบลางาน' },
+    { id: 'personnel', label: 'ระบบจัดการบุคลากรแพทย์', admin: true },
+    { id: 'requests', label: 'ระบบจัดการคำร้อง', admin: true },
+    { id: 'salary', label: 'ระบบคำนวณเงินเดือน', admin: true },
+  ];
+
+  const handleSearch = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    
+    if (query.trim() === '') {
+      setSearchResults([]);
+      return;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    const results = menuItems.filter(item => {
+      // Filter out admin items if user is not admin
+      if (item.admin && profile?.role !== 'admin') return false;
+      return item.label.toLowerCase().includes(lowerQuery);
+    });
+
+    setSearchResults(results);
+  };
+
+  const handleSelectSearchResult = (id) => {
+    setActiveTab(id);
+    setSearchQuery('');
+    setSearchResults([]);
+  };
 
   useEffect(() => {
     checkUser();
@@ -234,9 +271,71 @@ export default function Dashboard() {
       <main className="dashboard-main">
         {/* Header */}
         <header className="dashboard-header">
-          <div className="header-search">
-            <Search size={18} color="var(--text-secondary)" />
-            <input type="text" placeholder="ค้นหาข้อมูล..." />
+          <div style={{ position: 'relative' }}>
+            <div className="header-search">
+              <Search size={18} color="var(--text-secondary)" />
+              <input 
+                type="text" 
+                placeholder="ค้นหาเมนูการใช้งาน..." 
+                value={searchQuery}
+                onChange={handleSearch}
+              />
+            </div>
+            
+            {/* Search Results Dropdown */}
+            {searchResults.length > 0 && (
+              <div style={{
+                position: 'absolute',
+                top: '110%',
+                left: 0,
+                width: '100%',
+                background: 'white',
+                borderRadius: '12px',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                border: '1px solid var(--border-color)',
+                zIndex: 100,
+                overflow: 'hidden'
+              }}>
+                {searchResults.map((item) => (
+                  <div 
+                    key={item.id}
+                    onClick={() => handleSelectSearchResult(item.id)}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid var(--border-color)',
+                      fontSize: '0.95rem',
+                      color: 'var(--text-primary)',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseOver={(e) => e.target.style.background = '#f8fafc'}
+                    onMouseOut={(e) => e.target.style.background = 'white'}
+                  >
+                    {item.label}
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {searchQuery && searchResults.length === 0 && (
+              <div style={{
+                position: 'absolute',
+                top: '110%',
+                left: 0,
+                width: '100%',
+                background: 'white',
+                borderRadius: '12px',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                border: '1px solid var(--border-color)',
+                zIndex: 100,
+                padding: '1rem',
+                textAlign: 'center',
+                color: 'var(--text-secondary)',
+                fontSize: '0.9rem'
+              }}>
+                ไม่พบเมนูที่ค้นหา
+              </div>
+            )}
           </div>
 
           <div className="header-actions">
