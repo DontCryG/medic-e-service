@@ -45,10 +45,7 @@ export default function Dashboard() {
   
   // Notifications State
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'ยินดีต้อนรับเข้าสู่ระบบ', desc: 'ระบบ MEDIC E-SERVICE เปิดให้ใช้งานอย่างเป็นทางการแล้ว', time: '1 นาทีที่แล้ว', unread: true },
-    { id: 2, title: 'อัปเดตระบบใหม่', desc: 'เพิ่มฟีเจอร์การลางานและคำนวณเงินเดือนเรียบร้อยแล้ว', time: '2 ชม. ที่แล้ว', unread: false }
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
   const menuItems = [
     { id: 'dashboard', label: 'กระดานหลัก' },
@@ -89,8 +86,8 @@ export default function Dashboard() {
     checkUser();
     fetchAnnouncement();
     
-    // Subscribe to realtime changes for this user's profile
     let subscription;
+    let notifSub;
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         const discordId = session.user.user_metadata.provider_id || session.user.id;
@@ -105,6 +102,18 @@ export default function Dashboard() {
             setProfile(payload.new);
           })
           .subscribe();
+
+        notifSub = supabase
+          .channel('public:notifications')
+          .on('postgres_changes', { 
+            event: '*', 
+            schema: 'public', 
+            table: 'notifications',
+            filter: `discord_id=eq.${discordId}`
+          }, () => {
+            fetchNotifications(discordId);
+          })
+          .subscribe();
       }
     });
 
@@ -117,9 +126,48 @@ export default function Dashboard() {
 
     return () => {
       if (subscription) supabase.removeChannel(subscription);
+      if (notifSub) supabase.removeChannel(notifSub);
       supabase.removeChannel(settingsSub);
     };
   }, []);
+
+  const fetchNotifications = async (discordId) => {
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('discord_id', discordId)
+        .order('created_at', { ascending: false })
+        .limit(20);
+        
+      if (data) {
+        setNotifications(data.map(n => ({
+          id: n.id,
+          title: n.title,
+          desc: n.message,
+          time: new Date(n.created_at).toLocaleString('th-TH'),
+          unread: !n.is_read
+        })));
+      }
+    } catch(e) {
+      console.error(e);
+    }
+  };
+
+  const markAsRead = async (id) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
+    try {
+      await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    } catch(e) {}
+  };
+
+  const markAllAsRead = async () => {
+    if (!profile) return;
+    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+    try {
+      await supabase.from('notifications').update({ is_read: true }).eq('discord_id', profile.discord_id).eq('is_read', false);
+    } catch(e) {}
+  };
 
   const fetchAnnouncement = async () => {
     try {
@@ -170,6 +218,7 @@ export default function Dashboard() {
       }
 
       setProfile(data);
+      fetchNotifications(discordId);
     } catch (error) {
       console.error('Error checking user:', error);
     } finally {
@@ -442,9 +491,7 @@ export default function Dashboard() {
                       }}
                       onMouseOver={(e) => e.currentTarget.style.background = '#f1f5f9'}
                       onMouseOut={(e) => e.currentTarget.style.background = notif.unread ? '#f8fafc' : 'white'}
-                      onClick={() => {
-                        setNotifications(notifications.map(n => n.id === notif.id ? { ...n, unread: false } : n))
-                      }}
+                      onClick={() => markAsRead(notif.id)}
                       >
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: notif.unread ? '#3b82f6' : 'transparent', marginTop: '6px', flexShrink: 0 }}></div>
                         <div>
@@ -463,7 +510,7 @@ export default function Dashboard() {
                   {notifications.length > 0 && (
                     <div 
                       style={{ padding: '0.75rem', textAlign: 'center', borderTop: '1px solid var(--border-color)', color: 'var(--primary)', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer' }}
-                      onClick={() => setNotifications(notifications.map(n => ({...n, unread: false})))}
+                      onClick={markAllAsRead}
                       onMouseOver={(e) => e.currentTarget.style.background = '#f8fafc'}
                       onMouseOut={(e) => e.currentTarget.style.background = 'white'}
                     >
