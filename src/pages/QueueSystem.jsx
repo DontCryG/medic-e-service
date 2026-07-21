@@ -223,10 +223,8 @@ export default function QueueSystem({ profile }) {
       const currentTimeStr = new Intl.DateTimeFormat('en-GB', options).format(now);
 
       liveUsers.forEach(user => {
-        const isMe = user.discord_id === profile.discord_id;
-        
-        // Auto-tick "Story" only for the logged-in user to prevent race conditions
-        if (isMe && user.story_time && user.queue_state !== 'story') {
+        // Auto-tick "Story" when the time matches
+        if (user.story_time && user.queue_state !== 'story') {
           if (currentTimeStr === user.story_time) {
             handleStatusChange(user, 'story', user.queue_state);
           }
