@@ -29,6 +29,7 @@ import './DashboardGrid.css';
 import DutySystem from './DutySystem';
 import LeaveSystem from './LeaveSystem';
 import RequestManagement from './RequestManagement';
+import PersonnelSystem from './PersonnelSystem';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -478,16 +479,7 @@ export default function Dashboard() {
           )}
 
           {activeTab === 'personnel' && (
-            <div className="hub-container animate-fade-in">
-              <div className="hub-section">
-                <h2 className="hub-section-title admin">ระบบจัดการบุคลากรแพทย์</h2>
-                <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', textAlign: 'center', width: '100%', boxShadow: '0 10px 40px -10px rgba(234, 88, 12, 0.1)' }}>
-                  <Users size={48} color="#ea580c" style={{ marginBottom: '1rem' }} />
-                  <h3 style={{ color: '#ea580c' }}>หน้าจัดการบุคลากร</h3>
-                  <p style={{ color: '#64748b' }}>(กำลังอยู่ในระหว่างการพัฒนาในลูปต่อไป)</p>
-                </div>
-              </div>
-            </div>
+            <PersonnelSystem profile={profile} />
           )}
 
           {activeTab === 'requests' && (
