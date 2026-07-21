@@ -22,7 +22,8 @@ import {
   UserPlus,
   Ban,
   FileCheck2,
-  Banknote
+  Banknote,
+  CalendarDays
 } from 'lucide-react';
 import './Dashboard.css'; 
 import './DashboardGrid.css';
@@ -183,8 +184,8 @@ export default function Dashboard() {
             className={`nav-item ${activeTab === 'accident' ? 'active' : ''}`}
             onClick={() => setActiveTab('accident')}
           >
-            <ClipboardList size={20} />
-            <span>ระบบบันทึกเคสอุบัติเหตุ</span>
+            <CalendarDays size={20} />
+            <span>ระบบลางาน</span>
           </div>
 
           {profile?.role === 'admin' && (
@@ -286,10 +287,10 @@ export default function Dashboard() {
 
                 <div className="hub-card medic">
                   <div className="hub-icon-wrapper">
-                    <ClipboardList size={32} strokeWidth={1.5} />
+                    <CalendarDays size={32} strokeWidth={1.5} />
                   </div>
-                  <h3 className="hub-card-title">ระบบบันทึกเคสอุบัติเหตุ</h3>
-                  <p className="hub-card-desc">บันทึกประวัติการรักษา รายงานอุบัติเหตุ และผู้ป่วยฉุกเฉิน</p>
+                  <h3 className="hub-card-title">ระบบลางาน</h3>
+                  <p className="hub-card-desc">ระบบส่งใบลาพักผ่อน ลาป่วย และตรวจสอบประวัติการลางานของบุคลากร</p>
                   <button className="hub-btn" onClick={() => setActiveTab('accident')}>เข้าใช้งาน</button>
                 </div>
 
@@ -374,10 +375,10 @@ export default function Dashboard() {
           {activeTab === 'accident' && (
             <div className="hub-container animate-fade-in">
               <div className="hub-section">
-                <h2 className="hub-section-title medic">ระบบบันทึกเคสอุบัติเหตุ</h2>
+                <h2 className="hub-section-title medic">ระบบลางาน</h2>
                 <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', textAlign: 'center', width: '100%', boxShadow: '0 10px 40px -10px rgba(124, 58, 237, 0.1)' }}>
-                  <ClipboardList size={48} color="#7c3aed" style={{ marginBottom: '1rem' }} />
-                  <h3>ระบบบันทึกเคสอุบัติเหตุ</h3>
+                  <CalendarDays size={48} color="#7c3aed" style={{ marginBottom: '1rem' }} />
+                  <h3>ระบบลางาน</h3>
                   <p style={{ color: '#64748b' }}>(กำลังอยู่ในระหว่างการพัฒนาในลูปต่อไป)</p>
                 </div>
               </div>
