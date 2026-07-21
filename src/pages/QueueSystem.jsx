@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { Users, Edit3, History, Calendar, X } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import './QueueSystem.css';
 
 export default function QueueSystem({ profile }) {
@@ -411,20 +413,30 @@ export default function QueueSystem({ profile }) {
               <div className="filter-group">
                 <Calendar size={18} color="var(--text-secondary)" />
                 <span>จากวันที่:</span>
-                <input 
-                  type="date" 
-                  value={startDate} 
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="date-input"
+                <DatePicker 
+                  selected={startDate ? new Date(startDate) : new Date()}
+                  onChange={(date) => {
+                    if (date) {
+                      const d = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                      setStartDate(d);
+                    }
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  className="date-input custom-datepicker"
                 />
               </div>
               <div className="filter-group">
                 <span>ถึงวันที่:</span>
-                <input 
-                  type="date" 
-                  value={endDate} 
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="date-input"
+                <DatePicker 
+                  selected={endDate ? new Date(endDate) : new Date()}
+                  onChange={(date) => {
+                    if (date) {
+                      const d = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                      setEndDate(d);
+                    }
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  className="date-input custom-datepicker"
                 />
               </div>
             </div>
@@ -433,8 +445,8 @@ export default function QueueSystem({ profile }) {
               <table className="history-table">
                 <thead>
                   <tr>
-                    <th style={{ backgroundColor: '#f8f9fa', fontWeight: 600 }}>รายชื่อแพทย์</th>
-                    <th style={{ backgroundColor: '#f8f9fa', textAlign: 'center', fontWeight: 600 }}>เวลาทั้งหมด (นาที)</th>
+                    <th style={{ backgroundColor: '#f8f9fa', fontWeight: 600, color: '#334155' }}>รายชื่อแพทย์</th>
+                    <th style={{ backgroundColor: '#457b9d', color: 'white', textAlign: 'center', fontWeight: 600 }}>เวลาทั้งหมด (นาที)</th>
                   </tr>
                 </thead>
                 <tbody>

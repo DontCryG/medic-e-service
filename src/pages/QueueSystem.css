@@ -250,10 +250,16 @@
   color: #495057;
   outline: none;
   transition: border-color 0.2s;
+  width: 130px;
 }
 
 .date-input:focus {
   border-color: var(--primary-color);
+}
+
+.react-datepicker-wrapper {
+  display: inline-block;
+  width: auto;
 }
 
 .history-table-container {
