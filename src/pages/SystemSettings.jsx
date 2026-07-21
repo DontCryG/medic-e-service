@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
-import { Settings, FileText, Briefcase, Bell, Download, CalendarDays, PlusCircle, Trash2, Save, ChevronDown } from 'lucide-react';
+import { Settings, FileText, Briefcase, Bell, Download, CalendarDays, PlusCircle, Trash2, Save, ChevronDown, Building } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import html2canvas from 'html2canvas';
@@ -38,6 +38,10 @@ export default function SystemSettings({ profile }) {
   const [newPosition, setNewPosition] = useState('');
   const [newRate, setNewRate] = useState('');
 
+  // === Agencies State ===
+  const [agencies, setAgencies] = useState([]);
+  const [newAgencyName, setNewAgencyName] = useState('');
+
   // === General Settings State ===
   const [announcementText, setAnnouncementText] = useState('');
   const [announcementActive, setAnnouncementActive] = useState(true);
@@ -57,6 +61,8 @@ export default function SystemSettings({ profile }) {
         await fetchReportData();
       } else if (activeTab === 'positions') {
         await fetchPositions();
+      } else if (activeTab === 'agencies') {
+        await fetchAgencies();
       } else if (activeTab === 'general') {
         await fetchSettings();
       }
@@ -277,6 +283,47 @@ export default function SystemSettings({ profile }) {
     }
   };
 
+  // --- Agencies Logic ---
+  const fetchAgencies = async () => {
+    const { data } = await supabase.from('app_settings').select('*').eq('setting_key', 'agencies_list').single();
+    if (data && data.setting_value) {
+      try {
+        setAgencies(JSON.parse(data.setting_value));
+      } catch (e) {
+        setAgencies([]);
+      }
+    } else {
+      setAgencies([]);
+    }
+  };
+
+  const handleAddAgency = async () => {
+    if (!newAgencyName.trim()) return;
+    try {
+      const updatedAgencies = [...agencies, newAgencyName.trim()];
+      await supabase.from('app_settings').upsert([
+        { setting_key: 'agencies_list', setting_value: JSON.stringify(updatedAgencies) }
+      ]);
+      setNewAgencyName('');
+      fetchAgencies();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteAgency = async (agencyName) => {
+    if (!window.confirm(`ลบสังกัด ${agencyName} ออกจากระบบ?`)) return;
+    try {
+      const updatedAgencies = agencies.filter(a => a !== agencyName);
+      await supabase.from('app_settings').upsert([
+        { setting_key: 'agencies_list', setting_value: JSON.stringify(updatedAgencies) }
+      ]);
+      fetchAgencies();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   // --- General Settings Logic ---
   const fetchSettings = async () => {
     const { data } = await supabase.from('app_settings').select('*');
@@ -363,6 +410,9 @@ export default function SystemSettings({ profile }) {
           </button>
           <button className={`settings-tab-btn ${activeTab === 'positions' ? 'active positions' : ''}`} onClick={() => setActiveTab('positions')}>
             <Briefcase size={18} /> จัดการตำแหน่ง
+          </button>
+          <button className={`settings-tab-btn ${activeTab === 'agencies' ? 'active agencies' : ''}`} onClick={() => setActiveTab('agencies')}>
+            <Building size={18} /> จัดการสังกัด
           </button>
           <button className={`settings-tab-btn ${activeTab === 'general' ? 'active general' : ''}`} onClick={() => setActiveTab('general')}>
             <Bell size={18} /> ประกาศ & ทั่วไป
@@ -547,6 +597,45 @@ export default function SystemSettings({ profile }) {
                     </div>
                   ))}
                   {positions.length === 0 && <div style={{textAlign: 'center', color: '#94a3b8', padding: '2rem'}}>ยังไม่มีข้อมูลตำแหน่ง</div>}
+                </div>
+              </div>
+            )}
+
+            {/* AGENCIES TAB */}
+            {activeTab === 'agencies' && (
+              <div className="animate-fade-in" style={{ maxWidth: '600px' }}>
+                <p style={{ color: '#64748b', marginBottom: '2rem' }}>เพิ่มหรือลบรายชื่อสังกัดที่ต้องการให้มีในระบบ</p>
+                
+                <div className="position-add-card">
+                  <h4 style={{ margin: '0 0 1rem 0', color: '#1e293b' }}>เพิ่มสังกัดใหม่</h4>
+                  <div style={{ display: 'flex', gap: '1rem' }}>
+                    <input 
+                      type="text" 
+                      className="modal-input" 
+                      placeholder="ชื่อสังกัด (เช่น กาชาด)" 
+                      value={newAgencyName} 
+                      onChange={e => setNewAgencyName(e.target.value)} 
+                      style={{ flex: 1 }}
+                    />
+                    <button className="add-btn" onClick={handleAddAgency}>
+                      <PlusCircle size={18} /> เพิ่ม
+                    </button>
+                  </div>
+                </div>
+
+                <div className="positions-list">
+                  <h4 style={{ margin: '0 0 1rem 0', color: '#1e293b' }}>รายชื่อสังกัดทั้งหมด ({agencies.length})</h4>
+                  {agencies.map((agency, idx) => (
+                    <div key={idx} className="position-item">
+                      <div>
+                        <strong>{agency}</strong>
+                      </div>
+                      <button className="action-btn delete" onClick={() => handleDeleteAgency(agency)} title="ลบ">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                  {agencies.length === 0 && <div style={{textAlign: 'center', color: '#94a3b8', padding: '2rem'}}>ยังไม่มีรายชื่อสังกัด</div>}
                 </div>
               </div>
             )}
