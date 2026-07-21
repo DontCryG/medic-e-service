@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { Users, Search, Edit2, Trash2, X, ShieldAlert, ChevronDown } from 'lucide-react';
+import { Users, Search, Edit2, Trash2, X, ShieldAlert, ChevronDown, Clock } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import './PersonnelSystem.css';
 
 export default function PersonnelSystem({ profile }) {
@@ -17,6 +19,12 @@ export default function PersonnelSystem({ profile }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [availablePositions, setAvailablePositions] = useState([]);
+
+  // Add Duty Modal State
+  const [addingDutyUser, setAddingDutyUser] = useState(null);
+  const [dutyClockIn, setDutyClockIn] = useState(null);
+  const [dutyClockOut, setDutyClockOut] = useState(null);
+  const [dutyBreakMinutes, setDutyBreakMinutes] = useState(0);
 
   useEffect(() => {
     if (profile?.role === 'admin') {
@@ -123,6 +131,52 @@ export default function PersonnelSystem({ profile }) {
     }
   };
 
+  const handleAddDutyClick = (user) => {
+    setAddingDutyUser(user);
+    setDutyClockIn(null);
+    setDutyClockOut(null);
+    setDutyBreakMinutes(0);
+  };
+
+  const closeDutyModal = () => {
+    setAddingDutyUser(null);
+  };
+
+  const handleSaveDuty = async (e) => {
+    e.preventDefault();
+    if (!dutyClockIn || !dutyClockOut) {
+      alert('กรุณากรอกเวลาเข้าและออกเวรให้ครบถ้วน');
+      return;
+    }
+    
+    if (dutyClockOut <= dutyClockIn) {
+      alert('เวลาออกเวรต้องอยู่หลังเวลาเข้าเวร');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('duty_sessions')
+        .insert([{
+          discord_id: addingDutyUser.discord_id,
+          clock_in: dutyClockIn.toISOString(),
+          clock_out: dutyClockOut.toISOString(),
+          total_break_minutes: parseInt(dutyBreakMinutes) || 0,
+          status: 'completed'
+        }]);
+
+      if (error) throw error;
+      
+      alert('บันทึกเวลาเข้าเวรย้อนหลังสำเร็จ');
+      closeDutyModal();
+    } catch (error) {
+      alert('เกิดข้อผิดพลาด: ' + error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleDeleteUser = async (user) => {
     if (!window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการ "ลบ" ข้อมูลของ ${user.ic_name} ออกจากระบบอย่างถาวร? การกระทำนี้ไม่สามารถย้อนกลับได้`)) {
       return;
@@ -214,6 +268,9 @@ export default function PersonnelSystem({ profile }) {
                       <div className="personnel-actions">
                         <button className="action-btn edit" onClick={() => handleEditClick(user)} title="แก้ไขข้อมูล">
                           <Edit2 size={18} />
+                        </button>
+                        <button className="action-btn add-duty" onClick={() => handleAddDutyClick(user)} title="เพิ่มเวลาเวรย้อนหลัง">
+                          <Clock size={18} />
                         </button>
                         {user.discord_id !== profile.discord_id && (
                           <button className="action-btn delete" onClick={() => handleDeleteUser(user)} title="ลบข้อมูลถาวร">
@@ -340,6 +397,83 @@ export default function PersonnelSystem({ profile }) {
         </div>
       )}
 
+      {/* Add Duty Modal */}
+      {addingDutyUser && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>เพิ่มเวลาเข้าเวรย้อนหลัง</h2>
+              <button className="close-btn" onClick={closeDutyModal}><X size={20} /></button>
+            </div>
+            
+            <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '12px' }}>
+              <div className="personnel-avatar" style={{ padding: addingDutyUser.avatar_url ? 0 : undefined, width: '50px', height: '50px' }}>
+                {addingDutyUser.avatar_url ? (
+                  <img src={addingDutyUser.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : getInitial(addingDutyUser.ic_name)}
+              </div>
+              <div>
+                <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '1.1rem' }}>{addingDutyUser.ic_name}</div>
+                <div style={{ color: '#64748b', fontSize: '0.9rem' }}>{addingDutyUser.position || '-'}</div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveDuty}>
+              <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                <label className="modal-label">เวลาเข้าเวร (Clock In)</label>
+                <DatePicker 
+                  selected={dutyClockIn} 
+                  onChange={(date) => setDutyClockIn(date)} 
+                  showTimeSelect
+                  timeFormat="HH:mm"
+                  timeIntervals={15}
+                  timeCaption="เวลา"
+                  dateFormat="dd/MM/yyyy HH:mm"
+                  placeholderText="เลือกวันที่และเวลา"
+                  className="modal-select"
+                  required
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                <label className="modal-label">เวลาออกเวร (Clock Out)</label>
+                <DatePicker 
+                  selected={dutyClockOut} 
+                  onChange={(date) => setDutyClockOut(date)} 
+                  showTimeSelect
+                  timeFormat="HH:mm"
+                  timeIntervals={15}
+                  timeCaption="เวลา"
+                  dateFormat="dd/MM/yyyy HH:mm"
+                  minDate={dutyClockIn}
+                  placeholderText="เลือกวันที่และเวลา"
+                  className="modal-select"
+                  required
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: '2rem' }}>
+                <label className="modal-label">เวลาพักรวม (นาที)</label>
+                <input 
+                  type="number" 
+                  min="0"
+                  className="modal-select" 
+                  value={dutyBreakMinutes}
+                  onChange={(e) => setDutyBreakMinutes(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="modal-btn cancel" onClick={closeDutyModal}>ยกเลิก</button>
+                <button type="submit" className="modal-btn save" disabled={isSaving}>
+                  {isSaving ? 'กำลังบันทึก...' : 'บันทึกเวลาเวร'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

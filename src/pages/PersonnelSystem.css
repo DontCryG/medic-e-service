@@ -177,6 +177,13 @@
   background: #fef2f2;
 }
 
+.action-btn.add-duty {
+  color: #10b981;
+}
+.action-btn.add-duty:hover {
+  background: #d1fae5;
+}
+
 /* Edit Modal */
 .modal-overlay {
   position: fixed;
