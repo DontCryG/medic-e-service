@@ -5,6 +5,27 @@
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MEDIC WIPTOWN</title>
+    <script>
+      // Prevent common developer tools shortcuts
+      document.addEventListener('keydown', function(e) {
+        // F12
+        if(e.key === 'F12' || e.keyCode === 123) {
+          e.preventDefault(); return false;
+        }
+        // Ctrl+Shift+I / Cmd+Opt+I (DevTools)
+        if((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i')) {
+          e.preventDefault(); return false;
+        }
+        // Ctrl+Shift+J / Cmd+Opt+J (Console)
+        if((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
+          e.preventDefault(); return false;
+        }
+        // Ctrl+U / Cmd+U (View Source)
+        if((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u')) {
+          e.preventDefault(); return false;
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
