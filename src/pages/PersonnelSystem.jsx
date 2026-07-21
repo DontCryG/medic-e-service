@@ -121,6 +121,58 @@ export default function PersonnelSystem({ profile }) {
         }
       }
 
+      // Automatically clock out if role becomes user
+      if (editRole === 'user' && editingUser.role !== 'user') {
+        try {
+          const { data: activeSession } = await supabase
+            .from('duty_sessions')
+            .select('*')
+            .eq('discord_id', editingUser.discord_id)
+            .in('status', ['on_duty', 'on_break'])
+            .order('clock_in', { ascending: false })
+            .limit(1)
+            .single();
+
+          if (activeSession) {
+            let finalBreakMinutes = activeSession.total_break_minutes || 0;
+            if (activeSession.status === 'on_break' && activeSession.last_break_start) {
+              const breakStart = new Date(activeSession.last_break_start).getTime();
+              const now = new Date().getTime();
+              finalBreakMinutes += Math.floor((now - breakStart) / 60000);
+            }
+
+            await supabase
+              .from('duty_sessions')
+              .update({ 
+                status: 'completed',
+                clock_out: new Date().toISOString(),
+                total_break_minutes: finalBreakMinutes,
+                queue_state: 'available',
+                manager_start_time: null,
+                current_manager_log_id: null,
+                story_time: null
+              })
+              .eq('id', activeSession.id);
+              
+            // If they were a manager, end their log
+            if (activeSession.current_manager_log_id) {
+              const startTime = new Date(activeSession.manager_start_time).getTime();
+              const durationMinutes = Math.floor((Date.now() - startTime) / 60000);
+              
+              await supabase
+                .from('queue_manager_logs')
+                .update({ 
+                  end_time: new Date().toISOString(),
+                  duration_minutes: durationMinutes
+                })
+                .eq('id', activeSession.current_manager_log_id);
+            }
+          }
+        } catch (autoClockoutError) {
+          console.error('Error auto-clocking out user:', autoClockoutError);
+        }
+      }
+
       alert('บันทึกข้อมูลเรียบร้อยแล้ว');
       closeEditModal();
       fetchUsers();
