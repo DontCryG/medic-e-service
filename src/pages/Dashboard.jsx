@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { 
@@ -47,6 +47,7 @@ export default function Dashboard() {
   // Notifications State
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const notifRef = useRef(null);
 
   const menuItems = [
     { id: 'dashboard', label: 'กระดานหลัก' },
@@ -130,6 +131,16 @@ export default function Dashboard() {
       if (notifSub) supabase.removeChannel(notifSub);
       supabase.removeChannel(settingsSub);
     };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setIsNotifOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const fetchNotifications = async (discordId) => {
@@ -452,7 +463,7 @@ export default function Dashboard() {
           <div className="header-actions">
             
             {/* Notification Bell */}
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative' }} ref={notifRef}>
               <button 
                 className="icon-btn" 
                 onClick={() => setIsNotifOpen(!isNotifOpen)}
