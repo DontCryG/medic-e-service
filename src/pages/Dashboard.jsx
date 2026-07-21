@@ -30,6 +30,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   useEffect(() => {
     checkUser();
@@ -152,15 +153,24 @@ export default function Dashboard() {
         </div>
         
         <nav className="sidebar-nav">
-          <div className="nav-item active">
+          <div 
+            className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
             <LayoutDashboard size={20} />
             <span>กระดานหลัก</span>
           </div>
-          <div className="nav-item">
+          <div 
+            className={`nav-item ${activeTab === 'personnel' ? 'active' : ''}`}
+            onClick={() => setActiveTab('personnel')}
+          >
             <Users size={20} />
             <span>จัดการบุคลากร</span>
           </div>
-          <div className="nav-item">
+          <div 
+            className={`nav-item ${activeTab === 'treatment' ? 'active' : ''}`}
+            onClick={() => setActiveTab('treatment')}
+          >
             <Stethoscope size={20} />
             <span>ข้อมูลการรักษา</span>
           </div>
@@ -208,7 +218,8 @@ export default function Dashboard() {
         {/* Content */}
         <div className="dashboard-content" style={{ padding: '3rem 2rem' }}>
           
-          <div className="hub-container">
+          {activeTab === 'dashboard' && (
+            <div className="hub-container animate-fade-in">
             {/* Medic Section */}
             <div className="hub-section">
               <h2 className="hub-section-title medic">ระบบปฏิบัติการแพทย์ (Medic Services)</h2>
@@ -281,7 +292,34 @@ export default function Dashboard() {
               </a>
             </div>
 
-          </div>
+            </div>
+          )}
+
+          {activeTab === 'personnel' && (
+            <div className="hub-container animate-fade-in">
+              <div className="hub-section">
+                <h2 className="hub-section-title medic">ระบบจัดการบุคลากรทางการแพทย์</h2>
+                <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', textAlign: 'center', width: '100%', boxShadow: '0 10px 40px -10px rgba(124, 58, 237, 0.1)' }}>
+                  <Users size={48} color="#7c3aed" style={{ marginBottom: '1rem' }} />
+                  <h3>หน้าจัดการบุคลากร</h3>
+                  <p style={{ color: '#64748b' }}>(กำลังอยู่ในระหว่างการพัฒนาในลูปต่อไป)</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'treatment' && (
+            <div className="hub-container animate-fade-in">
+              <div className="hub-section">
+                <h2 className="hub-section-title medic">ระบบข้อมูลการรักษา (Treatment Data)</h2>
+                <div style={{ background: 'white', padding: '3rem', borderRadius: '24px', textAlign: 'center', width: '100%', boxShadow: '0 10px 40px -10px rgba(124, 58, 237, 0.1)' }}>
+                  <Stethoscope size={48} color="#7c3aed" style={{ marginBottom: '1rem' }} />
+                  <h3>หน้าข้อมูลการรักษา</h3>
+                  <p style={{ color: '#64748b' }}>(กำลังอยู่ในระหว่างการพัฒนาในลูปต่อไป)</p>
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
       </main>
