@@ -274,14 +274,14 @@ export default function Dashboard() {
             {/* Admin Section (Conditional) */}
             {profile?.role === 'admin' && (
               <div className="hub-section">
-                <h2 className="hub-section-title admin">ระบบจัดการภายในสภา (Council Only)</h2>
+                <h2 className="hub-section-title admin">ระบบจัดการภายในแพทย์ (Admin Only)</h2>
                 <div className="hub-grid">
                   
                   <div className="hub-card admin">
                     <div className="hub-icon-wrapper">
                       <Users size={32} strokeWidth={1.5} />
                     </div>
-                    <h3 className="hub-card-title">ระบบจัดการสมาชิกสภา</h3>
+                    <h3 className="hub-card-title">ระบบจัดการบุคลากรแพทย์</h3>
                     <p className="hub-card-desc">ฐานข้อมูลทะเบียนประวัติ และปรับเปลี่ยนสิทธิ์ (Role) เจ้าหน้าที่</p>
                     <button className="hub-btn">เข้าสู่ระบบ</button>
                   </div>
@@ -313,7 +313,7 @@ export default function Dashboard() {
               <h3 className="related-links-title"><Star size={20} color="#f59e0b" fill="#f59e0b" /> แนะนำเว็บไซต์ที่เกี่ยวข้อง</h3>
               <a href="#" className="related-link-btn">
                 <ExternalLink size={18} />
-                กฎหน่วยงานสภา WIP TOWN
+                กฎหน่วยงานแพทย์ WIP TOWN
               </a>
             </div>
 
