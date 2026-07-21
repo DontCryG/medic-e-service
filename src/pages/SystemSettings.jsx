@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
-import { Settings, FileText, Briefcase, Bell, Download, CalendarDays, PlusCircle, Trash2, Save } from 'lucide-react';
+import { Settings, FileText, Briefcase, Bell, Download, CalendarDays, PlusCircle, Trash2, Save, ChevronDown } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import html2canvas from 'html2canvas';
@@ -19,6 +19,19 @@ export default function SystemSettings({ profile }) {
   const [summaryData, setSummaryData] = useState({ totalPayout: 0, totalHours: 0 });
   const [isGenerating, setIsGenerating] = useState(false);
   const pdfRef = useRef();
+  
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const categoryDropdownRef = useRef();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target)) {
+        setIsCategoryDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // === Positions State ===
   const [positions, setPositions] = useState([]);
@@ -383,18 +396,31 @@ export default function SystemSettings({ profile }) {
                   </div>
                   <div className="filter-group">
                     <label style={{ marginRight: '0.5rem', fontWeight: 600 }}>หมวดหมู่:</label>
-                    <select 
-                      className="modal-input" 
-                      style={{ width: '220px', cursor: 'pointer', appearance: 'auto' }} 
-                      value={reportCategory} 
-                      onChange={e => setReportCategory(e.target.value)}
-                    >
-                      <option value="all">สรุปยอดรวมทั้งหมด (ALL)</option>
-                      <option value="ic">สรุปหมวดเงิน IC</option>
-                      <option value="oc">สรุปหมวดเงิน OC</option>
-                      <option value="story">สรุปหมวดเงินดูสตอรี่</option>
-                      <option value="bonus">สรุปหมวดเงินโบนัส</option>
-                    </select>
+                    <div className="custom-dropdown-container" ref={categoryDropdownRef}>
+                      <div 
+                        className="modal-input custom-dropdown-trigger"
+                        onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                      >
+                        <span>
+                          {reportCategory === 'all' ? 'สรุปยอดรวมทั้งหมด (ALL)' : 
+                           reportCategory === 'ic' ? 'สรุปหมวดเงิน IC' :
+                           reportCategory === 'oc' ? 'สรุปหมวดเงิน OC' :
+                           reportCategory === 'story' ? 'สรุปหมวดเงินดูสตอรี่' :
+                           reportCategory === 'bonus' ? 'สรุปหมวดเงินโบนัส' : ''}
+                        </span>
+                        <ChevronDown size={18} color="#64748b" style={{ transform: isCategoryDropdownOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
+                      </div>
+                      
+                      {isCategoryDropdownOpen && (
+                        <div className="custom-dropdown-menu">
+                          <div className={`custom-dropdown-item ${reportCategory === 'all' ? 'active' : ''}`} onClick={() => { setReportCategory('all'); setIsCategoryDropdownOpen(false); }}>สรุปยอดรวมทั้งหมด (ALL)</div>
+                          <div className={`custom-dropdown-item ${reportCategory === 'ic' ? 'active' : ''}`} onClick={() => { setReportCategory('ic'); setIsCategoryDropdownOpen(false); }}>สรุปหมวดเงิน IC</div>
+                          <div className={`custom-dropdown-item ${reportCategory === 'oc' ? 'active' : ''}`} onClick={() => { setReportCategory('oc'); setIsCategoryDropdownOpen(false); }}>สรุปหมวดเงิน OC</div>
+                          <div className={`custom-dropdown-item ${reportCategory === 'story' ? 'active' : ''}`} onClick={() => { setReportCategory('story'); setIsCategoryDropdownOpen(false); }}>สรุปหมวดเงินดูสตอรี่</div>
+                          <div className={`custom-dropdown-item ${reportCategory === 'bonus' ? 'active' : ''}`} onClick={() => { setReportCategory('bonus'); setIsCategoryDropdownOpen(false); }}>สรุปหมวดเงินโบนัส</div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <button className="export-btn" onClick={handleDownloadPDF} disabled={isGenerating || reportData.length === 0}>
                     {isGenerating ? 'กำลังสร้าง PDF...' : <><Download size={20} /> ดาวน์โหลด PDF</>}
