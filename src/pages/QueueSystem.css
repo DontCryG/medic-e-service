@@ -134,6 +134,12 @@
   border-color: #457b9d;
 }
 
+/* Purple Checkmark (Story) */
+.checkbox-container input:checked ~ .checkmark-purple {
+  background-color: #9d4edd;
+  border-color: #9d4edd;
+}
+
 .checkmark:after {
   content: "";
   position: absolute;
@@ -189,6 +195,15 @@
 
 .remark-input:disabled {
   color: var(--text-secondary);
+}
+
+.time-input {
+  text-align: center;
+  padding: 8px;
+}
+
+.time-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
 }
 
 .edit-icon {

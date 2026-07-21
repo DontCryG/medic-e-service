@@ -80,6 +80,19 @@ export default function QueueSystem({ profile }) {
     }
   };
 
+  const handleStoryTimeChange = async (sessionId, newTime) => {
+    try {
+      const { error } = await supabase
+        .from('duty_sessions')
+        .update({ story_time: newTime })
+        .eq('id', sessionId);
+        
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error updating story time:', err);
+    }
+  };
+
   if (!profile) return null;
 
   const isAdmin = profile.role === 'admin';
@@ -100,12 +113,14 @@ export default function QueueSystem({ profile }) {
                 <th className="col-unavailable" style={{ backgroundColor: '#e63946', color: 'white' }}>ไม่สะดวก</th>
                 <th className="col-queued" style={{ backgroundColor: '#2a9d8f', color: 'white' }}>คิว</th>
                 <th className="col-manager" style={{ backgroundColor: '#457b9d', color: 'white' }}>หมอรันคิว</th>
+                <th className="col-story" style={{ backgroundColor: '#9d4edd', color: 'white' }}>สตอรี่</th>
+                <th className="col-story-time" style={{ backgroundColor: '#e0aaff', color: 'black' }}>เวลาไป</th>
                 <th className="col-remark">หมายเหตุ</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '2rem' }}>กำลังโหลดข้อมูล...</td></tr>
+                <tr><td colSpan="7" style={{ textAlign: 'center', padding: '2rem' }}>กำลังโหลดข้อมูล...</td></tr>
               ) : liveUsers.length > 0 ? (
                 liveUsers.map((user) => {
                   const isMe = user.discord_id === profile.discord_id;
@@ -154,6 +169,35 @@ export default function QueueSystem({ profile }) {
                         </label>
                       </td>
 
+                      <td className="col-story" style={{ backgroundColor: '#f3e8ff' }}>
+                        <label className={`checkbox-container ${!canEdit ? 'disabled' : ''}`}>
+                          <input 
+                            type="checkbox" 
+                            checked={queueState === 'story'}
+                            onChange={() => handleStatusChange(user.id, 'story', queueState)}
+                            disabled={!canEdit}
+                          />
+                          <span className="checkmark checkmark-purple"></span>
+                        </label>
+                      </td>
+
+                      <td className="col-story-time" style={{ backgroundColor: '#f9f5ff' }}>
+                        <div className="remark-input-container">
+                          <input 
+                            type="time" 
+                            className="remark-input time-input"
+                            defaultValue={user.story_time || ''}
+                            disabled={!canEdit || queueState !== 'story'}
+                            style={{ opacity: queueState !== 'story' ? 0.4 : 1 }}
+                            onBlur={(e) => {
+                              if (e.target.value !== user.story_time) {
+                                handleStoryTimeChange(user.id, e.target.value);
+                              }
+                            }}
+                          />
+                        </div>
+                      </td>
+
                       <td className="col-remark">
                         <div className="remark-input-container">
                           <input 
@@ -181,7 +225,7 @@ export default function QueueSystem({ profile }) {
                 })
               ) : (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
                     ไม่มีบุคลากรเข้าเวรในขณะนี้
                   </td>
                 </tr>
