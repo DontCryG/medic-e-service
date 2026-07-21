@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { Users, Edit3, History, Calendar, X } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import Swal from 'sweetalert2';
 import './QueueSystem.css';
 
 export default function QueueSystem({ profile }) {
@@ -116,6 +117,47 @@ export default function QueueSystem({ profile }) {
         
         updatePayload.manager_start_time = null;
         updatePayload.current_manager_log_id = null;
+      }
+
+      // If they are STOPPING being a story
+      if (currentStatus === 'story' && finalStatus !== 'story') {
+        const { value: peopleCount } = await Swal.fire({
+          title: 'จบสตอรี่',
+          text: 'สตอรี่ที่คุณเพิ่งไป มีคนไปทั้งหมดกี่คน?',
+          input: 'select',
+          inputOptions: {
+            '1': 'ไป 1 คน (โบนัส 200,000)',
+            '2': 'ไปมากกว่า 1 คน (โบนัส 100,000)'
+          },
+          inputPlaceholder: 'เลือกจำนวนคน',
+          showCancelButton: true,
+          cancelButtonText: 'ยกเลิก',
+          confirmButtonText: 'ยืนยัน',
+          allowOutsideClick: false
+        });
+
+        if (peopleCount) {
+          const amount = peopleCount === '1' ? 200000 : 100000;
+          const { error: adjError } = await supabase.from('salary_adjustments').insert({
+            discord_id: user.discord_id,
+            type: 'bonus',
+            amount: amount,
+            reason: 'เงินสตอรี่'
+          });
+          
+          if (adjError) {
+            console.error('Error adding story money:', adjError);
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกเงินสตอรี่ได้', 'error');
+          } else {
+            Swal.fire({
+              title: 'สำเร็จ!',
+              text: `บันทึกเงินสตอรี่ ${amount.toLocaleString()} บาทแล้ว`,
+              icon: 'success',
+              timer: 2000,
+              showConfirmButton: false
+            });
+          }
+        }
       }
 
       // If they are STARTING to be a manager
