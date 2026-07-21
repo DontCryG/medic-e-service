@@ -130,7 +130,7 @@ export default function SystemSettings({ profile }) {
           userAdjData[adj.discord_id] = { bonus: 0, deduction: 0, storyMoney: 0, gacha_ic: 0, gacha_promote: 0, coin_agency: 0 };
         }
         if (adj.type === 'bonus') {
-          if (adj.reason === 'ดูสตอรี่') {
+          if (adj.reason === 'ดูสตอรี่' || adj.reason === 'เงินสตอรี่') {
             userAdjData[adj.discord_id].storyMoney += Number(adj.amount);
           } else {
             userAdjData[adj.discord_id].bonus += Number(adj.amount);
