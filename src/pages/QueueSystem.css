@@ -366,3 +366,55 @@
 .custom-swal-confirm:hover { transform: translateY(-1px) !important; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important; }  
 .custom-swal-cancel { background-color: #f1f5f9 !important; color: #475569 !important; border: none !important; border-radius: 8px !important; padding: 0.6rem 2rem !important; font-weight: 500 !important; font-size: 1.05rem !important; cursor: pointer !important; transition: all 0.2s !important; }  
 .custom-swal-cancel:hover { background-color: #e2e8f0 !important; color: #1e293b !important; }
+
+/* Custom Dropdown UI for Story Modal */
+.story-custom-dropdown {
+  position: relative;
+  width: 100%;
+}
+.story-dropdown-selected {
+  padding: 0.85rem 1rem;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #1e293b;
+  font-size: 1.05rem;
+  transition: all 0.2s;
+}
+.story-dropdown-selected:hover, .story-dropdown-selected.open {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+.story-dropdown-options {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  z-index: 100;
+  overflow: hidden;
+}
+.story-dropdown-option {
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  color: #334155;
+  transition: background 0.2s;
+  font-size: 1.05rem;
+  text-align: left;
+}
+.story-dropdown-option:hover {
+  background: #f8fafc;
+  color: #7c3aed;
+}
+.story-dropdown-option.selected {
+  background: #f3e8ff;
+  color: #7c3aed;
+  font-weight: 500;
+}

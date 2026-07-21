@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { Users, Edit3, History, Calendar, X } from 'lucide-react';
+import { Users, Edit3, History, Calendar, X, ChevronDown } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
@@ -15,6 +15,11 @@ export default function QueueSystem({ profile }) {
   const [showHistory, setShowHistory] = useState(false);
   const [historyData, setHistoryData] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+
+  // Story Modal State
+  const [storyModalUser, setStoryModalUser] = useState(null);
+  const [storyPeopleCount, setStoryPeopleCount] = useState('1');
+  const [isStoryDropdownOpen, setIsStoryDropdownOpen] = useState(false);
   
   const getLocalDateString = () => {
     const d = new Date();
@@ -121,67 +126,10 @@ export default function QueueSystem({ profile }) {
 
       // If they are STOPPING being a story
       if (currentStatus === 'story' && finalStatus !== 'story') {
-        const { value: peopleCount } = await Swal.fire({
-          title: 'จบสตอรี่',
-          text: 'สตอรี่ที่คุณเพิ่งไป มีคนไปทั้งหมดกี่คน?',
-          input: 'select',
-          inputOptions: {
-            '1': 'ไป 1 คน (โบนัส 200,000)',
-            '2': 'ไปมากกว่า 1 คน (โบนัส 100,000)'
-          },
-          inputPlaceholder: 'เลือกจำนวนคน',
-          showCancelButton: true,
-          cancelButtonText: 'ยกเลิก',
-          confirmButtonText: 'ยืนยัน',
-          allowOutsideClick: false,
-          buttonsStyling: false,
-          customClass: {
-            popup: 'custom-swal-popup',
-            title: 'custom-swal-title',
-            htmlContainer: 'custom-swal-text',
-            input: 'custom-swal-input',
-            confirmButton: 'custom-swal-confirm',
-            cancelButton: 'custom-swal-cancel',
-            actions: 'custom-swal-actions'
-          }
-        });
-
-        if (peopleCount) {
-          const amount = peopleCount === '1' ? 200000 : 100000;
-          const { error: adjError } = await supabase.from('salary_adjustments').insert({
-            discord_id: user.discord_id,
-            type: 'bonus',
-            amount: amount,
-            reason: 'เงินสตอรี่'
-          });
-          
-          if (adjError) {
-            console.error('Error adding story money:', adjError);
-            Swal.fire({
-              title: 'ข้อผิดพลาด',
-              text: 'ไม่สามารถบันทึกเงินสตอรี่ได้',
-              icon: 'error',
-              buttonsStyling: false,
-              customClass: {
-                popup: 'custom-swal-popup',
-                title: 'custom-swal-title',
-                confirmButton: 'custom-swal-confirm'
-              }
-            });
-          } else {
-            Swal.fire({
-              title: 'สำเร็จ!',
-              text: `บันทึกเงินสตอรี่ ${amount.toLocaleString()} บาทแล้ว`,
-              icon: 'success',
-              timer: 2000,
-              showConfirmButton: false,
-              customClass: {
-                popup: 'custom-swal-popup',
-                title: 'custom-swal-title'
-              }
-            });
-          }
-        }
+        setStoryModalUser({ user, finalStatus });
+        setStoryPeopleCount('1');
+        setIsStoryDropdownOpen(false);
+        return; // Wait for modal confirmation
       }
 
       // If they are STARTING to be a manager
@@ -207,6 +155,72 @@ export default function QueueSystem({ profile }) {
     } catch (err) {
       alert('Error updating queue status: ' + err.message);
     }
+  };
+
+  const confirmStoryMoney = async () => {
+    if (!storyModalUser) return;
+    const { user, finalStatus } = storyModalUser;
+    
+    setStoryModalUser(null);
+    
+    const amount = storyPeopleCount === '1' ? 200000 : 100000;
+    try {
+      const { error: adjError } = await supabase.from('salary_adjustments').insert({
+        discord_id: user.discord_id,
+        type: 'bonus',
+        amount: amount,
+        reason: 'เงินสตอรี่'
+      });
+      
+      if (adjError) {
+        console.error('Error adding story money:', adjError);
+        Swal.fire({
+          title: 'ข้อผิดพลาด',
+          text: 'ไม่สามารถบันทึกเงินสตอรี่ได้',
+          icon: 'error',
+          buttonsStyling: false,
+          customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', confirmButton: 'custom-swal-confirm' }
+        });
+      } else {
+        Swal.fire({
+          title: 'สำเร็จ!',
+          text: `บันทึกเงินสตอรี่ ${amount.toLocaleString()} บาทแล้ว`,
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+          customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title' }
+        });
+      }
+
+      let updatePayload = { queue_state: finalStatus };
+      
+      if (finalStatus === 'manager') {
+        const { data: logData, error: logError } = await supabase
+          .from('queue_manager_logs')
+          .insert({ discord_id: user.discord_id })
+          .select('id')
+          .single();
+          
+        if (logError) throw logError;
+        
+        updatePayload.manager_start_time = new Date().toISOString();
+        updatePayload.current_manager_log_id = logData.id;
+      }
+
+      const { error } = await supabase
+        .from('duty_sessions')
+        .update(updatePayload)
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
+    } catch (err) {
+      alert('Error updating queue status: ' + err.message);
+    }
+  };
+
+  const cancelStoryMoney = () => {
+    setStoryModalUser(null);
   };
 
   const handleRemarkChange = async (sessionId, newRemark) => {
@@ -573,6 +587,47 @@ export default function QueueSystem({ profile }) {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Story Dropdown Modal */}
+      {storyModalUser && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '420px', padding: '2.5rem 2rem' }}>
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+              <h2 style={{ fontSize: '1.75rem', color: '#1e293b', marginBottom: '0.5rem', fontWeight: 600 }}>จบสตอรี่</h2>
+              <p style={{ color: '#64748b', fontSize: '1.1rem' }}>สตอรี่ที่คุณเพิ่งไป มีคนไปทั้งหมดกี่คน?</p>
+            </div>
+            
+            <div className="story-custom-dropdown" style={{ marginBottom: '2.5rem' }}>
+              <div 
+                className={`story-dropdown-selected ${isStoryDropdownOpen ? 'open' : ''}`}
+                onClick={() => setIsStoryDropdownOpen(!isStoryDropdownOpen)}
+              >
+                {storyPeopleCount === '1' ? 'ไป 1 คน (โบนัส 200,000)' : 'ไปมากกว่า 1 คน (โบนัส 100,000)'}
+                <ChevronDown size={20} style={{ transition: 'transform 0.2s', transform: isStoryDropdownOpen ? 'rotate(180deg)' : 'none', color: '#64748b' }} />
+              </div>
+              {isStoryDropdownOpen && (
+                <div className="story-dropdown-options">
+                  <div className={`story-dropdown-option ${storyPeopleCount === '1' ? 'selected' : ''}`} onClick={() => { setStoryPeopleCount('1'); setIsStoryDropdownOpen(false); }}>
+                    ไป 1 คน (โบนัส 200,000)
+                  </div>
+                  <div className={`story-dropdown-option ${storyPeopleCount === '2' ? 'selected' : ''}`} onClick={() => { setStoryPeopleCount('2'); setIsStoryDropdownOpen(false); }}>
+                    ไปมากกว่า 1 คน (โบนัส 100,000)
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button onClick={confirmStoryMoney} style={{ flex: 1, padding: '0.75rem', fontSize: '1.05rem', backgroundColor: '#7c3aed', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.2s' }} onMouseOver={e => e.target.style.transform = 'translateY(-1px)'} onMouseOut={e => e.target.style.transform = 'none'}>
+                ยืนยัน
+              </button>
+              <button onClick={cancelStoryMoney} style={{ flex: 1, padding: '0.75rem', fontSize: '1.05rem', backgroundColor: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.2s' }} onMouseOver={e => e.target.style.backgroundColor = '#e2e8f0'} onMouseOut={e => e.target.style.backgroundColor = '#f1f5f9'}>
+                ยกเลิก
+              </button>
             </div>
           </div>
         </div>
