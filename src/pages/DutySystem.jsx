@@ -230,6 +230,71 @@ export default function DutySystem({ profile, avatarUrl }) {
     }
   };
 
+  const handleAdminToggleBreak = async (session) => {
+    if (!window.confirm(`ต้องการเปลี่ยนสถานะการพักเบรกของ ${session.users?.ic_name} ใช่หรือไม่?`)) return;
+    setLoading(true);
+    try {
+      if (session.status === 'on_duty') {
+        await supabase
+          .from('duty_sessions')
+          .update({ 
+            status: 'on_break',
+            last_break_start: new Date().toISOString()
+          })
+          .eq('id', session.id);
+      } else {
+        const breakStart = new Date(session.last_break_start).getTime();
+        const now = new Date().getTime();
+        const breakMinutes = Math.floor((now - breakStart) / 60000);
+        
+        await supabase
+          .from('duty_sessions')
+          .update({ 
+            status: 'on_duty',
+            total_break_minutes: session.total_break_minutes + breakMinutes,
+            last_break_start: null
+          })
+          .eq('id', session.id);
+      }
+      fetchLiveUsers();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAdminClockOut = async (session) => {
+    if (!window.confirm(`ต้องการให้ ${session.users?.ic_name} ออกเวรใช่หรือไม่?`)) return;
+    setLoading(true);
+    try {
+      let finalBreakMinutes = session.total_break_minutes;
+      if (session.status === 'on_break') {
+        const breakStart = new Date(session.last_break_start).getTime();
+        const now = new Date().getTime();
+        finalBreakMinutes += Math.floor((now - breakStart) / 60000);
+      }
+
+      await supabase
+        .from('duty_sessions')
+        .update({ 
+          status: 'completed',
+          clock_out: new Date().toISOString(),
+          total_break_minutes: finalBreakMinutes
+        })
+        .eq('id', session.id);
+      
+      fetchLiveUsers();
+      if (session.discord_id === profile.discord_id) {
+         fetchCurrentSession();
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatTime = (seconds) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
@@ -322,6 +387,7 @@ export default function DutySystem({ profile, avatarUrl }) {
                   <th>ชื่อแพทย์</th>
                   <th>สถานะ</th>
                   <th>เวลาเริ่ม</th>
+                  {profile.role === 'admin' && <th style={{ textAlign: 'right' }}>จัดการ (แอดมิน)</th>}
                 </tr>
               </thead>
               <tbody>
@@ -337,10 +403,32 @@ export default function DutySystem({ profile, avatarUrl }) {
                       </span>
                     </td>
                     <td>{new Date(user.clock_in).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</td>
+                    {profile.role === 'admin' && (
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                          <button 
+                            className="duty-btn btn-break" 
+                            style={{ padding: '4px 10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', minWidth: '85px', justifyContent: 'center' }}
+                            onClick={() => handleAdminToggleBreak(user)}
+                            disabled={loading}
+                          >
+                            {user.status === 'on_break' ? <><Play size={12} /> กลับ</> : <><Pause size={12} /> พัก</>}
+                          </button>
+                          <button 
+                            className="duty-btn btn-clock-out" 
+                            style={{ padding: '4px 10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            onClick={() => handleAdminClockOut(user)}
+                            disabled={loading}
+                          >
+                            <Square size={12} /> ออกเวร
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="3" style={{ textAlign: 'center', padding: '2rem' }}>ไม่มีผู้เข้าเวรในขณะนี้</td>
+                    <td colSpan={profile.role === 'admin' ? "4" : "3"} style={{ textAlign: 'center', padding: '2rem' }}>ไม่มีผู้เข้าเวรในขณะนี้</td>
                   </tr>
                 )}
               </tbody>
