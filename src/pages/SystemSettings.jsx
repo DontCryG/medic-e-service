@@ -665,15 +665,15 @@ export default function SystemSettings({ profile }) {
                 <div className="position-list">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 1rem 0' }}>
                     <h4 style={{ margin: 0, color: '#1e293b' }}>รายชื่อสังกัดทั้งหมด ({agencies.length})</h4>
-                    <div style={{ position: 'relative', width: '200px' }}>
-                      <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '10px' }} />
+                    <div style={{ position: 'relative', width: '250px' }}>
+                      <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                       <input 
                         type="text" 
                         className="modal-input" 
                         placeholder="ค้นหาสังกัด..." 
                         value={searchAgency}
                         onChange={(e) => setSearchAgency(e.target.value)}
-                        style={{ paddingLeft: '2.2rem', width: '100%' }}
+                        style={{ paddingLeft: '2.5rem', width: '100%', paddingBottom: '0.6rem', paddingTop: '0.6rem' }}
                       />
                     </div>
                   </div>
