@@ -14,6 +14,7 @@ export default function SystemSettings({ profile }) {
   // === Reports State ===
   const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [endDate, setEndDate] = useState(new Date());
+  const [reportCategory, setReportCategory] = useState('all');
   const [reportData, setReportData] = useState([]);
   const [summaryData, setSummaryData] = useState({ totalPayout: 0, totalHours: 0 });
   const [isGenerating, setIsGenerating] = useState(false);
@@ -56,74 +57,128 @@ export default function SystemSettings({ profile }) {
   // --- Reports Logic ---
   const fetchReportData = async () => {
     try {
-      // Fetch rates
+      // 1. Fetch Salary Rates
       const { data: ratesData } = await supabase.from('salary_rates').select('*');
       const ratesMap = {};
-      if (ratesData) {
-        ratesData.forEach(r => ratesMap[r.position_name] = Number(r.hourly_rate));
-      }
+      if (ratesData) ratesData.forEach(r => ratesMap[r.position_name] = Number(r.hourly_rate));
 
-      // Fetch users
+      // 2. Fetch Users
       const { data: usersData } = await supabase.from('users').select('*');
       const userMap = {};
-      if (usersData) {
-        usersData.forEach(u => userMap[u.discord_id] = u);
-      }
+      if (usersData) usersData.forEach(u => userMap[u.discord_id] = u);
 
-      // Fetch duty sessions
       let query = supabase.from('duty_sessions').select('*').eq('status', 'completed');
       let adjQuery = supabase.from('salary_adjustments').select('*');
+      let queueQuery = supabase.from('queue_manager_logs').select('*');
 
       if (startDate) {
-        const start = new Date(startDate);
-        start.setHours(0,0,0,0);
+        const start = new Date(startDate); start.setHours(0,0,0,0);
         query = query.gte('clock_in', start.toISOString());
         adjQuery = adjQuery.gte('created_at', start.toISOString());
+        queueQuery = queueQuery.gte('start_time', start.toISOString());
       }
+      
       if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23,59,59,999);
+        const end = new Date(endDate); end.setHours(23,59,59,999);
         query = query.lte('clock_in', end.toISOString());
         adjQuery = adjQuery.lte('created_at', end.toISOString());
+        queueQuery = queueQuery.lte('start_time', end.toISOString());
       }
 
-      const [sessionsRes, adjRes] = await Promise.all([query, adjQuery]);
+      const [sessionsRes, adjRes, queueRes] = await Promise.all([query, adjQuery, queueQuery]);
       const sessions = sessionsRes.data || [];
       const adjustments = adjRes.data || [];
+      const queueLogs = queueRes.data || [];
 
-      const userWork = {};
-      const userAdj = {};
-
-      adjustments.forEach(adj => {
-        if (!userAdj[adj.discord_id]) userAdj[adj.discord_id] = { bonus: 0, deduction: 0 };
-        if (adj.type === 'bonus') userAdj[adj.discord_id].bonus += Number(adj.amount);
-        if (adj.type === 'deduction') userAdj[adj.discord_id].deduction += Number(adj.amount);
+      // Calculate Queue Manager Bonus
+      const userQueueData = {};
+      queueLogs.forEach(log => {
+        if (!log.duration_minutes) return;
+        const d = new Date(log.start_time);
+        const dateStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(d);
+        if (!userQueueData[log.discord_id]) userQueueData[log.discord_id] = {};
+        if (!userQueueData[log.discord_id][dateStr]) userQueueData[log.discord_id][dateStr] = 0;
+        userQueueData[log.discord_id][dateStr] += log.duration_minutes;
       });
 
-      let tPayout = 0;
-      let tMins = 0;
+      const userBonusMinutes = {};
+      Object.keys(userQueueData).forEach(discordId => {
+        userBonusMinutes[discordId] = 0;
+        Object.keys(userQueueData[discordId]).forEach(dateStr => {
+          if (userQueueData[discordId][dateStr] >= 120) userBonusMinutes[discordId] += 120;
+        });
+      });
+
+      const userWorkData = {};
+      const userAdjData = {};
+      
+      adjustments.forEach(adj => {
+        if (!userAdjData[adj.discord_id]) userAdjData[adj.discord_id] = { bonus: 0, deduction: 0, storyMoney: 0 };
+        if (adj.type === 'bonus') {
+          if (adj.reason === 'เงินสตอรี่') {
+            userAdjData[adj.discord_id].storyMoney += Number(adj.amount);
+          } else {
+            userAdjData[adj.discord_id].bonus += Number(adj.amount);
+          }
+        }
+        if (adj.type === 'deduction') userAdjData[adj.discord_id].deduction += Number(adj.amount);
+      });
+      
+      let totalPayout = 0;
+      let totalMinutesGlobal = 0;
 
       sessions.forEach(session => {
-        if (!userWork[session.discord_id]) userWork[session.discord_id] = 0;
+        if (!userWorkData[session.discord_id]) userWorkData[session.discord_id] = { totalMinutes: 0, bonusDutyMinutes: 0 };
         const start = new Date(session.clock_in).getTime();
         const end = new Date(session.clock_out).getTime();
         const mins = Math.floor((end - start) / 60000) - (session.total_break_minutes || 0);
         if (mins > 0) {
-          userWork[session.discord_id] += mins;
-          tMins += mins;
+          userWorkData[session.discord_id].totalMinutes += mins;
+          totalMinutesGlobal += mins;
         }
       });
 
+      Object.keys(userBonusMinutes).forEach(discordId => {
+        const bonusMins = userBonusMinutes[discordId];
+        if (bonusMins > 0) {
+          if (!userWorkData[discordId]) userWorkData[discordId] = { totalMinutes: 0, bonusDutyMinutes: 0 };
+          userWorkData[discordId].totalMinutes += bonusMins;
+          userWorkData[discordId].bonusDutyMinutes = bonusMins;
+          totalMinutesGlobal += bonusMins;
+        }
+      });
+
+      const getOcRate = (position) => {
+        if (!position) return 0;
+        if (position.includes('ผอ') || position.includes('ผู้อำนวยการ')) return 25;
+        if (position.includes('รอง')) return 25;
+        if (position.includes('เลขา')) return 20;
+        if (position.includes('ชำนาญการ')) return 15;
+        if (position.includes('แพทย์')) return 10;
+        return 0;
+      };
+
       const finalData = [];
-      Object.keys(userWork).forEach(discordId => {
+      Object.keys(userWorkData).forEach(discordId => {
         const user = userMap[discordId];
         if (!user) return;
-        const tHours = userWork[discordId] / 60;
+
+        const tMins = userWorkData[discordId].totalMinutes;
+        const tHours = tMins / 60;
         const rate = ratesMap[user.position] || 0;
         const base = tHours * rate;
-        const adj = userAdj[discordId] || { bonus: 0, deduction: 0 };
-        const payout = Math.max(0, base + adj.bonus - adj.deduction);
-        tPayout += payout;
+        
+        let ocMoney = 0;
+        const floorHours = Math.floor(tHours);
+        if (floorHours >= 30) {
+          const ocRate = getOcRate(user.position);
+          ocMoney = (floorHours - 29) * ocRate;
+        }
+        
+        const adj = userAdjData[discordId] || { bonus: 0, deduction: 0, storyMoney: 0 };
+        const payout = Math.max(0, base + adj.bonus + adj.storyMoney + ocMoney - adj.deduction);
+        
+        totalPayout += payout;
         finalData.push({
           name: user.ic_name,
           position: user.position,
@@ -131,13 +186,15 @@ export default function SystemSettings({ profile }) {
           basePayout: base,
           bonus: adj.bonus,
           deduction: adj.deduction,
+          storyMoney: adj.storyMoney,
+          ocMoney: ocMoney,
           payout: payout
         });
       });
 
       finalData.sort((a,b) => b.payout - a.payout);
       setReportData(finalData);
-      setSummaryData({ totalPayout: tPayout, totalHours: tMins / 60 });
+      setSummaryData({ totalPayout: tPayout, totalHours: totalMinutesGlobal / 60 });
     } catch (err) {
       console.error(err);
     }
@@ -244,6 +301,22 @@ export default function SystemSettings({ profile }) {
     return `${hh} ชม. ${mm} นาที`;
   };
 
+  const filteredReportData = reportData.map(d => {
+    let categoryPayout = 0;
+    if (reportCategory === 'ic') {
+      categoryPayout = Math.max(0, d.basePayout + d.bonus - d.deduction);
+    } else if (reportCategory === 'oc') {
+      categoryPayout = d.ocMoney;
+    } else if (reportCategory === 'story') {
+      categoryPayout = d.storyMoney;
+    } else {
+      categoryPayout = d.payout;
+    }
+    return { ...d, categoryPayout };
+  }).filter(d => reportCategory === 'all' || d.categoryPayout > 0);
+  
+  const categoryTotalPayout = filteredReportData.reduce((sum, d) => sum + d.categoryPayout, 0);
+
   if (!profile || profile.role !== 'admin') return null;
 
   return (
@@ -289,6 +362,15 @@ export default function SystemSettings({ profile }) {
                       className="modal-input" dateFormat="dd/MM/yyyy"
                     />
                   </div>
+                  <div className="filter-group">
+                    <label style={{ marginRight: '0.5rem', fontWeight: 600 }}>หมวดหมู่:</label>
+                    <select className="modal-input" value={reportCategory} onChange={e => setReportCategory(e.target.value)} style={{ width: '180px', padding: '0.5rem' }}>
+                      <option value="all">รวมทุกหมวดหมู่ (All)</option>
+                      <option value="ic">หมวดเงินเดือน IC</option>
+                      <option value="oc">หมวดเงิน OC</option>
+                      <option value="story">หมวดเงินดูสตอรี่</option>
+                    </select>
+                  </div>
                   <button className="export-btn" onClick={handleDownloadPDF} disabled={isGenerating || reportData.length === 0}>
                     {isGenerating ? 'กำลังสร้าง PDF...' : <><Download size={20} /> ดาวน์โหลด PDF</>}
                   </button>
@@ -302,7 +384,12 @@ export default function SystemSettings({ profile }) {
                 <div className="pdf-preview-container">
                   <div className="pdf-document" ref={pdfRef}>
                     <div className="pdf-header">
-                      <h1 className="pdf-title">รายงานสรุปค่าตอบแทนบุคลากรทางการแพทย์</h1>
+                      <h1 className="pdf-title">
+                        {reportCategory === 'all' ? 'รายงานสรุปค่าตอบแทนบุคลากรทางการแพทย์' : 
+                         reportCategory === 'ic' ? 'รายงานสรุปหมวดเงินเดือน IC' :
+                         reportCategory === 'oc' ? 'รายงานสรุปหมวดเงิน OC' :
+                         'รายงานสรุปหมวดเงินดูสตอรี่'}
+                      </h1>
                       <p className="pdf-subtitle">
                         ประจำวันที่ {startDate.toLocaleDateString('th-TH')} ถึง {endDate.toLocaleDateString('th-TH')}
                       </p>
@@ -314,37 +401,57 @@ export default function SystemSettings({ profile }) {
                           <th>ลำดับ</th>
                           <th>ชื่อ-สกุล (IC)</th>
                           <th>ตำแหน่ง</th>
-                          <th>ชั่วโมงเข้าเวร</th>
-                          <th>โบนัส (+)/หัก (-)</th>
+                          {(reportCategory === 'all' || reportCategory === 'ic') && <th>ชั่วโมงเข้าเวร</th>}
+                          {reportCategory === 'all' && <th>รายการปรับปรุง (+/-)</th>}
+                          {reportCategory === 'ic' && <th>โบนัส (+)/หัก (-)</th>}
                           <th>ยอดสุทธิที่ต้องจ่าย</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {reportData.map((d, i) => (
+                        {filteredReportData.map((d, i) => (
                           <tr key={i}>
                             <td style={{textAlign: 'center'}}>{i + 1}</td>
                             <td>{d.name}</td>
                             <td>{d.position}</td>
-                            <td style={{textAlign: 'center'}}>{formatHours(d.hours)}</td>
-                            <td style={{textAlign: 'right'}}>
-                              {d.bonus > 0 ? `+${formatCurrency(d.bonus)}` : ''} 
-                              {d.deduction > 0 ? ` -${formatCurrency(d.deduction)}` : ''}
-                              {d.bonus === 0 && d.deduction === 0 ? '-' : ''}
-                            </td>
-                            <td style={{textAlign: 'right', fontWeight: 'bold'}}>{formatCurrency(d.payout)}</td>
+                            {(reportCategory === 'all' || reportCategory === 'ic') && (
+                              <td style={{textAlign: 'center'}}>{formatHours(d.hours)}</td>
+                            )}
+                            {reportCategory === 'all' && (
+                              <td style={{textAlign: 'right'}}>
+                                <div style={{display: 'flex', flexDirection: 'column', fontSize: '0.85rem'}}>
+                                  {d.bonus > 0 ? <span style={{color: '#059669'}}>+{formatCurrency(d.bonus)} (โบนัส)</span> : null} 
+                                  {d.deduction > 0 ? <span style={{color: '#e11d48'}}>-{formatCurrency(d.deduction)} (หัก)</span> : null}
+                                  {d.storyMoney > 0 ? <span style={{color: '#0284c7'}}>+{formatCurrency(d.storyMoney)} (สตอรี่)</span> : null}
+                                  {d.ocMoney > 0 ? <span style={{color: '#7c3aed'}}>+{formatCurrency(d.ocMoney)} (OC)</span> : null}
+                                  {d.bonus === 0 && d.deduction === 0 && d.storyMoney === 0 && d.ocMoney === 0 ? '-' : null}
+                                </div>
+                              </td>
+                            )}
+                            {reportCategory === 'ic' && (
+                              <td style={{textAlign: 'right'}}>
+                                <div style={{display: 'flex', flexDirection: 'column', fontSize: '0.85rem'}}>
+                                  {d.bonus > 0 ? <span style={{color: '#059669'}}>+{formatCurrency(d.bonus)}</span> : null} 
+                                  {d.deduction > 0 ? <span style={{color: '#e11d48'}}>-{formatCurrency(d.deduction)}</span> : null}
+                                  {d.bonus === 0 && d.deduction === 0 ? '-' : null}
+                                </div>
+                              </td>
+                            )}
+                            <td style={{textAlign: 'right', fontWeight: 'bold'}}>{formatCurrency(d.categoryPayout)}</td>
                           </tr>
                         ))}
-                        {reportData.length === 0 && (
+                        {filteredReportData.length === 0 && (
                           <tr><td colSpan="6" style={{textAlign: 'center', padding: '2rem'}}>ไม่มีข้อมูลในช่วงเวลานี้</td></tr>
                         )}
                       </tbody>
                     </table>
 
-                    {reportData.length > 0 && (
+                    {filteredReportData.length > 0 && (
                       <div className="pdf-summary">
-                        <p>จำนวนบุคลากรทั้งหมด: <strong>{reportData.length} คน</strong></p>
-                        <p>ชั่วโมงการทำงานรวม: <strong>{Math.floor(summaryData.totalHours)} ชั่วโมง</strong></p>
-                        <p style={{fontSize: '18px'}}>ยอดรวมที่ต้องชำระทั้งสิ้น: <strong>{formatCurrency(summaryData.totalPayout)}</strong></p>
+                        <p>จำนวนบุคลากรทั้งหมด: <strong>{filteredReportData.length} คน</strong></p>
+                        {(reportCategory === 'all' || reportCategory === 'ic') && (
+                          <p>ชั่วโมงการทำงานรวม: <strong>{Math.floor(summaryData.totalHours)} ชั่วโมง</strong></p>
+                        )}
+                        <p style={{fontSize: '18px'}}>ยอดรวมที่ต้องชำระทั้งสิ้น: <strong>{formatCurrency(categoryTotalPayout)}</strong></p>
                       </div>
                     )}
                   </div>
