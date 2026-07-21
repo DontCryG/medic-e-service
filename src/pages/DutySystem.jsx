@@ -8,7 +8,8 @@ export default function DutySystem({ profile }) {
   const [liveUsers, setLiveUsers] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterDate, setFilterDate] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   
   // Timer state
   const [dutyTime, setDutyTime] = useState(0);
@@ -36,7 +37,7 @@ export default function DutySystem({ profile }) {
         supabase.removeChannel(subscription);
       };
     }
-  }, [profile, filterDate]);
+  }, [profile, startDate, endDate]);
 
   // Timer effect
   useEffect(() => {
@@ -117,16 +118,16 @@ export default function DutySystem({ profile }) {
         .order('clock_in', { ascending: false })
         .limit(20);
 
-      if (filterDate) {
-        // Simple date filter
-        const startOfDay = new Date(filterDate);
-        startOfDay.setHours(0,0,0,0);
-        const endOfDay = new Date(filterDate);
-        endOfDay.setHours(23,59,59,999);
-        
-        query = query
-          .gte('clock_in', startOfDay.toISOString())
-          .lte('clock_in', endOfDay.toISOString());
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0,0,0,0);
+        query = query.gte('clock_in', start.toISOString());
+      }
+      
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23,59,59,999);
+        query = query.lte('clock_in', end.toISOString());
       }
 
       const { data, error } = await query;
@@ -344,14 +345,26 @@ export default function DutySystem({ profile }) {
         <div className="duty-card">
           <div className="duty-card-header">
             <h3 className="duty-card-title"><Clock size={22} color="#7c3aed" /> ประวัติการเข้าเวรของคุณ</h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               <Filter size={18} color="var(--text-secondary)" />
-              <input 
-                type="date" 
-                className="filter-input" 
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>ตั้งแต่:</span>
+                <input 
+                  type="date" 
+                  className="filter-input" 
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>ถึง:</span>
+                <input 
+                  type="date" 
+                  className="filter-input" 
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
             </div>
           </div>
           <div style={{ overflowX: 'auto' }}>
