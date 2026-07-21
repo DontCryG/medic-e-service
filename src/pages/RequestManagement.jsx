@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { UserCog, Clock, CheckCircle, XCircle, CalendarDays, LogOut } from 'lucide-react';
+import { UserCog, Clock, CheckCircle, XCircle, CalendarDays, LogOut, Umbrella } from 'lucide-react';
 import './RequestManagement.css';
 
 export default function RequestManagement({ profile }) {
@@ -86,7 +86,7 @@ export default function RequestManagement({ profile }) {
       try {
         await supabase.from('notifications').insert([{
           discord_id: discordId,
-          title: `คำร้อง${requestType === 'leave' ? 'ลางาน' : 'ลาออก'}ถูก${newStatus === 'approved' ? 'อนุมัติ' : 'ปฏิเสธ'}`,
+          title: `คำร้อง${requestType === 'leave' ? 'ลางาน' : requestType === 'vacation' ? 'ลาพักร้อน' : 'ลาออก'}ถูก${newStatus === 'approved' ? 'อนุมัติ' : 'ปฏิเสธ'}`,
           message: `คำร้องของคุณได้รับการตรวจสอบและ${newStatus === 'approved' ? 'อนุมัติเรียบร้อยแล้ว' : 'ถูกปฏิเสธ'}`
         }]);
       } catch (notifError) {
@@ -178,12 +178,12 @@ export default function RequestManagement({ profile }) {
                       </td>
                       <td>
                         <span className={`req-type-badge ${req.request_type}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                          {req.request_type === 'leave' ? <CalendarDays size={14} /> : <LogOut size={14} />}
-                          {req.request_type === 'leave' ? 'ลางาน' : 'ลาออก'}
+                          {req.request_type === 'leave' ? <CalendarDays size={14} /> : req.request_type === 'vacation' ? <Umbrella size={14} /> : <LogOut size={14} />}
+                          {req.request_type === 'leave' ? 'ลางาน' : req.request_type === 'vacation' ? 'ลาพักร้อน' : 'ลาออก'}
                         </span>
                       </td>
                       <td style={{ maxWidth: '250px' }}>
-                        {req.request_type === 'leave' ? (
+                        {req.request_type === 'leave' || req.request_type === 'vacation' ? (
                           <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.25rem', fontWeight: 600 }}>
                             {formatDateString(req.start_date)} - {formatDateString(req.end_date)}
                           </div>

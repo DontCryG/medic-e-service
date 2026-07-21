@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { CalendarDays, LogOut, Send, History, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { CalendarDays, LogOut, Send, History, CheckCircle, XCircle, Clock, Umbrella, AlertCircle } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './LeaveSystem.css';
@@ -18,6 +18,20 @@ export default function LeaveSystem({ profile }) {
   // Resign Form
   const [resignReason, setResignReason] = useState('');
   const [resignDate, setResignDate] = useState(null);
+
+  // Vacation Form & Logic
+  const [vacationStartDate, setVacationStartDate] = useState(null);
+  const [vacationEndDate, setVacationEndDate] = useState(null);
+  const [workingDays, setWorkingDays] = useState(0);
+  const [hasTakenVacation, setHasTakenVacation] = useState(false);
+  const isDoctorOrAbove = profile?.position && (
+    profile.position.includes('แพทย์') || 
+    profile.position.includes('ชำนาญการ') || 
+    profile.position.includes('เลขา') || 
+    profile.position.includes('รอง') || 
+    profile.position.includes('ผอ') || 
+    profile.position.includes('ผู้อำนวยการ')
+  ) && !profile.position.includes('นักศึกษา') && !profile.position.includes('นศพ');
 
   useEffect(() => {
     if (profile) {
@@ -47,11 +61,26 @@ export default function LeaveSystem({ profile }) {
         .from('leave_requests')
         .select('*')
         .eq('discord_id', profile.discord_id)
-        .order('created_at', { ascending: false })
-        .limit(20);
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setHistory(data || []);
+      
+      const allHistory = data || [];
+      setHistory(allHistory.slice(0, 20));
+      
+      const vacationTaken = allHistory.some(req => req.request_type === 'vacation' && req.status !== 'rejected');
+      setHasTakenVacation(vacationTaken);
+
+      const { data: dutyData } = await supabase
+        .from('duty_sessions')
+        .select('clock_in')
+        .eq('discord_id', profile.discord_id)
+        .not('clock_in', 'is', null);
+        
+      if (dutyData) {
+        const uniqueDates = new Set(dutyData.map(d => new Date(d.clock_in).toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' })));
+        setWorkingDays(uniqueDates.size);
+      }
     } catch (err) {
       console.error('Error fetching history:', err);
     }
@@ -82,6 +111,48 @@ export default function LeaveSystem({ profile }) {
       setEndDate(null);
       setLeaveReason('');
       alert('ส่งคำร้องขอลางานสำเร็จ');
+    } catch (err) {
+      alert('เกิดข้อผิดพลาด: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVacationSubmit = async (e) => {
+    e.preventDefault();
+    if (!vacationStartDate || !vacationEndDate) {
+      alert('กรุณากรอกข้อมูลวันที่เริ่มลาและถึงวันที่ให้ครบถ้วน');
+      return;
+    }
+    
+    if (workingDays < 30) {
+      alert('ไม่สามารถลาพักร้อนได้เนื่องจากคุณยังทำงานไม่ครบ 30 วัน');
+      return;
+    }
+    
+    if (hasTakenVacation) {
+      alert('คุณได้ใช้สิทธิ์ลาพักร้อนไปแล้ว');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('leave_requests')
+        .insert([{
+          discord_id: profile.discord_id,
+          request_type: 'vacation',
+          start_date: vacationStartDate.toISOString(),
+          end_date: vacationEndDate.toISOString(),
+          reason: 'ขอใช้สิทธิ์ลาพักร้อนประจำปี'
+        }]);
+
+      if (error) throw error;
+      
+      setVacationStartDate(null);
+      setVacationEndDate(null);
+      alert('ส่งคำร้องขอลาพักร้อนสำเร็จ');
+      fetchHistory();
     } catch (err) {
       alert('เกิดข้อผิดพลาด: ' + err.message);
     } finally {
@@ -155,6 +226,12 @@ export default function LeaveSystem({ profile }) {
           <CalendarDays size={18} /> ลางาน
         </button>
         <button 
+          className={`leave-tab-btn ${mode === 'vacation' ? 'active vacation' : ''}`}
+          onClick={() => setMode('vacation')}
+        >
+          <Umbrella size={18} /> ลาพักร้อน
+        </button>
+        <button 
           className={`leave-tab-btn ${mode === 'resign' ? 'active resign' : ''}`}
           onClick={() => setMode('resign')}
         >
@@ -217,6 +294,86 @@ export default function LeaveSystem({ profile }) {
                 </button>
               </form>
             </>
+          ) : mode === 'vacation' ? (
+            <>
+              <h2 className="leave-card-title vacation-mode"><Umbrella size={28} /> ฟอร์มขอลาพักร้อน</h2>
+              
+              {!isDoctorOrAbove ? (
+                <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', padding: '1.25rem', borderRadius: '12px', marginBottom: '1.5rem', color: '#991b1b', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <AlertCircle size={32} />
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>ไม่สามารถใช้สิทธิ์ได้</h3>
+                    <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem' }}>คุณต้องอยู่ในตำแหน่ง "แพทย์" หรือสูงกว่า จึงจะมีสิทธิ์ลาพักร้อนได้</p>
+                  </div>
+                </div>
+              ) : hasTakenVacation ? (
+                <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', padding: '1.25rem', borderRadius: '12px', marginBottom: '1.5rem', color: '#991b1b', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <AlertCircle size={32} />
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>สิทธิ์ถูกใช้ไปแล้ว</h3>
+                    <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem' }}>คุณได้ทำการใช้สิทธิ์ลาพักร้อน (1 ครั้ง) ไปแล้ว</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ backgroundColor: workingDays >= 30 ? '#ecfdf5' : '#fffbeb', border: `1px solid ${workingDays >= 30 ? '#a7f3d0' : '#fde68a'}`, padding: '1.25rem', borderRadius: '12px', marginBottom: '1.5rem', color: workingDays >= 30 ? '#065f46' : '#92400e' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                      <strong style={{ fontSize: '1.05rem' }}>สิทธิ์ลาพักร้อนประจำปี</strong>
+                      <span style={{ fontWeight: 600 }}>{workingDays}/30 วัน</span>
+                    </div>
+                    <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: `${Math.min(100, (workingDays / 30) * 100)}%`, height: '100%', background: workingDays >= 30 ? '#10b981' : '#f59e0b', transition: 'width 0.5s ease' }}></div>
+                    </div>
+                    {workingDays < 30 ? (
+                      <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem' }}>*คุณต้องตอกบัตรเข้าเวรอีก {30 - workingDays} วัน เพื่อปลดล็อคสิทธิ์ลาพักร้อน (สิทธิ์สามารถใช้ได้ 1 ครั้ง)</p>
+                    ) : (
+                      <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem' }}>*คุณมีสิทธิ์สามารถลาพักร้อนได้แล้ว! (สิทธิ์สามารถใช้ได้ 1 ครั้ง)</p>
+                    )}
+                  </div>
+                  
+                  <form onSubmit={handleVacationSubmit}>
+                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+                      <div style={{ flex: 1 }}>
+                        <label className="form-label">วันที่เริ่มลาพักร้อน</label>
+                        <DatePicker 
+                          selected={vacationStartDate} 
+                          onChange={(date) => setVacationStartDate(date)} 
+                          selectsStart
+                          startDate={vacationStartDate}
+                          endDate={vacationEndDate}
+                          minDate={new Date()}
+                          placeholderText="ระบุวันที่"
+                          className="form-input"
+                          dateFormat="dd/MM/yyyy"
+                          required
+                          disabled={workingDays < 30}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label className="form-label">ถึงวันที่</label>
+                        <DatePicker 
+                          selected={vacationEndDate} 
+                          onChange={(date) => setVacationEndDate(date)} 
+                          selectsEnd
+                          startDate={vacationStartDate}
+                          endDate={vacationEndDate}
+                          minDate={vacationStartDate || new Date()}
+                          placeholderText="ระบุวันที่"
+                          className="form-input"
+                          dateFormat="dd/MM/yyyy"
+                          required
+                          disabled={workingDays < 30}
+                        />
+                      </div>
+                    </div>
+                    
+                    <button type="submit" className="submit-btn vacation-btn" disabled={loading || workingDays < 30}>
+                      <Umbrella size={20} /> ส่งคำร้องขอลาพักร้อน
+                    </button>
+                  </form>
+                </>
+              )}
+            </>
           ) : (
             <>
               <h2 className="leave-card-title resign-mode"><LogOut size={28} /> ฟอร์มขอลาออก</h2>
@@ -273,13 +430,13 @@ export default function LeaveSystem({ profile }) {
                 {history.length > 0 ? history.map(req => (
                   <tr key={req.id}>
                     <td>
-                      <span className={`req-type-badge ${req.request_type}`}>
-                        {req.request_type === 'leave' ? 'ลางาน' : 'ลาออก'}
-                      </span>
+                      <h4 style={{ margin: 0, fontSize: '1rem', color: '#1e293b' }}>
+                        {req.request_type === 'resign' ? 'ขอลาออก' : req.request_type === 'vacation' ? 'ลาพักร้อน' : 'ขอลางาน'}
+                      </h4>
                     </td>
                     <td>{formatDateString(req.created_at)}</td>
                     <td style={{ maxWidth: '200px' }}>
-                      {req.request_type === 'leave' ? (
+                      {req.request_type === 'leave' || req.request_type === 'vacation' ? (
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
                           {formatDateString(req.start_date)} - {formatDateString(req.end_date)}
                         </div>

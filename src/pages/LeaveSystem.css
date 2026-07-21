@@ -40,6 +40,12 @@
   box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);
 }
 
+.leave-tab-btn.active.vacation {
+  background: #10b981;
+  color: white;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
+}
+
 .leave-tab-btn.active.resign {
   background: #ef4444;
   color: white;
@@ -73,6 +79,7 @@
 }
 
 .leave-card-title.leave-mode { color: #7c3aed; }
+.leave-card-title.vacation-mode { color: #10b981; }
 .leave-card-title.resign-mode { color: #ef4444; }
 
 .form-group {
@@ -129,16 +136,24 @@
 }
 
 .submit-btn.leave-btn {
-  background: #7c3aed;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
 }
-.submit-btn.leave-btn:hover:not(:disabled) {
-  background: #6d28d9;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+.submit-btn.leave-btn:hover {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+}
+
+.submit-btn.vacation-btn {
+  background: linear-gradient(135deg, #34d399, #10b981);
+}
+.submit-btn.vacation-btn:hover {
+  background: linear-gradient(135deg, #10b981, #059669);
 }
 
 .submit-btn.resign-btn {
-  background: #ef4444;
+  background: linear-gradient(135deg, #f87171, #ef4444);
+}
+.submit-btn.resign-btn:hover {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 .submit-btn.resign-btn:hover:not(:disabled) {
   background: #dc2626;
@@ -188,6 +203,11 @@
 .req-type-badge.resign {
   background: #fee2e2;
   color: #ef4444;
+}
+
+.req-type-badge.vacation {
+  background: #d1fae5;
+  color: #10b981;
 }
 
 .status-indicator {
