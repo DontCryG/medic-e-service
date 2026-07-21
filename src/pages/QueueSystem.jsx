@@ -611,10 +611,10 @@ export default function QueueSystem({ profile }) {
               <button className="close-btn" onClick={() => setShowHistory(false)}><X size={24} /></button>
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-              <button className="history-btn" onClick={() => setShowCaseHistory(true)} style={{ backgroundColor: '#457b9d' }}>
+              <button className="history-btn" onClick={() => { setShowHistory(false); setShowCaseHistory(true); }} style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', color: '#1e293b' }}>
                 <History size={18} /> ประวัติรันคิวเคส
               </button>
-              <button className="history-btn" onClick={() => setShowHistory(true)}>
+              <button className="history-btn" onClick={() => {}} style={{ backgroundColor: '#457b9d', color: 'white', border: 'none' }}>
                 <History size={18} /> ประวัติหมอรันคิว
               </button>
             </div>
@@ -691,6 +691,15 @@ export default function QueueSystem({ profile }) {
             <div className="modal-header">
               <h2><History size={24} color="#457b9d" style={{ marginRight: '8px' }} /> ประวัติรันคิวเคส (สตอรี่)</h2>
               <button className="close-btn" onClick={() => setShowCaseHistory(false)}><X size={24} /></button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+              <button className="history-btn" onClick={() => {}} style={{ backgroundColor: '#457b9d', color: 'white', border: 'none' }}>
+                <History size={18} /> ประวัติรันคิวเคส
+              </button>
+              <button className="history-btn" onClick={() => { setShowCaseHistory(false); setShowHistory(true); }} style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', color: '#1e293b' }}>
+                <History size={18} /> ประวัติหมอรันคิว
+              </button>
             </div>
             
             <div className="history-filters">
