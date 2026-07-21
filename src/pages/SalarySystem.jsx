@@ -217,6 +217,7 @@ export default function SalarySystem({ profile }) {
         if (position.includes('รอง')) return 25;
         if (position.includes('เลขา')) return 20;
         if (position.includes('ชำนาญการ')) return 15;
+        if (position.includes('นักเรียนแพทย์')) return 0;
         if (position.includes('แพทย์')) return 10;
         return 0;
       };
