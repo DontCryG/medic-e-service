@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { Play, Pause, Square, Clock, Users, Activity, Filter, RefreshCw } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import './DutySystem.css';
 
 export default function DutySystem({ profile }) {
@@ -8,8 +10,8 @@ export default function DutySystem({ profile }) {
   const [liveUsers, setLiveUsers] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   
   // Timer state
   const [dutyTime, setDutyTime] = useState(0);
@@ -349,20 +351,29 @@ export default function DutySystem({ profile }) {
               <Filter size={18} color="var(--text-secondary)" />
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>ตั้งแต่:</span>
-                <input 
-                  type="date" 
-                  className="filter-input" 
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                <DatePicker 
+                  selected={startDate} 
+                  onChange={(date) => setStartDate(date)} 
+                  selectsStart
+                  startDate={startDate}
+                  endDate={endDate}
+                  placeholderText="วว/ดด/ปปปป"
+                  className="filter-input date-picker-custom"
+                  dateFormat="dd/MM/yyyy"
                 />
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>ถึง:</span>
-                <input 
-                  type="date" 
-                  className="filter-input" 
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                <DatePicker 
+                  selected={endDate} 
+                  onChange={(date) => setEndDate(date)} 
+                  selectsEnd
+                  startDate={startDate}
+                  endDate={endDate}
+                  minDate={startDate}
+                  placeholderText="วว/ดด/ปปปป"
+                  className="filter-input date-picker-custom"
+                  dateFormat="dd/MM/yyyy"
                 />
               </div>
             </div>
