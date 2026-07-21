@@ -17,6 +17,7 @@ export default function LeaveSystem({ profile }) {
   
   // Resign Form
   const [resignReason, setResignReason] = useState('');
+  const [resignDate, setResignDate] = useState(null);
 
   useEffect(() => {
     if (profile) {
@@ -90,8 +91,8 @@ export default function LeaveSystem({ profile }) {
 
   const handleResignSubmit = async (e) => {
     e.preventDefault();
-    if (!resignReason) {
-      alert('กรุณาระบุเหตุผลการลาออก');
+    if (!resignReason || !resignDate) {
+      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
 
@@ -106,12 +107,14 @@ export default function LeaveSystem({ profile }) {
         .insert([{
           discord_id: profile.discord_id,
           request_type: 'resign',
+          start_date: resignDate.toISOString(),
           reason: resignReason
         }]);
 
       if (error) throw error;
       
       setResignReason('');
+      setResignDate(null);
       alert('ส่งคำร้องขอลาออกสำเร็จ กรุณารอแอดมินดำเนินการ');
     } catch (err) {
       alert('เกิดข้อผิดพลาด: ' + err.message);
@@ -222,6 +225,18 @@ export default function LeaveSystem({ profile }) {
               </div>
               <form onSubmit={handleResignSubmit}>
                 <div className="form-group">
+                  <label className="form-label">วันทำงานวันสุดท้าย</label>
+                  <DatePicker 
+                    selected={resignDate} 
+                    onChange={(date) => setResignDate(date)} 
+                    placeholderText="ระบุวันที่"
+                    className="form-input"
+                    dateFormat="dd/MM/yyyy"
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
                   <label className="form-label">เหตุผลการลาออก</label>
                   <textarea 
                     className="form-textarea"
@@ -268,7 +283,13 @@ export default function LeaveSystem({ profile }) {
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
                           {formatDateString(req.start_date)} - {formatDateString(req.end_date)}
                         </div>
-                      ) : null}
+                      ) : (
+                        req.start_date && (
+                          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+                            วันสุดท้าย: {formatDateString(req.start_date)}
+                          </div>
+                        )
+                      )}
                       <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={req.reason}>
                         {req.reason}
                       </div>
