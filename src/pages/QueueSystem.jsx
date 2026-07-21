@@ -375,7 +375,7 @@ export default function QueueSystem({ profile }) {
                       <td className="col-name">
                         <div style={{ 
                           fontWeight: 600,
-                          color: queueState === 'story' ? '#e63946' : 'inherit'
+                          color: queueState === 'story' ? '#e63946' : queueState === 'unavailable' ? '#2563eb' : 'inherit'
                         }}>
                           {user.users?.ic_name} {isMe && <span className="badge-me">(คุณ)</span>}
                         </div>
