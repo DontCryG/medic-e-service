@@ -42,6 +42,13 @@ export default function Dashboard() {
   const [searchResults, setSearchResults] = useState([]);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [announcement, setAnnouncement] = useState(null);
+  
+  // Notifications State
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: 1, title: 'ยินดีต้อนรับเข้าสู่ระบบ', desc: 'ระบบ MEDIC E-SERVICE เปิดให้ใช้งานอย่างเป็นทางการแล้ว', time: '1 นาทีที่แล้ว', unread: true },
+    { id: 2, title: 'อัปเดตระบบใหม่', desc: 'เพิ่มฟีเจอร์การลางานและคำนวณเงินเดือนเรียบร้อยแล้ว', time: '2 ชม. ที่แล้ว', unread: false }
+  ]);
 
   const menuItems = [
     { id: 'dashboard', label: 'กระดานหลัก' },
@@ -385,10 +392,87 @@ export default function Dashboard() {
           </div>
 
           <div className="header-actions">
-            <button className="icon-btn">
-              <Bell size={22} />
-              <span className="icon-badge"></span>
-            </button>
+            
+            {/* Notification Bell */}
+            <div style={{ position: 'relative' }}>
+              <button 
+                className="icon-btn" 
+                onClick={() => setIsNotifOpen(!isNotifOpen)}
+              >
+                <Bell size={22} />
+                {notifications.filter(n => n.unread).length > 0 && (
+                  <span className="icon-badge"></span>
+                )}
+              </button>
+
+              {/* Notifications Dropdown */}
+              {isNotifOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: '120%',
+                  right: 0,
+                  width: '320px',
+                  background: 'white',
+                  borderRadius: '16px',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                  border: '1px solid var(--border-color)',
+                  zIndex: 100,
+                  overflow: 'hidden',
+                  animation: 'slideUp 0.2s ease-out'
+                }}>
+                  <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>การแจ้งเตือน</h3>
+                    {notifications.filter(n => n.unread).length > 0 && (
+                      <span style={{ background: '#ef4444', color: 'white', fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
+                        {notifications.filter(n => n.unread).length} ใหม่
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                    {notifications.length > 0 ? notifications.map(notif => (
+                      <div key={notif.id} style={{ 
+                        padding: '1rem', 
+                        borderBottom: '1px solid var(--border-color)',
+                        background: notif.unread ? '#f8fafc' : 'white',
+                        display: 'flex',
+                        gap: '1rem',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                      onMouseOut={(e) => e.currentTarget.style.background = notif.unread ? '#f8fafc' : 'white'}
+                      onClick={() => {
+                        setNotifications(notifications.map(n => n.id === notif.id ? { ...n, unread: false } : n))
+                      }}
+                      >
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: notif.unread ? '#3b82f6' : 'transparent', marginTop: '6px', flexShrink: 0 }}></div>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>{notif.title}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', lineHeight: 1.4 }}>{notif.desc}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{notif.time}</div>
+                        </div>
+                      </div>
+                    )) : (
+                      <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                        ไม่มีการแจ้งเตือนใหม่
+                      </div>
+                    )}
+                  </div>
+                  
+                  {notifications.length > 0 && (
+                    <div 
+                      style={{ padding: '0.75rem', textAlign: 'center', borderTop: '1px solid var(--border-color)', color: 'var(--primary)', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer' }}
+                      onClick={() => setNotifications(notifications.map(n => ({...n, unread: false})))}
+                      onMouseOver={(e) => e.currentTarget.style.background = '#f8fafc'}
+                      onMouseOut={(e) => e.currentTarget.style.background = 'white'}
+                    >
+                      อ่านทั้งหมด
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             
             <div className="user-profile">
               <div className="user-info">
