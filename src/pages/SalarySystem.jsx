@@ -236,23 +236,35 @@ export default function SalarySystem({ profile }) {
 
   const handleAddAdjustment = async () => {
     if (!adjAmount || isNaN(adjAmount) || Number(adjAmount) <= 0) {
-      alert('กรุณากรอกจำนวนเงินให้ถูกต้อง');
+      alert('กรุณากรอกตัวเลขให้ถูกต้อง');
       return;
     }
+    
+    let finalType = adjType;
+    let finalAmount = Number(adjAmount);
+    let finalReason = adjReason || '-';
+
+    if (adjType === 'story') {
+      finalType = 'bonus';
+      finalAmount = Number(adjAmount) * 250000;
+      finalReason = `ค่าดูสตอรี่ ${adjAmount} ครั้ง ${adjReason ? `(${adjReason})` : ''}`;
+    }
+
     setSavingAdj(true);
     try {
       const { error } = await supabase
         .from('salary_adjustments')
         .insert([{
           discord_id: adjModalUser.discord_id,
-          type: adjType,
-          amount: Number(adjAmount),
-          reason: adjReason || '-'
+          type: finalType,
+          amount: finalAmount,
+          reason: finalReason
         }]);
       if (error) throw error;
       
       setAdjAmount('');
       setAdjReason('');
+      setAdjType('bonus'); // reset
       await loadUserAdjustments(adjModalUser.discord_id);
       fetchRatesAndData(); // Refresh main table
     } catch (err) {
@@ -502,18 +514,22 @@ export default function SalarySystem({ profile }) {
             <div className="adj-form">
               <div className="modal-form-group">
                 <label>ประเภทรายการ</label>
-                <select className="modal-select" value={adjType} onChange={e => setAdjType(e.target.value)}>
+                <select className="modal-select" value={adjType} onChange={e => {
+                  setAdjType(e.target.value);
+                  setAdjAmount(''); // Reset input when changing type
+                }}>
                   <option value="bonus">บวกโบนัส (+)</option>
                   <option value="deduction">หักเงิน (-)</option>
+                  <option value="story">บวกค่าดูสตอรี่ (ครั้งละ 250,000)</option>
                 </select>
               </div>
               <div className="modal-form-group">
-                <label>จำนวนเงิน (บาท)</label>
+                <label>{adjType === 'story' ? 'จำนวนครั้ง (ครั้ง)' : 'จำนวนเงิน (บาท)'}</label>
                 <input type="number" className="modal-input" placeholder="0" value={adjAmount} onChange={e => setAdjAmount(e.target.value)} />
               </div>
               <div className="modal-form-group adj-form-full">
                 <label>สาเหตุ / หมายเหตุ (ถ้ามี)</label>
-                <input type="text" className="modal-input" placeholder="เช่น ทำงานดีเยี่ยม, มาสาย" value={adjReason} onChange={e => setAdjReason(e.target.value)} />
+                <input type="text" className="modal-input" placeholder={adjType === 'story' ? "เว้นว่างได้ หรือระบุรายละเอียดเพิ่ม" : "เช่น ทำงานดีเยี่ยม, มาสาย"} value={adjReason} onChange={e => setAdjReason(e.target.value)} />
               </div>
               <div className="adj-form-full">
                 <button className="adj-add-btn" onClick={handleAddAdjustment} disabled={savingAdj}>
