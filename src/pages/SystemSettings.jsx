@@ -606,32 +606,29 @@ export default function SystemSettings({ profile }) {
               <div className="animate-fade-in" style={{ maxWidth: '600px' }}>
                 <p style={{ color: '#64748b', marginBottom: '2rem' }}>เพิ่มหรือลบรายชื่อสังกัดที่ต้องการให้มีในระบบ</p>
                 
-                <div className="position-add-card">
-                  <h4 style={{ margin: '0 0 1rem 0', color: '#1e293b' }}>เพิ่มสังกัดใหม่</h4>
-                  <div style={{ display: 'flex', gap: '1rem' }}>
-                    <input 
-                      type="text" 
-                      className="modal-input" 
-                      placeholder="ชื่อสังกัด (เช่น กาชาด)" 
-                      value={newAgencyName} 
-                      onChange={e => setNewAgencyName(e.target.value)} 
-                      style={{ flex: 1 }}
-                    />
-                    <button className="add-btn" onClick={handleAddAgency}>
-                      <PlusCircle size={18} /> เพิ่ม
-                    </button>
-                  </div>
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+                  <input 
+                    type="text" 
+                    className="modal-input" 
+                    placeholder="ชื่อสังกัด (เช่น กาชาด)" 
+                    value={newAgencyName} 
+                    onChange={e => setNewAgencyName(e.target.value)} 
+                    style={{ flex: 1 }}
+                  />
+                  <button className="export-btn" style={{ padding: '0.75rem 1.5rem', borderRadius: '12px' }} onClick={handleAddAgency}>
+                    <PlusCircle size={18} /> เพิ่ม
+                  </button>
                 </div>
 
-                <div className="positions-list">
+                <div className="position-list">
                   <h4 style={{ margin: '0 0 1rem 0', color: '#1e293b' }}>รายชื่อสังกัดทั้งหมด ({agencies.length})</h4>
                   {agencies.map((agency, idx) => (
                     <div key={idx} className="position-item">
                       <div>
-                        <strong>{agency}</strong>
+                        <div className="position-name">{agency}</div>
                       </div>
-                      <button className="action-btn delete" onClick={() => handleDeleteAgency(agency)} title="ลบ">
-                        <Trash2 size={16} />
+                      <button className="delete-adj-btn" onClick={() => handleDeleteAgency(agency)} title="ลบ">
+                        <Trash2 size={18} />
                       </button>
                     </div>
                   ))}
