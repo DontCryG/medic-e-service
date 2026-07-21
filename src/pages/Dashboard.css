@@ -12,7 +12,6 @@
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  padding: 1.5rem;
   box-shadow: 2px 0 10px rgba(0,0,0,0.02);
   z-index: 10;
 }
@@ -21,8 +20,8 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 2.5rem;
-  padding-bottom: 1.5rem;
+  height: 80px;
+  padding: 0 1.5rem;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -44,6 +43,7 @@
   flex-direction: column;
   gap: 0.5rem;
   flex: 1;
+  padding: 1.5rem;
 }
 
 .nav-item {
