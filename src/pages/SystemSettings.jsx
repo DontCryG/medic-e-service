@@ -113,15 +113,20 @@ export default function SystemSettings({ profile }) {
       const userAdjData = {};
       
       adjustments.forEach(adj => {
-        if (!userAdjData[adj.discord_id]) userAdjData[adj.discord_id] = { bonus: 0, deduction: 0, storyMoney: 0 };
+        if (!userAdjData[adj.discord_id]) {
+          userAdjData[adj.discord_id] = { bonus: 0, deduction: 0, storyMoney: 0, gacha_ic: 0, gacha_promote: 0, coin_agency: 0 };
+        }
         if (adj.type === 'bonus') {
-          if (adj.reason === 'เงินสตอรี่') {
+          if (adj.reason === 'ดูสตอรี่') {
             userAdjData[adj.discord_id].storyMoney += Number(adj.amount);
           } else {
             userAdjData[adj.discord_id].bonus += Number(adj.amount);
           }
         }
         if (adj.type === 'deduction') userAdjData[adj.discord_id].deduction += Number(adj.amount);
+        if (adj.type === 'gacha_ic') userAdjData[adj.discord_id].gacha_ic += Number(adj.amount);
+        if (adj.type === 'gacha_promote') userAdjData[adj.discord_id].gacha_promote += Number(adj.amount);
+        if (adj.type === 'coin_agency') userAdjData[adj.discord_id].coin_agency += Number(adj.amount);
       });
       
       let totalPayout = 0;
@@ -175,18 +180,23 @@ export default function SystemSettings({ profile }) {
           ocMoney = (floorHours - 29) * ocRate;
         }
         
-        const adj = userAdjData[discordId] || { bonus: 0, deduction: 0, storyMoney: 0 };
+        const adj = userAdjData[discordId] || { bonus: 0, deduction: 0, storyMoney: 0, gacha_ic: 0, gacha_promote: 0, coin_agency: 0 };
         const payout = Math.max(0, base + adj.bonus + adj.storyMoney + ocMoney - adj.deduction);
         
         totalPayout += payout;
         finalData.push({
+          discord_id: discordId,
           name: user.ic_name,
           position: user.position,
           hours: tHours,
+          bonusDutyMinutes: userWorkData[discordId].bonusDutyMinutes || 0,
           basePayout: base,
           bonus: adj.bonus,
           deduction: adj.deduction,
           storyMoney: adj.storyMoney,
+          gacha_ic: adj.gacha_ic,
+          gacha_promote: adj.gacha_promote,
+          coin_agency: adj.coin_agency,
           ocMoney: ocMoney,
           payout: payout
         });
@@ -194,7 +204,7 @@ export default function SystemSettings({ profile }) {
 
       finalData.sort((a,b) => b.payout - a.payout);
       setReportData(finalData);
-      setSummaryData({ totalPayout: tPayout, totalHours: totalMinutesGlobal / 60 });
+      setSummaryData({ totalPayout: totalPayout, totalHours: totalMinutesGlobal / 60 });
     } catch (err) {
       console.error(err);
     }
@@ -304,11 +314,13 @@ export default function SystemSettings({ profile }) {
   const filteredReportData = reportData.map(d => {
     let categoryPayout = 0;
     if (reportCategory === 'ic') {
-      categoryPayout = Math.max(0, d.basePayout + d.bonus - d.deduction);
+      categoryPayout = Math.max(0, d.basePayout - d.deduction);
     } else if (reportCategory === 'oc') {
       categoryPayout = d.ocMoney;
     } else if (reportCategory === 'story') {
       categoryPayout = d.storyMoney;
+    } else if (reportCategory === 'bonus') {
+      categoryPayout = d.bonus;
     } else {
       categoryPayout = d.payout;
     }
@@ -364,11 +376,12 @@ export default function SystemSettings({ profile }) {
                   </div>
                   <div className="filter-group">
                     <label style={{ marginRight: '0.5rem', fontWeight: 600 }}>หมวดหมู่:</label>
-                    <select className="modal-input" value={reportCategory} onChange={e => setReportCategory(e.target.value)} style={{ width: '180px', padding: '0.5rem' }}>
-                      <option value="all">รวมทุกหมวดหมู่ (All)</option>
-                      <option value="ic">หมวดเงินเดือน IC</option>
-                      <option value="oc">หมวดเงิน OC</option>
-                      <option value="story">หมวดเงินดูสตอรี่</option>
+                    <select className="settings-input" style={{ width: '200px' }} value={reportCategory} onChange={e => setReportCategory(e.target.value)}>
+                      <option value="all">สรุปยอดรวมทั้งหมด (ALL)</option>
+                      <option value="ic">สรุปหมวดเงินเดือน IC</option>
+                      <option value="oc">สรุปหมวดเงิน OC</option>
+                      <option value="story">สรุปหมวดเงินดูสตอรี่</option>
+                      <option value="bonus">สรุปหมวดเงินโบนัส</option>
                     </select>
                   </div>
                   <button className="export-btn" onClick={handleDownloadPDF} disabled={isGenerating || reportData.length === 0}>
@@ -388,6 +401,7 @@ export default function SystemSettings({ profile }) {
                         {reportCategory === 'all' ? 'รายงานสรุปค่าตอบแทนบุคลากรทางการแพทย์' : 
                          reportCategory === 'ic' ? 'รายงานสรุปหมวดเงินเดือน IC' :
                          reportCategory === 'oc' ? 'รายงานสรุปหมวดเงิน OC' :
+                         reportCategory === 'bonus' ? 'รายงานสรุปหมวดเงินโบนัส' :
                          'รายงานสรุปหมวดเงินดูสตอรี่'}
                       </h1>
                       <p className="pdf-subtitle">
@@ -420,19 +434,21 @@ export default function SystemSettings({ profile }) {
                               <td style={{textAlign: 'right'}}>
                                 <div style={{display: 'flex', flexDirection: 'column', fontSize: '0.85rem'}}>
                                   {d.bonus > 0 ? <span style={{color: '#059669'}}>+{formatCurrency(d.bonus)} (โบนัส)</span> : null} 
+                                  {d.gacha_ic > 0 ? <span style={{color: '#8b5cf6'}}>กาชา IC: {d.gacha_ic} ลูก</span> : null} 
+                                  {d.gacha_promote > 0 ? <span style={{color: '#ec4899'}}>กาชา Promote: {d.gacha_promote} ลูก</span> : null} 
+                                  {d.coin_agency > 0 ? <span style={{color: '#f59e0b'}}>เหรียญ Agency: {d.coin_agency} เหรียญ</span> : null} 
                                   {d.deduction > 0 ? <span style={{color: '#e11d48'}}>-{formatCurrency(d.deduction)} (หัก)</span> : null}
                                   {d.storyMoney > 0 ? <span style={{color: '#0284c7'}}>+{formatCurrency(d.storyMoney)} (สตอรี่)</span> : null}
                                   {d.ocMoney > 0 ? <span style={{color: '#7c3aed'}}>+{formatCurrency(d.ocMoney)} (OC)</span> : null}
-                                  {d.bonus === 0 && d.deduction === 0 && d.storyMoney === 0 && d.ocMoney === 0 ? '-' : null}
+                                  {d.bonus === 0 && d.deduction === 0 && d.storyMoney === 0 && d.ocMoney === 0 && d.gacha_ic === 0 && d.gacha_promote === 0 && d.coin_agency === 0 ? '-' : null}
                                 </div>
                               </td>
                             )}
                             {reportCategory === 'ic' && (
                               <td style={{textAlign: 'right'}}>
                                 <div style={{display: 'flex', flexDirection: 'column', fontSize: '0.85rem'}}>
-                                  {d.bonus > 0 ? <span style={{color: '#059669'}}>+{formatCurrency(d.bonus)}</span> : null} 
-                                  {d.deduction > 0 ? <span style={{color: '#e11d48'}}>-{formatCurrency(d.deduction)}</span> : null}
-                                  {d.bonus === 0 && d.deduction === 0 ? '-' : null}
+                                  {d.deduction > 0 ? <span style={{color: '#e11d48'}}>-{formatCurrency(d.deduction)} (หัก)</span> : null}
+                                  {d.deduction === 0 ? '-' : null}
                                 </div>
                               </td>
                             )}
