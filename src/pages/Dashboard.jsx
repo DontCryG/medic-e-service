@@ -21,7 +21,9 @@ import {
   UserCog,
   UserPlus,
   Ban,
-  CalendarDays
+  Banknote,
+  CalendarDays,
+  Bell
 } from 'lucide-react';
 import './Dashboard.css'; 
 import './DashboardGrid.css';
