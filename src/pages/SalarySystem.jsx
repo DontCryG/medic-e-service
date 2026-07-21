@@ -34,6 +34,23 @@ export default function SalarySystem({ profile }) {
   useEffect(() => {
     if (profile?.role === 'admin') {
       fetchRatesAndData();
+
+      const subscription = supabase
+        .channel('salary_updates')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'duty_sessions' }, () => {
+          fetchRatesAndData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'salary_adjustments' }, () => {
+          fetchRatesAndData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'salary_rates' }, () => {
+          fetchRatesAndData();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(subscription);
+      };
     }
   }, [profile, startDate, endDate]);
 

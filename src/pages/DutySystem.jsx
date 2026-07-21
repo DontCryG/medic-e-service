@@ -32,6 +32,7 @@ export default function DutySystem({ profile, avatarUrl }) {
         }, () => {
           fetchLiveUsers();
           fetchCurrentSession(); // In case admin changes it or it updates elsewhere
+          fetchHistory();
         })
         .subscribe();
 
