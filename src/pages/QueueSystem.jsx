@@ -360,26 +360,45 @@ export default function QueueSystem({ profile }) {
 
                       <td className="col-story-time" style={{ backgroundColor: '#f9f5ff' }}>
                         <div className="remark-input-container">
-                          <DatePicker
-                            selected={user.story_time ? timeStringToDate(user.story_time) : null}
-                            onChange={(date) => {
-                              if (date) {
-                                const timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-                                handleStoryTimeChange(user.id, timeStr);
-                              } else {
-                                handleStoryTimeChange(user.id, null);
-                              }
-                            }}
-                            showTimeSelect
-                            showTimeSelectOnly
-                            timeIntervals={5}
-                            timeCaption="เวลา"
-                            dateFormat="HH:mm"
-                            timeFormat="HH:mm"
-                            placeholderText="--:--"
+                          <input 
+                            type="text"
                             className="remark-input time-input"
+                            defaultValue={user.story_time || ''}
+                            placeholder="--:--"
                             disabled={!canEdit}
-                            portalId="root-portal"
+                            onBlur={(e) => {
+                              let val = e.target.value.trim();
+                              if (!val) {
+                                if (user.story_time !== null) handleStoryTimeChange(user.id, null);
+                                return;
+                              }
+                              
+                              val = val.replace('.', ':');
+                              if (/^\d{3,4}$/.test(val)) {
+                                const isThree = val.length === 3;
+                                const h = isThree ? val.slice(0, 1) : val.slice(0, 2);
+                                const m = isThree ? val.slice(1) : val.slice(2);
+                                val = `${h.padStart(2, '0')}:${m}`;
+                              }
+                              
+                              const match = val.match(/^(\d{1,2}):(\d{2})$/);
+                              if (match) {
+                                const h = parseInt(match[1]);
+                                const m = parseInt(match[2]);
+                                if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+                                  const formattedTime = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                                  e.target.value = formattedTime;
+                                  if (formattedTime !== user.story_time) {
+                                    handleStoryTimeChange(user.id, formattedTime);
+                                  }
+                                  return;
+                                }
+                              }
+                              e.target.value = user.story_time || '';
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') e.target.blur();
+                            }}
                           />
                         </div>
                       </td>
