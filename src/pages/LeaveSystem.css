@@ -1,0 +1,222 @@
+/* LeaveSystem.css */
+.leave-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  animation: fade-in 0.4s ease-out;
+}
+
+/* Tabs */
+.leave-tabs {
+  display: flex;
+  gap: 1rem;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  width: fit-content;
+  border: 1px solid var(--border-color);
+}
+
+.leave-tab-btn {
+  padding: 0.75rem 2rem;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.leave-tab-btn.active.leave {
+  background: #7c3aed;
+  color: white;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);
+}
+
+.leave-tab-btn.active.resign {
+  background: #ef4444;
+  color: white;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);
+}
+
+/* Two Columns Layout */
+.leave-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 2rem;
+}
+
+/* Form Card */
+.leave-card {
+  background: white;
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+}
+
+.leave-card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.leave-card-title.leave-mode { color: #7c3aed; }
+.leave-card-title.resign-mode { color: #ef4444; }
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.form-input, .form-textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus, .form-textarea:focus {
+  border-color: #7c3aed;
+}
+
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 1.25rem;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  color: white;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.submit-btn.leave-btn {
+  background: #7c3aed;
+}
+.submit-btn.leave-btn:hover:not(:disabled) {
+  background: #6d28d9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+}
+
+.submit-btn.resign-btn {
+  background: #ef4444;
+}
+.submit-btn.resign-btn:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+/* History Table */
+.leave-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.leave-table th {
+  text-align: left;
+  padding: 1rem;
+  color: #64748b;
+  font-weight: 500;
+  border-bottom: 2px solid #f1f5f9;
+  font-size: 0.9rem;
+}
+
+.leave-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.leave-table tr:last-child td {
+  border-bottom: none;
+}
+
+.req-type-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.req-type-badge.leave {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.req-type-badge.resign {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-indicator.pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-indicator.approved {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.status-indicator.rejected {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+@media (max-width: 1024px) {
+  .leave-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
