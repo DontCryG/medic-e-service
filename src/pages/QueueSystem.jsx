@@ -192,7 +192,7 @@ export default function QueueSystem({ profile }) {
         });
       }
 
-      let updatePayload = { queue_state: finalStatus };
+      let updatePayload = { queue_state: finalStatus, story_time: null };
       
       if (finalStatus === 'manager') {
         const { data: logData, error: logError } = await supabase
