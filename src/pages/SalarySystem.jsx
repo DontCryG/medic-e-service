@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { Settings, Calculator, Filter, CalendarDays, DollarSign, Clock, Users, X, Save } from 'lucide-react';
+import { Settings, Calculator, Filter, CalendarDays, DollarSign, Clock, Users, X, Save, PlusCircle, Trash2, Pencil } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './SalarySystem.css';
@@ -21,6 +21,14 @@ export default function SalarySystem({ profile }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [editRates, setEditRates] = useState([]);
   const [savingRates, setSavingRates] = useState(false);
+
+  // Adjustments Modal
+  const [adjModalUser, setAdjModalUser] = useState(null); // User object currently viewing
+  const [userAdjustments, setUserAdjustments] = useState([]);
+  const [adjType, setAdjType] = useState('bonus');
+  const [adjAmount, setAdjAmount] = useState('');
+  const [adjReason, setAdjReason] = useState('');
+  const [savingAdj, setSavingAdj] = useState(false);
 
   useEffect(() => {
     if (profile?.role === 'admin') {
@@ -68,23 +76,46 @@ export default function SalarySystem({ profile }) {
         .select('*')
         .eq('status', 'completed');
 
+      let adjQuery = supabase
+        .from('salary_adjustments')
+        .select('*');
+
       if (startDate) {
         const start = new Date(startDate);
         start.setHours(0,0,0,0);
         query = query.gte('clock_in', start.toISOString());
+        adjQuery = adjQuery.gte('created_at', start.toISOString());
       }
       
       if (endDate) {
         const end = new Date(endDate);
         end.setHours(23,59,59,999);
         query = query.lte('clock_in', end.toISOString());
+        adjQuery = adjQuery.lte('created_at', end.toISOString());
       }
 
-      const { data: sessions, error: sessionsError } = await query;
-      if (sessionsError) throw sessionsError;
+      const [sessionsRes, adjRes] = await Promise.all([
+        query,
+        adjQuery
+      ]);
+
+      if (sessionsRes.error) throw sessionsRes.error;
+      const sessions = sessionsRes.data;
+      
+      // Some installations might not have the table yet
+      const adjustments = adjRes.error ? [] : adjRes.data; 
 
       // 4. Calculate Salary
       const userWorkData = {};
+      const userAdjData = {};
+      
+      adjustments.forEach(adj => {
+        if (!userAdjData[adj.discord_id]) {
+          userAdjData[adj.discord_id] = { bonus: 0, deduction: 0 };
+        }
+        if (adj.type === 'bonus') userAdjData[adj.discord_id].bonus += Number(adj.amount);
+        if (adj.type === 'deduction') userAdjData[adj.discord_id].deduction += Number(adj.amount);
+      });
       let totalPayout = 0;
       let totalMinutesGlobal = 0;
 
@@ -113,7 +144,10 @@ export default function SalarySystem({ profile }) {
         const totalMinutes = userWorkData[discordId].totalMinutes;
         const totalHours = totalMinutes / 60;
         const hourlyRate = ratesMap[user.position] || 0;
-        const payout = totalHours * hourlyRate;
+        const basePayout = totalHours * hourlyRate;
+        
+        const adj = userAdjData[discordId] || { bonus: 0, deduction: 0 };
+        const payout = basePayout + adj.bonus - adj.deduction;
         
         totalPayout += payout;
 
@@ -125,7 +159,10 @@ export default function SalarySystem({ profile }) {
           totalMinutes: totalMinutes,
           totalHours: totalHours,
           hourlyRate: hourlyRate,
-          payout: payout
+          basePayout: basePayout,
+          bonus: adj.bonus,
+          deduction: adj.deduction,
+          payout: Math.max(0, payout) // Don't allow negative payout
         });
       });
 
@@ -162,6 +199,77 @@ export default function SalarySystem({ profile }) {
       alert('เกิดข้อผิดพลาดในการบันทึก: ' + error.message);
     } finally {
       setSavingRates(false);
+    }
+  };
+
+  const openAdjModal = async (user) => {
+    setAdjModalUser(user);
+    loadUserAdjustments(user.discord_id);
+  };
+
+  const loadUserAdjustments = async (discordId) => {
+    try {
+      let query = supabase
+        .from('salary_adjustments')
+        .select('*')
+        .eq('discord_id', discordId)
+        .order('created_at', { ascending: false });
+        
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0,0,0,0);
+        query = query.gte('created_at', start.toISOString());
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23,59,59,999);
+        query = query.lte('created_at', end.toISOString());
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      setUserAdjustments(data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAddAdjustment = async () => {
+    if (!adjAmount || isNaN(adjAmount) || Number(adjAmount) <= 0) {
+      alert('กรุณากรอกจำนวนเงินให้ถูกต้อง');
+      return;
+    }
+    setSavingAdj(true);
+    try {
+      const { error } = await supabase
+        .from('salary_adjustments')
+        .insert([{
+          discord_id: adjModalUser.discord_id,
+          type: adjType,
+          amount: Number(adjAmount),
+          reason: adjReason || '-'
+        }]);
+      if (error) throw error;
+      
+      setAdjAmount('');
+      setAdjReason('');
+      await loadUserAdjustments(adjModalUser.discord_id);
+      fetchRatesAndData(); // Refresh main table
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      setSavingAdj(false);
+    }
+  };
+
+  const handleDeleteAdj = async (id) => {
+    if (!window.confirm('ลบรายการนี้ใช่หรือไม่?')) return;
+    try {
+      await supabase.from('salary_adjustments').delete().eq('id', id);
+      await loadUserAdjustments(adjModalUser.discord_id);
+      fetchRatesAndData();
+    } catch (err) {
+      alert(err.message);
     }
   };
 
@@ -266,8 +374,10 @@ export default function SalarySystem({ profile }) {
                   <th>ข้อมูลบุคลากร (IC)</th>
                   <th>ตำแหน่ง (Position)</th>
                   <th>ชั่วโมงทำงานสุทธิ</th>
-                  <th>เรทต่อชั่วโมง</th>
+                  <th>ยอดเข้าเวร</th>
+                  <th>รายการปรับปรุง</th>
                   <th>ยอดสุทธิที่ต้องจ่าย</th>
+                  <th>จัดการ</th>
                 </tr>
               </thead>
               <tbody>
@@ -285,12 +395,30 @@ export default function SalarySystem({ profile }) {
                     </td>
                     <td>{data.position}</td>
                     <td style={{ color: '#475569' }}>{formatHours(data.totalHours)}</td>
-                    <td style={{ color: '#64748b' }}>{data.hourlyRate > 0 ? `${data.hourlyRate} บ./ชม.` : 'ไม่มีเรทค่าจ้าง'}</td>
+                    <td style={{ color: '#64748b' }}>
+                      {formatCurrency(data.basePayout)}
+                      <div style={{fontSize: '0.8rem', color: '#94a3b8'}}>({data.hourlyRate} บ./ชม.)</div>
+                    </td>
+                    <td>
+                      {data.bonus === 0 && data.deduction === 0 ? (
+                        <span style={{ color: '#cbd5e1' }}>-</span>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.9rem' }}>
+                          {data.bonus > 0 && <span className="adj-val-positive">+{formatCurrency(data.bonus)}</span>}
+                          {data.deduction > 0 && <span className="adj-val-negative">-{formatCurrency(data.deduction)}</span>}
+                        </div>
+                      )}
+                    </td>
                     <td className="amount-text">{formatCurrency(data.payout)}</td>
+                    <td>
+                      <button className="adjustment-btn" onClick={() => openAdjModal(data)} title="เพิ่มโบนัส/หักเงิน">
+                        <Pencil size={16} />
+                      </button>
+                    </td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
                       ไม่มีข้อมูลการเข้าเวรในช่วงเวลาที่เลือก
                     </td>
                   </tr>
@@ -346,6 +474,77 @@ export default function SalarySystem({ profile }) {
                 {savingRates ? 'กำลังบันทึก...' : 'บันทึกการตั้งค่า'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Adjustments Modal */}
+      {adjModalUser && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '600px' }}>
+            <div className="modal-header">
+              <h2>รายการโบนัส / หักเงินเดือน</h2>
+              <button className="close-btn" onClick={() => setAdjModalUser(null)}><X size={20} /></button>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '12px' }}>
+              <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                {adjModalUser.avatar_url ? (
+                  <img src={adjModalUser.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : getInitial(adjModalUser.ic_name)}
+              </div>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '1.1rem', color: '#1e293b' }}>{adjModalUser.ic_name}</div>
+                <div style={{ fontSize: '0.9rem', color: '#64748b' }}>{adjModalUser.position}</div>
+              </div>
+            </div>
+
+            <div className="adj-form">
+              <div className="modal-form-group">
+                <label>ประเภทรายการ</label>
+                <select className="modal-select" value={adjType} onChange={e => setAdjType(e.target.value)}>
+                  <option value="bonus">บวกโบนัส (+)</option>
+                  <option value="deduction">หักเงิน (-)</option>
+                </select>
+              </div>
+              <div className="modal-form-group">
+                <label>จำนวนเงิน (บาท)</label>
+                <input type="number" className="modal-input" placeholder="0" value={adjAmount} onChange={e => setAdjAmount(e.target.value)} />
+              </div>
+              <div className="modal-form-group adj-form-full">
+                <label>สาเหตุ / หมายเหตุ (ถ้ามี)</label>
+                <input type="text" className="modal-input" placeholder="เช่น ทำงานดีเยี่ยม, มาสาย" value={adjReason} onChange={e => setAdjReason(e.target.value)} />
+              </div>
+              <div className="adj-form-full">
+                <button className="adj-add-btn" onClick={handleAddAdjustment} disabled={savingAdj}>
+                  <PlusCircle size={18} /> {savingAdj ? 'กำลังบันทึก...' : 'เพิ่มรายการ'}
+                </button>
+              </div>
+            </div>
+
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#1e293b' }}>ประวัติรายการในช่วงเวลานี้</h3>
+            <div className="adjustment-list">
+              {userAdjustments.length > 0 ? userAdjustments.map(adj => (
+                <div key={adj.id} className="adj-item">
+                  <div>
+                    <div className="adj-reason">
+                      {adj.type === 'bonus' ? '🌟 ' : '⚠️ '}
+                      {adj.reason}
+                    </div>
+                    <div className="adj-date">{new Date(adj.created_at).toLocaleDateString('th-TH')}</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div className={`adj-amount ${adj.type}`}>
+                      {adj.type === 'bonus' ? '+' : '-'}{formatCurrency(adj.amount)}
+                    </div>
+                    <button className="delete-adj-btn" onClick={() => handleDeleteAdj(adj.id)} title="ลบรายการนี้"><Trash2 size={16} /></button>
+                  </div>
+                </div>
+              )) : (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>ไม่มีรายการโบนัสหรือหักเงิน</div>
+              )}
+            </div>
+
           </div>
         </div>
       )}

@@ -195,3 +195,99 @@
 .rate-input:focus {
   border-color: #7c3aed;
 }
+
+/* Adjustments UI */
+.adjustment-btn {
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.adjustment-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.adj-val-positive { color: #16a34a; font-weight: 600; }
+.adj-val-negative { color: #ef4444; font-weight: 600; }
+
+.adjustment-list {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  margin-bottom: 1.5rem;
+}
+
+.adj-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.adj-item:last-child {
+  border-bottom: none;
+}
+
+.adj-reason {
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.adj-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.adj-amount.bonus { color: #16a34a; font-weight: 600; }
+.adj-amount.deduction { color: #ef4444; font-weight: 600; }
+
+.delete-adj-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+}
+.delete-adj-btn:hover { color: #ef4444; background: #fee2e2; }
+
+.adj-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.adj-form-full {
+  grid-column: span 2;
+}
+
+.adj-add-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: none;
+  background: #0f172a;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+.adj-add-btn:hover:not(:disabled) { background: #1e293b; }
+.adj-add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
