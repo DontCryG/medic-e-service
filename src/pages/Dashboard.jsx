@@ -101,8 +101,16 @@ export default function Dashboard() {
       }
     });
 
+    const settingsSub = supabase
+      .channel('app_settings_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings' }, () => {
+        fetchAnnouncement();
+      })
+      .subscribe();
+
     return () => {
       if (subscription) supabase.removeChannel(subscription);
+      supabase.removeChannel(settingsSub);
     };
   }, []);
 
