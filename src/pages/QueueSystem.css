@@ -258,8 +258,44 @@
 }
 
 .react-datepicker-wrapper {
-  display: inline-block;
-  width: auto;
+  display: block;
+  width: 100%;
+}
+
+/* Fix Time Picker Popup Width */
+.react-datepicker__time-container,
+.react-datepicker__time-box {
+  width: 120px !important;
+}
+
+.react-datepicker__time-list-item {
+  padding: 8px !important;
+  font-family: inherit;
+}
+
+/* Custom styles for time input in table to match the theme */
+.col-story-time .time-input {
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  padding: 8px;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  color: var(--text-primary);
+}
+
+.col-story-time .time-input:hover:not(:disabled) {
+  border-color: var(--border-color);
+  background-color: var(--surface-color);
+}
+
+.col-story-time .time-input:focus {
+  border-color: var(--primary-color);
+  background-color: var(--surface-color);
+  outline: none;
 }
 
 .history-table-container {
