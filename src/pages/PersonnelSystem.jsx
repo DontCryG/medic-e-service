@@ -240,13 +240,18 @@ export default function PersonnelSystem({ profile }) {
 
             <div className="modal-form-group">
               <label>ตำแหน่ง (Position)</label>
-              <input 
-                type="text" 
-                className="modal-input"
+              <select 
+                className="modal-select"
                 value={editPosition}
                 onChange={(e) => setEditPosition(e.target.value)}
-                placeholder="เช่น นักเรียนแพทย์, ศัลยแพทย์, ผู้อำนวยการ"
-              />
+              >
+                <option value="ผู้อำนวยการ">ผู้อำนวยการ</option>
+                <option value="รองผู้อำนวยการ">รองผู้อำนวยการ</option>
+                <option value="เลขานุการ">เลขานุการ</option>
+                <option value="แพทย์ชำนาญการ">แพทย์ชำนาญการ</option>
+                <option value="แพทย์">แพทย์</option>
+                <option value="นักเรียนแพทย์">นักเรียนแพทย์</option>
+              </select>
             </div>
 
             {editRole === 'user' && (
