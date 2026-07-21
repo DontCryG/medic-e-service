@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
-import { Settings, FileText, Briefcase, Bell, Download, CalendarDays, PlusCircle, Trash2, Save, ChevronDown, Building } from 'lucide-react';
+import { Settings, FileText, Briefcase, Bell, Download, CalendarDays, PlusCircle, Trash2, Save, ChevronDown, Building, Edit2, Search, X } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import html2canvas from 'html2canvas';
@@ -41,6 +41,9 @@ export default function SystemSettings({ profile }) {
   // === Agencies State ===
   const [agencies, setAgencies] = useState([]);
   const [newAgencyName, setNewAgencyName] = useState('');
+  const [searchAgency, setSearchAgency] = useState('');
+  const [editingAgency, setEditingAgency] = useState('');
+  const [editAgencyInput, setEditAgencyInput] = useState('');
 
   // === General Settings State ===
   const [announcementText, setAnnouncementText] = useState('');
@@ -318,6 +321,23 @@ export default function SystemSettings({ profile }) {
       await supabase.from('app_settings').upsert([
         { setting_key: 'agencies_list', setting_value: JSON.stringify(updatedAgencies) }
       ]);
+      fetchAgencies();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleSaveEditAgency = async () => {
+    if (!editAgencyInput.trim() || editAgencyInput.trim() === editingAgency) {
+      setEditingAgency('');
+      return;
+    }
+    try {
+      const updatedAgencies = agencies.map(a => a === editingAgency ? editAgencyInput.trim() : a);
+      await supabase.from('app_settings').upsert([
+        { setting_key: 'agencies_list', setting_value: JSON.stringify(updatedAgencies) }
+      ]);
+      setEditingAgency('');
       fetchAgencies();
     } catch (err) {
       alert(err.message);
@@ -621,18 +641,62 @@ export default function SystemSettings({ profile }) {
                 </div>
 
                 <div className="position-list">
-                  <h4 style={{ margin: '0 0 1rem 0', color: '#1e293b' }}>รายชื่อสังกัดทั้งหมด ({agencies.length})</h4>
-                  {agencies.map((agency, idx) => (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 1rem 0' }}>
+                    <h4 style={{ margin: 0, color: '#1e293b' }}>รายชื่อสังกัดทั้งหมด ({agencies.length})</h4>
+                    <div style={{ position: 'relative', width: '200px' }}>
+                      <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '10px' }} />
+                      <input 
+                        type="text" 
+                        className="modal-input" 
+                        placeholder="ค้นหาสังกัด..." 
+                        value={searchAgency}
+                        onChange={(e) => setSearchAgency(e.target.value)}
+                        style={{ paddingLeft: '2.2rem', width: '100%' }}
+                      />
+                    </div>
+                  </div>
+                  
+                  {agencies.filter(a => a.toLowerCase().includes(searchAgency.toLowerCase())).map((agency, idx) => (
                     <div key={idx} className="position-item">
-                      <div>
-                        <div className="position-name">{agency}</div>
-                      </div>
-                      <button className="delete-adj-btn" onClick={() => handleDeleteAgency(agency)} title="ลบ">
-                        <Trash2 size={18} />
-                      </button>
+                      {editingAgency === agency ? (
+                        <div style={{ display: 'flex', gap: '0.5rem', flex: 1, alignItems: 'center' }}>
+                          <input 
+                            type="text" 
+                            className="modal-input" 
+                            value={editAgencyInput} 
+                            onChange={(e) => setEditAgencyInput(e.target.value)} 
+                            style={{ flex: 1 }}
+                            autoFocus
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEditAgency(); }}
+                          />
+                          <button className="add-btn" onClick={handleSaveEditAgency} style={{ padding: '0.5rem', background: '#059669', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+                            <Save size={16} />
+                          </button>
+                          <button className="action-btn delete" onClick={() => setEditingAgency('')} style={{ padding: '0.5rem', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <div className="position-name">{agency}</div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button className="edit-btn" onClick={() => { setEditingAgency(agency); setEditAgencyInput(agency); }} title="แก้ไข" style={{ background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '8px', padding: '0.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Edit2 size={18} />
+                            </button>
+                            <button className="delete-adj-btn" onClick={() => handleDeleteAgency(agency)} title="ลบ">
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))}
                   {agencies.length === 0 && <div style={{textAlign: 'center', color: '#94a3b8', padding: '2rem'}}>ยังไม่มีรายชื่อสังกัด</div>}
+                  {agencies.length > 0 && agencies.filter(a => a.toLowerCase().includes(searchAgency.toLowerCase())).length === 0 && (
+                    <div style={{textAlign: 'center', color: '#94a3b8', padding: '2rem'}}>ไม่พบรายชื่อสังกัดที่ค้นหา</div>
+                  )}
                 </div>
               </div>
             )}
