@@ -90,7 +90,6 @@ export default function SalarySystem({ profile }) {
         userMap[u.discord_id] = u;
       });
 
-      // 3. Fetch Duty Sessions in Date Range
       let query = supabase
         .from('duty_sessions')
         .select('*')
@@ -100,11 +99,16 @@ export default function SalarySystem({ profile }) {
         .from('salary_adjustments')
         .select('*');
 
+      let queueQuery = supabase
+        .from('queue_manager_logs')
+        .select('*');
+
       if (startDate) {
         const start = new Date(startDate);
         start.setHours(0,0,0,0);
         query = query.gte('clock_in', start.toISOString());
         adjQuery = adjQuery.gte('created_at', start.toISOString());
+        queueQuery = queueQuery.gte('start_time', start.toISOString());
       }
       
       if (endDate) {
@@ -112,18 +116,42 @@ export default function SalarySystem({ profile }) {
         end.setHours(23,59,59,999);
         query = query.lte('clock_in', end.toISOString());
         adjQuery = adjQuery.lte('created_at', end.toISOString());
+        queueQuery = queueQuery.lte('start_time', end.toISOString());
       }
 
-      const [sessionsRes, adjRes] = await Promise.all([
+      const [sessionsRes, adjRes, queueRes] = await Promise.all([
         query,
-        adjQuery
+        adjQuery,
+        queueQuery
       ]);
 
       if (sessionsRes.error) throw sessionsRes.error;
       const sessions = sessionsRes.data;
       
       // Some installations might not have the table yet
-      const adjustments = adjRes.error ? [] : adjRes.data; 
+      const queueLogs = queueRes.error ? [] : queueRes.data;
+
+      // Calculate Queue Manager Bonus
+      const userQueueData = {}; // discord_id -> date -> total_minutes
+      queueLogs.forEach(log => {
+        if (!log.duration_minutes) return;
+        const d = new Date(log.start_time);
+        // Use 'en-CA' with Asia/Bangkok to easily get YYYY-MM-DD
+        const dateStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(d);
+        if (!userQueueData[log.discord_id]) userQueueData[log.discord_id] = {};
+        if (!userQueueData[log.discord_id][dateStr]) userQueueData[log.discord_id][dateStr] = 0;
+        userQueueData[log.discord_id][dateStr] += log.duration_minutes;
+      });
+
+      const userBonusMinutes = {}; // discord_id -> total bonus minutes
+      Object.keys(userQueueData).forEach(discordId => {
+        userBonusMinutes[discordId] = 0;
+        Object.keys(userQueueData[discordId]).forEach(dateStr => {
+          if (userQueueData[discordId][dateStr] >= 120) {
+            userBonusMinutes[discordId] += 120; // 2 hours bonus per qualifying day
+          }
+        });
+      });
 
       // 4. Calculate Salary
       const userWorkData = {};
@@ -136,13 +164,15 @@ export default function SalarySystem({ profile }) {
         if (adj.type === 'bonus') userAdjData[adj.discord_id].bonus += Number(adj.amount);
         if (adj.type === 'deduction') userAdjData[adj.discord_id].deduction += Number(adj.amount);
       });
+      
       let totalPayout = 0;
       let totalMinutesGlobal = 0;
 
       sessions.forEach(session => {
         if (!userWorkData[session.discord_id]) {
           userWorkData[session.discord_id] = {
-            totalMinutes: 0
+            totalMinutes: 0,
+            bonusDutyMinutes: 0
           };
         }
         const start = new Date(session.clock_in).getTime();
@@ -152,6 +182,19 @@ export default function SalarySystem({ profile }) {
         if (totalMinutes > 0) {
           userWorkData[session.discord_id].totalMinutes += totalMinutes;
           totalMinutesGlobal += totalMinutes;
+        }
+      });
+
+      // Add Queue Bonus
+      Object.keys(userBonusMinutes).forEach(discordId => {
+        const bonusMins = userBonusMinutes[discordId];
+        if (bonusMins > 0) {
+          if (!userWorkData[discordId]) {
+            userWorkData[discordId] = { totalMinutes: 0, bonusDutyMinutes: 0 };
+          }
+          userWorkData[discordId].totalMinutes += bonusMins;
+          userWorkData[discordId].bonusDutyMinutes = bonusMins;
+          totalMinutesGlobal += bonusMins;
         }
       });
 
@@ -177,6 +220,7 @@ export default function SalarySystem({ profile }) {
           position: user.position,
           avatar_url: user.avatar_url,
           totalMinutes: totalMinutes,
+          bonusDutyMinutes: userWorkData[discordId].bonusDutyMinutes || 0,
           totalHours: totalHours,
           hourlyRate: hourlyRate,
           basePayout: basePayout,
@@ -463,6 +507,7 @@ export default function SalarySystem({ profile }) {
                   <th>ข้อมูลบุคลากร (IC)</th>
                   <th>ตำแหน่ง (Position)</th>
                   <th>ชั่วโมงทำงานสุทธิ</th>
+                  <th>โบนัสรันคิว (ชม.)</th>
                   <th>ยอดเข้าเวร</th>
                   <th>รายการปรับปรุง</th>
                   <th>ยอดสุทธิที่ต้องจ่าย</th>
@@ -483,7 +528,23 @@ export default function SalarySystem({ profile }) {
                       </div>
                     </td>
                     <td>{data.position}</td>
-                    <td style={{ color: '#475569' }}>{formatHours(data.totalHours)}</td>
+                    <td style={{ color: '#475569' }}>
+                      {formatHours(data.totalHours)}
+                      {data.bonusDutyMinutes > 0 && (
+                        <div style={{fontSize: '0.8rem', color: '#0284c7', marginTop: '2px'}}>
+                          (รวมโบนัสแล้ว)
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      {data.bonusDutyMinutes > 0 ? (
+                        <span style={{ color: '#0284c7', fontWeight: 'bold' }}>
+                          +{Math.floor(data.bonusDutyMinutes / 60)} ชม.
+                        </span>
+                      ) : (
+                        <span style={{ color: '#cbd5e1' }}>-</span>
+                      )}
+                    </td>
                     <td style={{ color: '#64748b' }}>
                       {formatCurrency(data.basePayout)}
                       <div style={{fontSize: '0.8rem', color: '#94a3b8'}}>({data.hourlyRate} บ./ชม.)</div>
@@ -507,7 +568,7 @@ export default function SalarySystem({ profile }) {
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="7" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                    <td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
                       ไม่มีข้อมูลการเข้าเวรในช่วงเวลาที่เลือก
                     </td>
                   </tr>
