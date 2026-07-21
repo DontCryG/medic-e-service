@@ -41,9 +41,11 @@ export default function SystemSettings({ profile }) {
   // === Agencies State ===
   const [agencies, setAgencies] = useState([]);
   const [newAgencyName, setNewAgencyName] = useState('');
+  const [newAgencyCategory, setNewAgencyCategory] = useState('Gang');
   const [searchAgency, setSearchAgency] = useState('');
-  const [editingAgency, setEditingAgency] = useState('');
+  const [editingAgency, setEditingAgency] = useState(''); // Stores the agency object being edited
   const [editAgencyInput, setEditAgencyInput] = useState('');
+  const [editAgencyCategory, setEditAgencyCategory] = useState('Gang');
 
   // === General Settings State ===
   const [announcementText, setAnnouncementText] = useState('');
@@ -291,7 +293,12 @@ export default function SystemSettings({ profile }) {
     const { data } = await supabase.from('app_settings').select('*').eq('setting_key', 'agencies_list').single();
     if (data && data.setting_value) {
       try {
-        setAgencies(JSON.parse(data.setting_value));
+        const parsed = JSON.parse(data.setting_value);
+        const migrated = parsed.map(item => {
+          if (typeof item === 'string') return { name: item, category: 'Gang' };
+          return item;
+        });
+        setAgencies(migrated);
       } catch (e) {
         setAgencies([]);
       }
@@ -303,21 +310,23 @@ export default function SystemSettings({ profile }) {
   const handleAddAgency = async () => {
     if (!newAgencyName.trim()) return;
     try {
-      const updatedAgencies = [...agencies, newAgencyName.trim()];
+      const newObj = { name: newAgencyName.trim(), category: newAgencyCategory };
+      const updatedAgencies = [...agencies, newObj];
       await supabase.from('app_settings').upsert([
         { setting_key: 'agencies_list', setting_value: JSON.stringify(updatedAgencies) }
       ]);
       setNewAgencyName('');
+      setNewAgencyCategory('Gang');
       fetchAgencies();
     } catch (err) {
       alert(err.message);
     }
   };
 
-  const handleDeleteAgency = async (agencyName) => {
-    if (!window.confirm(`ลบสังกัด ${agencyName} ออกจากระบบ?`)) return;
+  const handleDeleteAgency = async (agencyObj) => {
+    if (!window.confirm(`ลบสังกัด ${agencyObj.name} ออกจากระบบ?`)) return;
     try {
-      const updatedAgencies = agencies.filter(a => a !== agencyName);
+      const updatedAgencies = agencies.filter(a => a.name !== agencyObj.name);
       await supabase.from('app_settings').upsert([
         { setting_key: 'agencies_list', setting_value: JSON.stringify(updatedAgencies) }
       ]);
@@ -328,12 +337,16 @@ export default function SystemSettings({ profile }) {
   };
 
   const handleSaveEditAgency = async () => {
-    if (!editAgencyInput.trim() || editAgencyInput.trim() === editingAgency) {
+    if (!editAgencyInput.trim()) {
       setEditingAgency('');
       return;
     }
     try {
-      const updatedAgencies = agencies.map(a => a === editingAgency ? editAgencyInput.trim() : a);
+      const updatedAgencies = agencies.map(a => 
+        a.name === editingAgency.name 
+          ? { ...a, name: editAgencyInput.trim(), category: editAgencyCategory } 
+          : a
+      );
       await supabase.from('app_settings').upsert([
         { setting_key: 'agencies_list', setting_value: JSON.stringify(updatedAgencies) }
       ]);
@@ -635,6 +648,15 @@ export default function SystemSettings({ profile }) {
                     onChange={e => setNewAgencyName(e.target.value)} 
                     style={{ flex: 1 }}
                   />
+                  <select 
+                    className="modal-input" 
+                    value={newAgencyCategory} 
+                    onChange={e => setNewAgencyCategory(e.target.value)}
+                    style={{ width: '150px' }}
+                  >
+                    <option value="Gang">Gang</option>
+                    <option value="Family">Family</option>
+                  </select>
                   <button className="export-btn" style={{ padding: '0.75rem 1.5rem', borderRadius: '12px' }} onClick={handleAddAgency}>
                     <PlusCircle size={18} /> เพิ่ม
                   </button>
@@ -656,9 +678,9 @@ export default function SystemSettings({ profile }) {
                     </div>
                   </div>
                   
-                  {agencies.filter(a => a.toLowerCase().includes(searchAgency.toLowerCase())).map((agency, idx) => (
+                  {agencies.filter(a => a.name.toLowerCase().includes(searchAgency.toLowerCase())).map((agency, idx) => (
                     <div key={idx} className="position-item">
-                      {editingAgency === agency ? (
+                      {editingAgency && editingAgency.name === agency.name ? (
                         <div style={{ display: 'flex', gap: '0.5rem', flex: 1, alignItems: 'center' }}>
                           <input 
                             type="text" 
@@ -669,6 +691,15 @@ export default function SystemSettings({ profile }) {
                             autoFocus
                             onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEditAgency(); }}
                           />
+                          <select 
+                            className="modal-input" 
+                            value={editAgencyCategory} 
+                            onChange={e => setEditAgencyCategory(e.target.value)}
+                            style={{ width: '130px', padding: '0.5rem' }}
+                          >
+                            <option value="Gang">Gang</option>
+                            <option value="Family">Family</option>
+                          </select>
                           <button className="add-btn" onClick={handleSaveEditAgency} style={{ padding: '0.5rem', background: '#059669', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
                             <Save size={16} />
                           </button>
@@ -678,11 +709,14 @@ export default function SystemSettings({ profile }) {
                         </div>
                       ) : (
                         <>
-                          <div>
-                            <div className="position-name">{agency}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div className="position-name">{agency.name}</div>
+                            <span className={`agency-tag ${agency.category?.toLowerCase() === 'family' ? 'family' : 'gang'}`}>
+                              {agency.category || 'Gang'}
+                            </span>
                           </div>
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button className="edit-btn" onClick={() => { setEditingAgency(agency); setEditAgencyInput(agency); }} title="แก้ไข" style={{ background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '8px', padding: '0.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <button className="edit-btn" onClick={() => { setEditingAgency(agency); setEditAgencyInput(agency.name); setEditAgencyCategory(agency.category || 'Gang'); }} title="แก้ไข" style={{ background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '8px', padding: '0.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                               <Edit2 size={18} />
                             </button>
                             <button className="delete-adj-btn" onClick={() => handleDeleteAgency(agency)} title="ลบ">
@@ -694,7 +728,7 @@ export default function SystemSettings({ profile }) {
                     </div>
                   ))}
                   {agencies.length === 0 && <div style={{textAlign: 'center', color: '#94a3b8', padding: '2rem'}}>ยังไม่มีรายชื่อสังกัด</div>}
-                  {agencies.length > 0 && agencies.filter(a => a.toLowerCase().includes(searchAgency.toLowerCase())).length === 0 && (
+                  {agencies.length > 0 && agencies.filter(a => a.name.toLowerCase().includes(searchAgency.toLowerCase())).length === 0 && (
                     <div style={{textAlign: 'center', color: '#94a3b8', padding: '2rem'}}>ไม่พบรายชื่อสังกัดที่ค้นหา</div>
                   )}
                 </div>
