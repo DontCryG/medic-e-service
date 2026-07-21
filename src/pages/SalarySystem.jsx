@@ -174,6 +174,7 @@ export default function SalarySystem({ profile }) {
       
       let totalPayout = 0;
       let totalMinutesGlobal = 0;
+      let totalOcMoneyGlobal = 0;
 
       sessions.forEach(session => {
         if (!userWorkData[session.discord_id]) {
@@ -237,6 +238,7 @@ export default function SalarySystem({ profile }) {
         const payout = basePayout + adj.bonus + adj.storyMoney + ocMoney - adj.deduction;
         
         totalPayout += payout;
+        totalOcMoneyGlobal += ocMoney;
 
         finalSalaryData.push({
           discord_id: discordId,
@@ -263,7 +265,8 @@ export default function SalarySystem({ profile }) {
       setSummary({
         totalPayout,
         totalHours: totalMinutesGlobal / 60,
-        totalStaff: finalSalaryData.length
+        totalStaff: finalSalaryData.length,
+        totalOcMoney: totalOcMoneyGlobal
       });
 
     } catch (error) {
@@ -498,6 +501,15 @@ export default function SalarySystem({ profile }) {
           <div className="summary-details">
             <h4>ชั่วโมงทำงานรวม</h4>
             <p className="summary-value">{Math.floor(summary.totalHours)}<span style={{fontSize: '1rem', fontWeight: '500', color: '#64748b'}}> ชม.</span></p>
+          </div>
+        </div>
+        <div className="summary-card">
+          <div className="summary-icon" style={{ background: '#e0f2fe', color: '#0ea5e9' }}>
+            <DollarSign size={24} />
+          </div>
+          <div className="summary-details">
+            <h4>ยอดรวมเงิน OC</h4>
+            <p className="summary-value" style={{ color: '#0ea5e9' }}>{formatCurrency(summary.totalOcMoney || 0)}</p>
           </div>
         </div>
         <div className="summary-card">
