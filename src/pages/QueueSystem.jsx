@@ -205,12 +205,16 @@ export default function QueueSystem({ profile }) {
       if (usersError) throw usersError;
 
       const userMap = {};
-      usersData.forEach(u => { userMap[u.discord_id] = u.ic_name; });
-
       const grouped = {};
+      
+      usersData.forEach(u => { 
+        userMap[u.discord_id] = u.ic_name; 
+        grouped[u.discord_id] = 0; // Initialize everyone with 0 minutes
+      });
+
       data.forEach(log => {
         if (!log.duration_minutes) return;
-        if (!grouped[log.discord_id]) grouped[log.discord_id] = 0;
+        if (grouped[log.discord_id] === undefined) grouped[log.discord_id] = 0;
         grouped[log.discord_id] += log.duration_minutes;
       });
 
