@@ -332,6 +332,9 @@ export default function SystemSettings({ profile }) {
   });
   
   const categoryTotalPayout = filteredReportData.reduce((sum, d) => sum + d.categoryPayout, 0);
+  const totalGachaIC = filteredReportData.reduce((sum, d) => sum + (d.gacha_ic || 0), 0);
+  const totalGachaPromote = filteredReportData.reduce((sum, d) => sum + (d.gacha_promote || 0), 0);
+  const totalCoinAgency = filteredReportData.reduce((sum, d) => sum + (d.coin_agency || 0), 0);
 
   if (!profile || profile.role !== 'admin') return null;
 
@@ -472,9 +475,16 @@ export default function SystemSettings({ profile }) {
                       <div className="pdf-summary">
                         <p>จำนวนบุคลากรทั้งหมด: <strong>{filteredReportData.length} คน</strong></p>
                         {(reportCategory === 'all' || reportCategory === 'ic') && (
-                          <p>ชั่วโมงการทำงานรวม: <strong>{Math.floor(summaryData.totalHours)} ชั่วโมง</strong></p>
+                          <p>รวมชั่วโมงเข้าเวร: <strong>{Math.floor(summaryData.totalHours)} ชั่วโมง</strong></p>
                         )}
-                        <p style={{fontSize: '18px'}}>ยอดรวมที่ต้องชำระทั้งสิ้น: <strong>{formatCurrency(categoryTotalPayout)}</strong></p>
+                        {(reportCategory === 'all' || reportCategory === 'bonus') && (
+                          <div style={{ marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+                            {totalGachaIC > 0 && <p>รวมกาชา IC: <strong>{totalGachaIC} ลูก</strong></p>}
+                            {totalGachaPromote > 0 && <p>รวมกาชา Promote: <strong>{totalGachaPromote} ลูก</strong></p>}
+                            {totalCoinAgency > 0 && <p>รวมเหรียญ Agency: <strong>{totalCoinAgency} เหรียญ</strong></p>}
+                          </div>
+                        )}
+                        <p style={{fontSize: '18px'}}>ยอดรวมสุทธิที่ต้องจ่าย: <strong>{formatCurrency(categoryTotalPayout)}</strong></p>
                       </div>
                     )}
                   </div>
