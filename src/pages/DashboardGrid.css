@@ -1,149 +1,147 @@
-/* Additional CSS for Dashboard Content (Loop 4) */
+/* Portal Hub Style Dashboard (Loop 4) */
 
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+.hub-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  padding-bottom: 2rem;
+}
+
+.hub-section {
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
-  margin-bottom: 2rem;
 }
 
-.stat-card {
-  background: white;
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-}
-
-.stat-icon {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-}
-
-.stat-icon.medic {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-}
-
-.stat-icon.admin {
-  background: rgba(126, 34, 206, 0.1);
-  color: var(--primary);
-}
-
-.stat-icon.docs {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-}
-
-.stat-info {
-  flex: 1;
-}
-
-.stat-title {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: 0.25rem;
-}
-
-.stat-value {
-  color: var(--text-primary);
-  font-size: 1.5rem;
+.hub-section-title {
+  text-align: center;
+  font-size: 1.2rem;
   font-weight: 700;
 }
 
-/* Table Styles */
-.activity-section {
+.hub-section-title.medic {
+  color: #581c87; /* Dark Purple */
+}
+
+.hub-section-title.admin {
+  color: #c2410c; /* Dark Orange */
+}
+
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.hub-card {
   background: white;
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
-}
-
-.section-header {
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 1.5rem;
+  text-align: center;
+  border: 1px solid rgba(0,0,0,0.03);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.section-title {
+.hub-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(126, 34, 206, 0.08);
+}
+
+.hub-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.hub-card.medic .hub-icon-wrapper {
+  background: rgba(126, 34, 206, 0.08);
+  color: #7e22ce;
+}
+
+.hub-card.admin .hub-icon-wrapper {
+  background: rgba(234, 88, 12, 0.1);
+  color: #ea580c;
+}
+
+.hub-card-title {
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
+  margin-bottom: 0.5rem;
 }
 
-.view-all-btn {
-  color: var(--primary);
-  background: none;
-  border: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.view-all-btn:hover {
-  text-decoration: underline;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.data-table th {
-  text-align: left;
-  padding: 1rem;
+.hub-card-desc {
+  font-size: 0.85rem;
   color: var(--text-secondary);
-  font-weight: 500;
-  font-size: 0.875rem;
-  border-bottom: 1px solid var(--border-color);
+  line-height: 1.5;
+  margin-bottom: 2rem;
+  flex: 1; /* Pushes the button to the bottom */
 }
 
-.data-table td {
-  padding: 1rem;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border-color);
-  font-size: 0.95rem;
-}
-
-.data-table tr:last-child td {
-  border-bottom: none;
-}
-
-.status-badge {
-  padding: 4px 10px;
+.hub-btn {
+  width: 100%;
+  background: #0f172a;
+  color: white;
+  border: none;
   border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  padding: 0.875rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
 }
 
-.status-badge.active {
-  background: rgba(16, 185, 129, 0.1);
-  color: #059669;
+.hub-btn:hover {
+  background: #1e293b;
 }
 
-.status-badge.pending {
-  background: rgba(245, 158, 11, 0.1);
-  color: #d97706;
+/* Related Links Card */
+.related-links-card {
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-.status-badge.closed {
-  background: rgba(107, 114, 128, 0.1);
-  color: #4b5563;
+.related-links-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1rem;
+}
+
+.related-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(126, 34, 206, 0.06);
+  color: #7e22ce;
+  text-decoration: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.related-link-btn:hover {
+  background: rgba(126, 34, 206, 0.12);
 }

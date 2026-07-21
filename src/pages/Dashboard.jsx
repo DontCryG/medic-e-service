@@ -11,7 +11,16 @@ import {
   Bell,
   Stethoscope,
   Activity,
-  FileText
+  FileText,
+  LayoutGrid,
+  Users,
+  Settings,
+  Star,
+  ExternalLink,
+  Clock,
+  BriefcaseMedical,
+  ClipboardList,
+  UserCog
 } from 'lucide-react';
 import './Dashboard.css'; 
 import './DashboardGrid.css';
@@ -196,90 +205,92 @@ export default function Dashboard() {
         </header>
 
         {/* Content */}
-        <div className="dashboard-content">
-          <div className="page-header">
-            <h1 className="page-title">ยินดีต้อนรับ, {profile?.ic_name}</h1>
-            <p className="page-subtitle">ดูภาพรวมและจัดการข้อมูลของหน่วยงานแพทย์</p>
-          </div>
+        <div className="dashboard-content" style={{ padding: '3rem 2rem' }}>
+          
+          <div className="hub-container">
+            {/* Medic Section */}
+            <div className="hub-section">
+              <h2 className="hub-section-title medic">ระบบปฏิบัติการแพทย์ (Medic Services)</h2>
+              <div className="hub-grid">
+                
+                <div className="hub-card medic">
+                  <div className="hub-icon-wrapper">
+                    <LayoutGrid size={28} />
+                  </div>
+                  <h3 className="hub-card-title">ศูนย์กลางบริการทั่วไป</h3>
+                  <p className="hub-card-desc">กระดานรวมบริการ และสรุปภาพรวมการทำงานของบุคลากรทางการแพทย์</p>
+                  <button className="hub-btn">เข้าใช้งาน</button>
+                </div>
 
-          {/* Stat Cards Grid */}
-          <div className="dashboard-grid">
-            <div className="stat-card">
-              <div className="stat-icon medic">
-                <Stethoscope size={28} />
-              </div>
-              <div className="stat-info">
-                <div className="stat-title">แพทย์เข้าเวร (Medic)</div>
-                <div className="stat-value">12 นาย</div>
+                <div className="hub-card medic">
+                  <div className="hub-icon-wrapper">
+                    <Clock size={28} />
+                  </div>
+                  <h3 className="hub-card-title">ระบบเข้าเวรออกเวร</h3>
+                  <p className="hub-card-desc">บันทึกการลงเวลาปฏิบัติงาน และตรวจสอบตารางเวรของแพทย์แต่ละท่าน</p>
+                  <button className="hub-btn">เข้าใช้งาน</button>
+                </div>
+
+                <div className="hub-card medic">
+                  <div className="hub-icon-wrapper">
+                    <BriefcaseMedical size={28} />
+                  </div>
+                  <h3 className="hub-card-title">ระบบเบิกจ่ายคลัง</h3>
+                  <p className="hub-card-desc">จัดการการเบิกจ่ายอุปกรณ์ทางการแพทย์ และยารักษาโรคจากคลังกลาง</p>
+                  <button className="hub-btn">เข้าใช้งาน</button>
+                </div>
+
+                <div className="hub-card medic">
+                  <div className="hub-icon-wrapper">
+                    <ClipboardList size={28} />
+                  </div>
+                  <h3 className="hub-card-title">ระบบบันทึกเคสอุบัติเหตุ</h3>
+                  <p className="hub-card-desc">บันทึกประวัติการรักษา รายงานอุบัติเหตุ และผู้ป่วยฉุกเฉิน</p>
+                  <button className="hub-btn">เข้าใช้งาน</button>
+                </div>
+
               </div>
             </div>
 
+            {/* Admin Section (Conditional) */}
             {profile?.role === 'admin' && (
-              <div className="stat-card">
-                <div className="stat-icon admin">
-                  <Users size={28} />
-                </div>
-                <div className="stat-info">
-                  <div className="stat-title">รออนุมัติสิทธิ์ (Admin)</div>
-                  <div className="stat-value">3 รายการ</div>
+              <div className="hub-section">
+                <h2 className="hub-section-title admin">ระบบจัดการภายในสภา (Council Only)</h2>
+                <div className="hub-grid">
+                  
+                  <div className="hub-card admin">
+                    <div className="hub-icon-wrapper">
+                      <Users size={28} />
+                    </div>
+                    <h3 className="hub-card-title">ระบบจัดการสมาชิกสภา</h3>
+                    <p className="hub-card-desc">ฐานข้อมูลทะเบียนประวัติ และปรับเปลี่ยนสิทธิ์ (Role) เจ้าหน้าที่</p>
+                    <button className="hub-btn">เข้าสู่ระบบ</button>
+                  </div>
+
+                  <div className="hub-card admin">
+                    <div className="hub-icon-wrapper">
+                      <UserCog size={28} />
+                    </div>
+                    <h3 className="hub-card-title">ระบบจัดการคำร้อง</h3>
+                    <p className="hub-card-desc">ตรวจสอบ อนุมัติ และจัดการคำร้องต่างๆ ที่ถูกส่งเข้ามา</p>
+                    <button className="hub-btn">เข้าสู่ระบบ</button>
+                  </div>
+
                 </div>
               </div>
             )}
 
-            <div className="stat-card">
-              <div className="stat-icon docs">
-                <Activity size={28} />
-              </div>
-              <div className="stat-info">
-                <div className="stat-title">เคสฉุกเฉินวันนี้</div>
-                <div className="stat-value">45 เคส</div>
-              </div>
+            {/* Related Links */}
+            <div className="related-links-card">
+              <h3 className="related-links-title"><Star size={20} color="#f59e0b" fill="#f59e0b" /> แนะนำเว็บไซต์ที่เกี่ยวข้อง</h3>
+              <a href="#" className="related-link-btn">
+                <ExternalLink size={18} />
+                กฎหน่วยงานสภา WIP TOWN
+              </a>
             </div>
+
           </div>
 
-          {/* Recent Activity Table */}
-          <div className="activity-section">
-            <div className="section-header">
-              <h2 className="section-title">เอกสารและประวัติล่าสุด</h2>
-              <button className="view-all-btn">ดูทั้งหมด</button>
-            </div>
-            <div style={{ overflowX: 'auto' }}>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>วันที่/เวลา</th>
-                    <th>ประเภทเอกสาร</th>
-                    <th>ผู้ป่วย / รายละเอียด</th>
-                    <th>ผู้บันทึก</th>
-                    <th>สถานะ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>21 ก.ค. 2026, 14:30</td>
-                    <td>รายงานอุบัติเหตุ (191)</td>
-                    <td>ชายปริศนาถูกรถชน อาการสาหัส</td>
-                    <td>พ.พ. สมชาย ใจดี</td>
-                    <td><span className="status-badge active">กำลังรักษา</span></td>
-                  </tr>
-                  <tr>
-                    <td>21 ก.ค. 2026, 11:15</td>
-                    <td>ใบรับรองแพทย์</td>
-                    <td>ทดสอบ ระบบ</td>
-                    <td>พ.พ. สมชาย ใจดี</td>
-                    <td><span className="status-badge closed">เสร็จสิ้น</span></td>
-                  </tr>
-                  <tr>
-                    <td>20 ก.ค. 2026, 22:40</td>
-                    <td>เบิกจ่ายคลัง (Inventory)</td>
-                    <td>เบิก ผ้าพันแผล x50, ยาชา x20</td>
-                    <td>น.พ. สมเกียรติ</td>
-                    <td><span className="status-badge pending">รออนุมัติ</span></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
         </div>
       </main>
     </div>
