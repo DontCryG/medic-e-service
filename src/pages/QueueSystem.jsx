@@ -379,6 +379,7 @@ export default function QueueSystem({ profile }) {
                             placeholderText="--:--"
                             className="remark-input time-input"
                             disabled={!canEdit}
+                            portalId="root-portal"
                           />
                         </div>
                       </td>
