@@ -439,6 +439,7 @@ export default function QueueSystem({ profile }) {
                       <td className="col-story-time" style={{ backgroundColor: '#f9f5ff' }}>
                         <div className="remark-input-container">
                           <input 
+                            key={`story-${user.id}-${user.story_time || ''}`}
                             type="text"
                             className="remark-input time-input"
                             defaultValue={user.story_time || ''}
@@ -484,6 +485,7 @@ export default function QueueSystem({ profile }) {
                       <td className="col-remark">
                         <div className="remark-input-container">
                           <input 
+                            key={`remark-${user.id}-${user.queue_remark || ''}`}
                             type="text" 
                             className="remark-input"
                             defaultValue={user.queue_remark || ''}
