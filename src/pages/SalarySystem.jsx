@@ -328,6 +328,17 @@ export default function SalarySystem({ profile }) {
         }]);
       if (error) throw error;
       
+      // Send notification
+      try {
+        await supabase.from('notifications').insert([{
+          discord_id: adjModalUser.discord_id,
+          title: `แจ้งเตือน${finalType === 'bonus' ? 'โบนัส' : 'หักเงิน'}`,
+          message: `คุณได้รับ${finalType === 'bonus' ? 'โบนัส' : 'การหักเงิน'} จำนวน ${new Intl.NumberFormat('th-TH').format(finalAmount)} บาท\nสาเหตุ: ${finalReason}`
+        }]);
+      } catch (notifError) {
+        console.error('Error sending notification:', notifError);
+      }
+      
       setAdjAmount('');
       setAdjReason('');
       setAdjType('bonus'); // reset

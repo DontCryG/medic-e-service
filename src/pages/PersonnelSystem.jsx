@@ -96,6 +96,23 @@ export default function PersonnelSystem({ profile }) {
 
       if (error) throw error;
       
+      // Send notification
+      if (editRole !== editingUser.role || editPosition !== editingUser.position) {
+        let msg = '';
+        if (editRole !== editingUser.role) msg += `สิทธิ์การใช้งานของคุณถูกเปลี่ยนเป็น: ${editRole}\n`;
+        if (editPosition !== editingUser.position) msg += `ตำแหน่งของคุณถูกเปลี่ยนเป็น: ${editPosition}\n`;
+        
+        try {
+          await supabase.from('notifications').insert([{
+            discord_id: editingUser.discord_id,
+            title: 'แจ้งเตือนการเปลี่ยนแปลงข้อมูลบุคลากร',
+            message: msg.trim()
+          }]);
+        } catch (notifError) {
+          console.error('Error sending notification:', notifError);
+        }
+      }
+
       alert('บันทึกข้อมูลเรียบร้อยแล้ว');
       closeEditModal();
       fetchUsers();

@@ -82,6 +82,17 @@ export default function RequestManagement({ profile }) {
         if (roleError) console.error('Error updating user role:', roleError);
       }
 
+      // 3. Send Notification
+      try {
+        await supabase.from('notifications').insert([{
+          discord_id: discordId,
+          title: `คำร้อง${requestType === 'leave' ? 'ลางาน' : 'ลาออก'}ถูก${newStatus === 'approved' ? 'อนุมัติ' : 'ปฏิเสธ'}`,
+          message: `คำร้องของคุณได้รับการตรวจสอบและ${newStatus === 'approved' ? 'อนุมัติเรียบร้อยแล้ว' : 'ถูกปฏิเสธ'}`
+        }]);
+      } catch (notifError) {
+        console.error('Error sending notification:', notifError);
+      }
+
       alert('ดำเนินการสำเร็จ');
       fetchData();
     } catch (error) {
