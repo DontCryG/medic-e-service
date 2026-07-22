@@ -647,7 +647,7 @@ export default function Dashboard() {
                     <Bell size={24} />
                   </div>
                   <div>
-                    <h4 style={{ margin: '0 0 0.25rem 0', color: '#92400e', fontSize: '1.05rem' }}>ประกาศจากผู้ดูแลระบบ</h4>
+                    <h4 style={{ margin: '0 0 0.25rem 0', color: '#92400e', fontSize: '1.05rem' }}>ประกาศจากโรงพยาบาล WIP TOWN</h4>
                     <p style={{ margin: 0, color: '#b45309', whiteSpace: 'pre-wrap' }}>{announcement}</p>
                   </div>
                 </div>
