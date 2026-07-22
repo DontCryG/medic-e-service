@@ -220,7 +220,7 @@ export default function AccountingSystem({ profile }) {
         <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>{activeTab === 'finance' ? 'หมวดหมู่ / ชื่อรายการ' : 'รายการสิ่งของ'}</label>
         <input 
           type="text" 
-          style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)' }}
+          style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'transparent', color: '#1e293b' }}
           placeholder={activeTab === 'finance' ? 'เช่น เงินเดือน, สปอนเซอร์, ซื้ออุปกรณ์' : 'เช่น Ticket Rainy, GACHA IC'}
           value={category}
           onChange={e => setCategory(e.target.value)}
@@ -233,7 +233,7 @@ export default function AccountingSystem({ profile }) {
           <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>จำนวนเงิน (THB)</label>
           <input 
             type="number" 
-            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)' }}
+            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'transparent', color: '#1e293b' }}
             placeholder="0"
             value={amount}
             onChange={e => setAmount(e.target.value)}
@@ -250,7 +250,7 @@ export default function AccountingSystem({ profile }) {
             <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>จำนวนทั้งหมด</label>
             <input 
               type="number" 
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)' }}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'transparent', color: '#1e293b' }}
               placeholder="0"
               value={quantity}
               onChange={e => setQuantity(e.target.value)}
@@ -263,7 +263,7 @@ export default function AccountingSystem({ profile }) {
               <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>จำนวนแจก(คน)</label>
               <input 
                 type="number" 
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)' }}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'transparent', color: '#1e293b' }}
                 placeholder="0"
                 value={distributePerPerson}
                 onChange={e => setDistributePerPerson(e.target.value)}
@@ -274,7 +274,7 @@ export default function AccountingSystem({ profile }) {
               <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>จำนวนคน</label>
               <input 
                 type="number" 
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)' }}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'transparent', color: '#1e293b' }}
                 placeholder="0"
                 value={personCount}
                 onChange={e => setPersonCount(e.target.value)}
@@ -285,7 +285,7 @@ export default function AccountingSystem({ profile }) {
           <div className="form-group" style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>สถานะ</label>
             <select 
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#1e293b' }}
               value={itemStatus}
               onChange={e => setItemStatus(e.target.value)}
             >
@@ -300,7 +300,7 @@ export default function AccountingSystem({ profile }) {
       <div className="form-group" style={{ marginBottom: '1.5rem' }}>
         <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>รายละเอียดเพิ่มเติม (Optional)</label>
         <textarea 
-          style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)', resize: 'vertical' }}
+          style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'transparent', color: '#1e293b', resize: 'vertical' }}
           rows="3"
           placeholder="ระบุหมายเหตุหรือผู้ที่เกี่ยวข้อง..."
           value={description}
@@ -318,36 +318,36 @@ export default function AccountingSystem({ profile }) {
     <div className="manage-container animate-fade-in">
       {/* Summary Cards */}
       <div className="summary-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
-        <div className="summary-card receive" style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1.25rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div className="summary-card receive" style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '1.25rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
           <div className="icon-wrapper" style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {activeTab === 'finance' ? <TrendingUp size={24} /> : <PackagePlus size={24} />}
           </div>
           <div>
             <h3 style={{ margin: '0 0 0.25rem 0', color: '#64748b', fontSize: '0.875rem' }}>{activeTab === 'finance' ? 'รายรับทั้งหมด' : 'รับเข้าทั้งหมด'}</h3>
-            <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: 700 }}>{activeTab === 'finance' ? formatCurrency(stats.totalIncome) : `${formatNumber(stats.totalReceive)} ชิ้น`}</p>
+            <p style={{ margin: 0, color: '#1e293b', fontSize: '1.5rem', fontWeight: 700 }}>{activeTab === 'finance' ? formatCurrency(stats.totalIncome) : `${formatNumber(stats.totalReceive)} ชิ้น`}</p>
           </div>
         </div>
-        <div className="summary-card disburse" style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1.25rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div className="summary-card disburse" style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '1.25rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
           <div className="icon-wrapper" style={{ width: '48px', height: '48px', borderRadius: '12px', background: activeTab === 'finance' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)', color: activeTab === 'finance' ? '#ef4444' : '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {activeTab === 'finance' ? <TrendingDown size={24} /> : <PackageMinus size={24} />}
           </div>
           <div>
             <h3 style={{ margin: '0 0 0.25rem 0', color: '#64748b', fontSize: '0.875rem' }}>{activeTab === 'finance' ? 'รายจ่ายทั้งหมด' : 'เบิกออกทั้งหมด'}</h3>
-            <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: 700 }}>{activeTab === 'finance' ? formatCurrency(stats.totalExpense) : `${formatNumber(stats.totalDisburse)} ชิ้น`}</p>
+            <p style={{ margin: 0, color: '#1e293b', fontSize: '1.5rem', fontWeight: 700 }}>{activeTab === 'finance' ? formatCurrency(stats.totalExpense) : `${formatNumber(stats.totalDisburse)} ชิ้น`}</p>
           </div>
         </div>
-        <div className="summary-card balance" style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1.25rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div className="summary-card balance" style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '1.25rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
           <div className="icon-wrapper" style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {activeTab === 'finance' ? <Wallet size={24} /> : <CheckCircle size={24} />}
           </div>
           <div>
             <h3 style={{ margin: '0 0 0.25rem 0', color: '#64748b', fontSize: '0.875rem' }}>{activeTab === 'finance' ? 'ยอดคงเหลือ' : 'ทำรายการทั้งหมด'}</h3>
-            <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: 700 }}>{activeTab === 'finance' ? formatCurrency(stats.balance) : `${formatNumber(logs.length)} รายการ`}</p>
+            <p style={{ margin: 0, color: '#1e293b', fontSize: '1.5rem', fontWeight: 700 }}>{activeTab === 'finance' ? formatCurrency(stats.balance) : `${formatNumber(logs.length)} รายการ`}</p>
           </div>
         </div>
       </div>
 
-      <div className="table-container" style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+      <div className="table-container" style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
             <h3 style={{ margin: 0, color: '#1e293b' }}>ประวัติการบันทึก</h3>
             
@@ -480,7 +480,7 @@ export default function AccountingSystem({ profile }) {
 
     return (
       <div className="report-container animate-fade-in">
-        <div className="table-header" style={{ marginBottom: '1.5rem', background: 'var(--surface)', padding: '1rem 1.5rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
+        <div className="table-header" style={{ marginBottom: '1.5rem', background: '#ffffff', padding: '1rem 1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
           <h2 style={{ margin: 0, color: '#1e293b', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <FileText size={24} color={activeTab === 'finance' ? '#3b82f6' : '#f59e0b'} />
             {activeTab === 'finance' ? 'สรุปเงินอยู่ที่ Vivian' : 'สรุปของอยู่ที่ Vivian'}
@@ -507,7 +507,7 @@ export default function AccountingSystem({ profile }) {
           </div>
         </div>
         
-        <div className="report-table-wrapper" style={{ overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div className="report-table-wrapper" style={{ overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
           {activeTab === 'finance' ? (
             <table className="report-table finance-theme" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
               <thead>
@@ -615,18 +615,18 @@ export default function AccountingSystem({ profile }) {
       </div>
 
       {/* Header and Sub Tabs */}
-      <div className="sub-tabs-container" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface)', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
+      <div className="sub-tabs-container" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#ffffff', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button 
             className={`accounting-tab-btn ${subTab === 'manage' ? 'active' : ''}`}
-            style={{ background: subTab === 'manage' ? 'rgba(59, 130, 246, 0.1)' : 'transparent', color: subTab === 'manage' ? '#3b82f6' : 'var(--text-secondary)' }}
+            style={{ background: subTab === 'manage' ? 'rgba(59, 130, 246, 0.1)' : 'transparent', color: subTab === 'manage' ? '#3b82f6' : '#64748b' }}
             onClick={() => setSubTab('manage')}
           >
             <Settings2 size={16} /> จัดการข้อมูล
           </button>
           <button 
             className={`accounting-tab-btn ${subTab === 'report' ? 'active' : ''}`}
-            style={{ background: subTab === 'report' ? 'rgba(59, 130, 246, 0.1)' : 'transparent', color: subTab === 'report' ? '#3b82f6' : 'var(--text-secondary)' }}
+            style={{ background: subTab === 'report' ? 'rgba(59, 130, 246, 0.1)' : 'transparent', color: subTab === 'report' ? '#3b82f6' : '#64748b' }}
             onClick={() => setSubTab('report')}
           >
             <FileText size={16} /> รายงานสรุป
@@ -649,9 +649,9 @@ export default function AccountingSystem({ profile }) {
       {/* Add Modal */}
       {showAddModal && (
         <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-          <div className="modal-content animate-fade-in" style={{ background: 'var(--bg-main)', padding: '2rem', borderRadius: '16px', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--border)', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+          <div className="modal-content animate-fade-in" style={{ background: '#ffffff', padding: '2rem', borderRadius: '16px', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid #e2e8f0', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <h3 style={{ margin: 0, color: '#1e293b', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 {activeTab === 'finance' ? <Wallet size={20} color="#3b82f6"/> : <PackagePlus size={20} color="#0ea5e9"/>}
                 {activeTab === 'finance' ? 'บันทึกธุรกรรมใหม่' : 'บันทึกรายการสิ่งของ'}
               </h3>
