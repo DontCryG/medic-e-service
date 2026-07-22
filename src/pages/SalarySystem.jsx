@@ -578,14 +578,7 @@ export default function SalarySystem({ profile }) {
                 {salaryData.length > 0 ? salaryData.map(data => (
                   <tr key={data.discord_id}>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', fontWeight: 'bold', color: '#94a3b8' }}>
-                          {data.avatar_url ? (
-                            <img src={data.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          ) : getInitial(data.ic_name)}
-                        </div>
-                        <div style={{ fontWeight: 600, color: '#1e293b' }}>{data.ic_name}</div>
-                      </div>
+                      <div style={{ fontWeight: 600, color: '#1e293b' }}>{data.ic_name}</div>
                     </td>
                     <td>{data.position}</td>
                     <td style={{ color: '#475569' }}>
