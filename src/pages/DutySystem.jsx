@@ -428,19 +428,54 @@ export default function DutySystem({ profile, avatarUrl }) {
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                           <button 
                             className="duty-btn btn-break" 
-                            style={{ padding: '4px 10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', minWidth: '85px', justifyContent: 'center' }}
+                            style={{ 
+                              padding: '6px 16px', 
+                              fontSize: '0.85rem', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: '6px', 
+                              minWidth: '90px', 
+                              justifyContent: 'center',
+                              borderRadius: '9999px',
+                              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                              color: 'white',
+                              border: 'none',
+                              boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+                              fontWeight: '600',
+                              transition: 'all 0.2s ease',
+                              cursor: 'pointer'
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(245, 158, 11, 0.4)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.3)'; }}
                             onClick={() => handleAdminToggleBreak(user)}
                             disabled={loading}
                           >
-                            {user.status === 'on_break' ? <><Play size={12} /> กลับ</> : <><Pause size={12} /> พัก</>}
+                            {user.status === 'on_break' ? <><Play size={14} /> กลับ</> : <><Pause size={14} /> พัก</>}
                           </button>
                           <button 
                             className="duty-btn btn-clock-out" 
-                            style={{ padding: '4px 10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            style={{ 
+                              padding: '6px 16px', 
+                              fontSize: '0.85rem', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: '6px', 
+                              justifyContent: 'center',
+                              borderRadius: '9999px',
+                              background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+                              color: 'white',
+                              border: 'none',
+                              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+                              fontWeight: '600',
+                              transition: 'all 0.2s ease',
+                              cursor: 'pointer'
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)'; }}
                             onClick={() => handleAdminClockOut(user)}
                             disabled={loading}
                           >
-                            <Square size={12} /> ออกเวร
+                            <Square size={14} /> ออกเวร
                           </button>
                         </div>
                       </td>
