@@ -113,7 +113,7 @@ export default function AccountingSystem({ profile }) {
         payload.distribute_per_person = parseInt(distributePerPerson, 10) || 0;
         payload.person_count = parseInt(personCount, 10) || 0;
         payload.distribute_total = payload.distribute_per_person * payload.person_count;
-        payload.item_status = 'Auto';
+        payload.item_status = 'รอดำเนินการ';
       }
 
       const { error } = await supabase.from('accounting_logs').insert([payload]);
@@ -161,6 +161,16 @@ export default function AccountingSystem({ profile }) {
       } catch (err) {
         Swal.fire('Error', err.message, 'error');
       }
+    }
+  };
+
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      const { error } = await supabase.from('accounting_logs').update({ item_status: newStatus }).eq('id', id);
+      if (error) throw error;
+      fetchLogs();
+    } catch (err) {
+      Swal.fire('Error', err.message, 'error');
     }
   };
 
@@ -441,7 +451,29 @@ export default function AccountingSystem({ profile }) {
                             <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{log.distribute_per_person > 0 ? formatNumber(log.distribute_per_person) : '-'}</td>
                             <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{log.person_count > 0 ? formatNumber(log.person_count) : '-'}</td>
                             <td style={{ textAlign: 'center', fontWeight: 'bold', whiteSpace: 'nowrap' }}>{formatNumber(remaining)}</td>
-                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{log.item_status !== '-' ? log.item_status : '-'}</td>
+                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                              {log.item_status === 'รอดำเนินการ' ? (
+                                <button 
+                                  onClick={() => handleUpdateStatus(log.id, 'เสร็จสิ้น')}
+                                  style={{ cursor: 'pointer', border: 'none', background: '#fef08a', color: '#854d0e', padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600, transition: 'all 0.2s' }}
+                                  onMouseOver={(e) => e.target.style.opacity = '0.8'}
+                                  onMouseOut={(e) => e.target.style.opacity = '1'}
+                                >
+                                  รอดำเนินการ
+                                </button>
+                              ) : log.item_status === 'เสร็จสิ้น' ? (
+                                <button
+                                  onClick={() => handleUpdateStatus(log.id, 'รอดำเนินการ')}
+                                  style={{ cursor: 'pointer', border: 'none', background: '#bbf7d0', color: '#166534', padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600, transition: 'all 0.2s' }}
+                                  onMouseOver={(e) => e.target.style.opacity = '0.8'}
+                                  onMouseOut={(e) => e.target.style.opacity = '1'}
+                                >
+                                  เสร็จสิ้น
+                                </button>
+                              ) : (
+                                '-'
+                              )}
+                            </td>
                           </>
                         )}
                         
