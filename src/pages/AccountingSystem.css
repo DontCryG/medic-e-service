@@ -258,3 +258,15 @@
 .val-positive { color: #10b981; font-weight: 600; }
 .val-negative { color: #ef4444; font-weight: 600; }
 .val-neutral { color: var(--text-primary); font-weight: 600; }
+  
+/* Report Styles */  
+@media print {  
+  body * { visibility: hidden; }  
+  .report-container, .report-container * { visibility: visible; }  
+  .report-container { position: absolute; left: 0; top: 0; width: 100%; }  
+  .sub-tabs-container, .accounting-header, .filter-group, button { display: none !important; }  
+}  
+.report-table th { border-right: 1px solid rgba(0,0,0,0.1); }  
+.report-table th:last-child { border-right: none; }  
+.report-table td { border-right: 1px solid rgba(0,0,0,0.05); }  
+.report-table td:last-child { border-right: none; } 
