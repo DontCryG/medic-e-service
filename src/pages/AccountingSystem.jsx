@@ -536,10 +536,10 @@ export default function AccountingSystem({ profile }) {
                         {activeTab === 'finance' ? (
                           <>
                             <td style={{ textAlign: 'right', color: '#10b981', fontWeight: isIncome ? 'bold' : 'normal', whiteSpace: 'nowrap' }}>
-                              {isIncome ? formatCurrency(amount).replace('฿', '') : ''}
+                              {isIncome ? formatCurrency(amount).replace('฿', '') : '-'}
                             </td>
                             <td style={{ textAlign: 'right', color: '#ef4444', fontWeight: !isIncome ? 'bold' : 'normal', whiteSpace: 'nowrap' }}>
-                              {!isIncome ? formatCurrency(amount).replace('฿', '') : ''}
+                              {!isIncome ? formatCurrency(amount).replace('฿', '') : '-'}
                             </td>
                             <td style={{ textAlign: 'right', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                               {formatCurrency(remaining).replace('฿', '')}
@@ -658,8 +658,8 @@ export default function AccountingSystem({ profile }) {
                       <tr key={log.id} style={{ borderBottom: '1px solid #e2e8f0', background: isIncome ? '#f8fafc' : '#f1f5f9' }}>
                         <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{formatDate(log.transaction_date)}</td>
                         <td style={{ padding: '0.75rem 1rem' }}>{log.category}</td>
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{isIncome ? formatCurrency(amount).replace('฿', '') : ''}</td>
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{!isIncome ? formatCurrency(amount).replace('฿', '') : ''}</td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{isIncome ? formatCurrency(amount).replace('฿', '') : '-'}</td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{!isIncome ? formatCurrency(amount).replace('฿', '') : '-'}</td>
                         <td style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 'bold' }}>{formatCurrency(currentBalance).replace('฿', '')}</td>
                       </tr>
                     );
@@ -703,7 +703,7 @@ export default function AccountingSystem({ profile }) {
                         <td style={{ padding: '0.75rem 1rem', textAlign: 'center', borderRight: '1px solid #fef08a' }}>{log.transaction_type === 'disburse' && log.distribute_per_person > 0 ? formatNumber(log.distribute_per_person) : '-'}</td>
                         <td style={{ padding: '0.75rem 1rem', textAlign: 'center', borderRight: '1px solid #fef08a' }}>{log.transaction_type === 'disburse' && log.person_count > 0 ? formatNumber(log.person_count) : '-'}</td>
                         <td style={{ padding: '0.75rem 1rem', textAlign: 'center', borderRight: '1px solid #fef08a', fontWeight: 'bold' }}>{formatNumber(log._running_balance)}</td>
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{log.item_status !== '-' ? log.item_status : ''}</td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{log.item_status && log.item_status !== '-' ? log.item_status : '-'}</td>
                       </tr>
                     );
                   })
