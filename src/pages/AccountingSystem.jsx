@@ -607,7 +607,7 @@ export default function AccountingSystem({ profile }) {
         <div className="table-header" style={{ marginBottom: '1.5rem', background: '#ffffff', padding: '1rem 1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
           <h2 style={{ margin: 0, color: '#1e293b', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <FileText size={24} color={activeTab === 'finance' ? '#3b82f6' : '#f59e0b'} />
-            {activeTab === 'finance' ? 'สรุปเงินอยู่ที่ Vivian' : 'สรุปของอยู่ที่ Vivian'}
+            {activeTab === 'finance' ? 'รายงานสรุปการเงิน' : 'รายงานสรุปสิ่งของ'}
           </h2>
           
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
