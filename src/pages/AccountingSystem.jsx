@@ -113,7 +113,7 @@ export default function AccountingSystem({ profile }) {
         payload.distribute_per_person = parseInt(distributePerPerson, 10) || 0;
         payload.person_count = parseInt(personCount, 10) || 0;
         payload.distribute_total = payload.distribute_per_person * payload.person_count;
-        payload.item_status = itemStatus;
+        payload.item_status = 'Auto';
       }
 
       const { error } = await supabase.from('accounting_logs').insert([payload]);
@@ -283,18 +283,6 @@ export default function AccountingSystem({ profile }) {
                     min="0"
                   />
                 </div>
-              </div>
-              <div className="form-group" style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>สถานะ</label>
-                <select 
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#1e293b' }}
-                  value={itemStatus}
-                  onChange={e => setItemStatus(e.target.value)}
-                >
-                  <option value="เสร็จสิ้น">เสร็จสิ้น</option>
-                  <option value="รอดำเนินการ">รอดำเนินการ</option>
-                  <option value="-">-</option>
-                </select>
               </div>
             </>
           )}
