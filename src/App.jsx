@@ -17,6 +17,7 @@ function AutoUpdateChecker() {
           const data = await response.json();
           if (currentVersion && currentVersion !== data.version) {
             console.log('New version detected! Reloading...', data.version);
+            setCurrentVersion(data.version); // Prevent multiple triggers
             
             // Show SweetAlert notification with 5-second countdown
             let timerInterval;
