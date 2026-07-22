@@ -258,42 +258,46 @@ export default function AccountingSystem({ profile }) {
               required
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-            <div className="form-group">
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>จำนวนแจก(คน)</label>
-              <input 
-                type="number" 
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'transparent', color: '#1e293b' }}
-                placeholder="0"
-                value={distributePerPerson}
-                onChange={e => setDistributePerPerson(e.target.value)}
-                min="0"
-              />
-            </div>
-            <div className="form-group">
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>จำนวนคน</label>
-              <input 
-                type="number" 
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'transparent', color: '#1e293b' }}
-                placeholder="0"
-                value={personCount}
-                onChange={e => setPersonCount(e.target.value)}
-                min="0"
-              />
-            </div>
-          </div>
-          <div className="form-group" style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>สถานะ</label>
-            <select 
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#1e293b' }}
-              value={itemStatus}
-              onChange={e => setItemStatus(e.target.value)}
-            >
-              <option value="เสร็จสิ้น">เสร็จสิ้น</option>
-              <option value="รอดำเนินการ">รอดำเนินการ</option>
-              <option value="-">-</option>
-            </select>
-          </div>
+          {transactionType === 'disburse' && (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div className="form-group">
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>จำนวนแจก(คน)</label>
+                  <input 
+                    type="number" 
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'transparent', color: '#1e293b' }}
+                    placeholder="0"
+                    value={distributePerPerson}
+                    onChange={e => setDistributePerPerson(e.target.value)}
+                    min="0"
+                  />
+                </div>
+                <div className="form-group">
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>จำนวนคน</label>
+                  <input 
+                    type="number" 
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'transparent', color: '#1e293b' }}
+                    placeholder="0"
+                    value={personCount}
+                    onChange={e => setPersonCount(e.target.value)}
+                    min="0"
+                  />
+                </div>
+              </div>
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>สถานะ</label>
+                <select 
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#1e293b' }}
+                  value={itemStatus}
+                  onChange={e => setItemStatus(e.target.value)}
+                >
+                  <option value="เสร็จสิ้น">เสร็จสิ้น</option>
+                  <option value="รอดำเนินการ">รอดำเนินการ</option>
+                  <option value="-">-</option>
+                </select>
+              </div>
+            </>
+          )}
         </>
       )}
 
