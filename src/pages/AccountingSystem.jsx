@@ -102,7 +102,27 @@ export default function AccountingSystem({ profile }) {
         }
         throw error;
       }
-      setLogs(data || []);
+      // Calculate running balances
+      let currentFinanceBal = 0;
+      const itemBalances = {};
+      
+      const logsWithBalances = (data || []).map(log => {
+        if (log.record_group === 'finance') {
+          if (log.transaction_type === 'income') currentFinanceBal += (log.amount || 0);
+          else if (log.transaction_type === 'expense') currentFinanceBal -= (log.amount || 0);
+          return { ...log, _running_balance: currentFinanceBal };
+        } else {
+          if (!itemBalances[log.category]) itemBalances[log.category] = 0;
+          if (log.transaction_type === 'receive') {
+            itemBalances[log.category] += (log.quantity || 0);
+          } else if (log.transaction_type === 'disburse') {
+            const distributeTotal = log.distribute_total || ((log.distribute_per_person || 0) * (log.person_count || 0));
+            itemBalances[log.category] -= distributeTotal;
+          }
+          return { ...log, _running_balance: itemBalances[log.category] };
+        }
+      });
+      setLogs(logsWithBalances);
     } catch (err) {
       console.error(err);
       Swal.fire('Error', err.message, 'error');
@@ -496,11 +516,7 @@ export default function AccountingSystem({ profile }) {
                     const isIncome = log.transaction_type === 'income';
                     const amount = log.amount || 0;
                     
-                    let remaining = 0;
-                    if (activeTab === 'item') {
-                      const totalDistribute = (log.distribute_per_person || 0) * (log.person_count || 0);
-                      remaining = (log.quantity || 0) - totalDistribute;
-                    }
+                    let remaining = log._running_balance || 0;
 
                     return (
                       <tr key={log.id}>
@@ -527,9 +543,9 @@ export default function AccountingSystem({ profile }) {
                           </>
                         ) : (
                           <>
-                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{formatNumber(log.quantity)}</td>
-                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{log.distribute_per_person > 0 ? formatNumber(log.distribute_per_person) : '-'}</td>
-                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{log.person_count > 0 ? formatNumber(log.person_count) : '-'}</td>
+                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{log.transaction_type === 'receive' ? formatNumber(log.quantity) : '-'}</td>
+                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{log.transaction_type === 'disburse' && log.distribute_per_person > 0 ? formatNumber(log.distribute_per_person) : '-'}</td>
+                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{log.transaction_type === 'disburse' && log.person_count > 0 ? formatNumber(log.person_count) : '-'}</td>
                             <td style={{ textAlign: 'center', fontWeight: 'bold', whiteSpace: 'nowrap' }}>{formatNumber(remaining)}</td>
                             <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                               {log.item_status === 'รอดำเนินการ' ? (
@@ -678,11 +694,11 @@ export default function AccountingSystem({ profile }) {
                       <tr key={log.id} style={{ borderBottom: '1px solid #e2e8f0', background: i % 2 === 0 ? '#fdf8cb' : '#fefce8' }}>
                         <td style={{ padding: '0.75rem 1rem', textAlign: 'center', borderRight: '1px solid #fef08a' }}>{formatDate(log.transaction_date)}</td>
                         <td style={{ padding: '0.75rem 1rem', borderRight: '1px solid #fef08a' }}>{log.category}</td>
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center', borderRight: '1px solid #fef08a' }}>{formatNumber(log.quantity)}</td>
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center', borderRight: '1px solid #fef08a' }}>{totalDistribute > 0 ? formatNumber(totalDistribute) : ''}</td>
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center', borderRight: '1px solid #fef08a' }}>{log.distribute_per_person > 0 ? formatNumber(log.distribute_per_person) : ''}</td>
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center', borderRight: '1px solid #fef08a' }}>{log.person_count > 0 ? formatNumber(log.person_count) : ''}</td>
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center', borderRight: '1px solid #fef08a', fontWeight: 'bold' }}>{formatNumber(remaining)}</td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center', borderRight: '1px solid #fef08a' }}>{log.transaction_type === 'receive' ? formatNumber(log.quantity) : '-'}</td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center', borderRight: '1px solid #fef08a' }}>{totalDistribute > 0 ? formatNumber(totalDistribute) : '-'}</td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center', borderRight: '1px solid #fef08a' }}>{log.transaction_type === 'disburse' && log.distribute_per_person > 0 ? formatNumber(log.distribute_per_person) : '-'}</td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center', borderRight: '1px solid #fef08a' }}>{log.transaction_type === 'disburse' && log.person_count > 0 ? formatNumber(log.person_count) : '-'}</td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center', borderRight: '1px solid #fef08a', fontWeight: 'bold' }}>{formatNumber(log._running_balance)}</td>
                         <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{log.item_status !== '-' ? log.item_status : ''}</td>
                       </tr>
                     );
