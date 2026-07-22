@@ -492,6 +492,7 @@ export default function AccountingSystem({ profile }) {
                     <>
                       <th style={{ textAlign: 'right', whiteSpace: 'nowrap', width: '15%' }}>รายรับ</th>
                       <th style={{ textAlign: 'right', whiteSpace: 'nowrap', width: '15%' }}>รายจ่าย</th>
+                      <th style={{ textAlign: 'right', whiteSpace: 'nowrap', width: '15%' }}>คงเหลือ</th>
                     </>
                   ) : (
                     <>
@@ -508,9 +509,9 @@ export default function AccountingSystem({ profile }) {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={activeTab === 'finance' ? 6 : 9} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>กำลังโหลดข้อมูล...</td></tr>
+                  <tr><td colSpan={activeTab === 'finance' ? 7 : 9} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>กำลังโหลดข้อมูล...</td></tr>
                 ) : manageLogs.length === 0 ? (
-                  <tr><td colSpan={activeTab === 'finance' ? 6 : 9} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>ไม่พบข้อมูลในช่วงเวลานี้</td></tr>
+                  <tr><td colSpan={activeTab === 'finance' ? 7 : 9} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>ไม่พบข้อมูลในช่วงเวลานี้</td></tr>
                 ) : (
                   manageLogs.map(log => {
                     const isIncome = log.transaction_type === 'income';
@@ -539,6 +540,9 @@ export default function AccountingSystem({ profile }) {
                             </td>
                             <td style={{ textAlign: 'right', color: '#ef4444', fontWeight: !isIncome ? 'bold' : 'normal', whiteSpace: 'nowrap' }}>
                               {!isIncome ? formatCurrency(amount).replace('฿', '') : ''}
+                            </td>
+                            <td style={{ textAlign: 'right', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                              {formatCurrency(remaining).replace('฿', '')}
                             </td>
                           </>
                         ) : (
