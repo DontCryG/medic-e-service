@@ -35,6 +35,7 @@ export default function AccountingSystem({ profile }) {
   const [distributePerPerson, setDistributePerPerson] = useState(''); // แจกต่อคน
   const [personCount, setPersonCount] = useState(''); // จำนวนคน
   const [itemStatus, setItemStatus] = useState('เสร็จสิ้น'); // สถานะ
+  const [availableItems, setAvailableItems] = useState([]);
 
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,7 +50,22 @@ export default function AccountingSystem({ profile }) {
 
   useEffect(() => {
     fetchLogs();
+    if (activeTab === 'item') {
+      fetchAvailableItems();
+    }
   }, [activeTab, startDate, endDate]);
+
+  const fetchAvailableItems = async () => {
+    try {
+      const { data, error } = await supabase.from('accounting_logs').select('category').eq('record_group', 'item');
+      if (!error && data) {
+        const unique = Array.from(new Set(data.map(d => d.category).filter(Boolean)));
+        setAvailableItems(unique);
+      }
+    } catch (err) {
+      console.error('Failed to fetch items:', err);
+    }
+  };
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -175,6 +191,7 @@ export default function AccountingSystem({ profile }) {
       setDescription('');
       setShowAddModal(false);
       fetchLogs();
+      if (activeTab === 'item') fetchAvailableItems();
     } catch (err) {
       Swal.fire('Error', err.message, 'error');
     } finally {
@@ -268,14 +285,28 @@ export default function AccountingSystem({ profile }) {
 
       <div className="form-group" style={{ marginBottom: '1rem' }}>
         <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>{activeTab === 'finance' ? 'หมวดหมู่ / ชื่อรายการ' : 'รายการสิ่งของ'}</label>
-        <input 
-          type="text" 
-          style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'transparent', color: '#1e293b' }}
-          placeholder={activeTab === 'finance' ? 'เช่น เงินเดือน, สปอนเซอร์, ซื้ออุปกรณ์' : 'เช่น Ticket Rainy, GACHA IC'}
-          value={category}
-          onChange={e => setCategory(e.target.value)}
-          required
-        />
+        {activeTab === 'item' && transactionType === 'disburse' ? (
+          <select 
+            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#1e293b' }}
+            value={category}
+            onChange={e => setCategory(e.target.value)}
+            required
+          >
+            <option value="" disabled>-- เลือกสิ่งของที่ต้องการเบิก --</option>
+            {availableItems.map(item => (
+              <option key={item} value={item}>{item}</option>
+            ))}
+          </select>
+        ) : (
+          <input 
+            type="text" 
+            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'transparent', color: '#1e293b' }}
+            placeholder={activeTab === 'finance' ? 'เช่น เงินเดือน, สปอนเซอร์, ซื้ออุปกรณ์' : 'เช่น Ticket Rainy, GACHA IC'}
+            value={category}
+            onChange={e => setCategory(e.target.value)}
+            required
+          />
+        )}
       </div>
 
       {activeTab === 'finance' && (
@@ -296,18 +327,20 @@ export default function AccountingSystem({ profile }) {
 
       {activeTab === 'item' && (
         <>
-          <div className="form-group" style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>จำนวนทั้งหมด</label>
-            <input 
-              type="number" 
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'transparent', color: '#1e293b' }}
-              placeholder="0"
-              value={quantity}
-              onChange={e => setQuantity(e.target.value)}
-              min="0"
-              required
-            />
-          </div>
+          {transactionType === 'receive' && (
+            <div className="form-group" style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>จำนวนทั้งหมด</label>
+              <input 
+                type="number" 
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'transparent', color: '#1e293b' }}
+                placeholder="0"
+                value={quantity}
+                onChange={e => setQuantity(e.target.value)}
+                min="0"
+                required
+              />
+            </div>
+          )}
           {transactionType === 'disburse' && (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
