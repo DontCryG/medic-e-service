@@ -57,10 +57,17 @@ export default function AccountingSystem({ profile }) {
 
   const fetchAvailableItems = async () => {
     try {
-      const { data, error } = await supabase.from('accounting_logs').select('category').eq('record_group', 'item');
+      const { data, error } = await supabase.from('accounting_logs').select('category, transaction_type, quantity, distribute_total').eq('record_group', 'item');
       if (!error && data) {
-        const unique = Array.from(new Set(data.map(d => d.category).filter(Boolean)));
-        setAvailableItems(unique);
+        const balances = {};
+        data.forEach(log => {
+          if (!log.category) return;
+          if (!balances[log.category]) balances[log.category] = 0;
+          if (log.transaction_type === 'receive') balances[log.category] += (log.quantity || 0);
+          else if (log.transaction_type === 'disburse') balances[log.category] -= (log.distribute_total || 0);
+        });
+        const uniqueWithBalances = Object.keys(balances).map(k => ({ name: k, balance: balances[k] }));
+        setAvailableItems(uniqueWithBalances);
       }
     } catch (err) {
       console.error('Failed to fetch items:', err);
@@ -294,7 +301,7 @@ export default function AccountingSystem({ profile }) {
           >
             <option value="" disabled>-- เลือกสิ่งของที่ต้องการเบิก --</option>
             {availableItems.map(item => (
-              <option key={item} value={item}>{item}</option>
+              <option key={item.name} value={item.name}>{item.name} (คงเหลือ {formatNumber(item.balance)} ชิ้น)</option>
             ))}
           </select>
         ) : (
