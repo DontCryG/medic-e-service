@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { 
   Wallet, TrendingUp, TrendingDown, PackageSearch, PackagePlus, PackageMinus, 
-  PlusCircle, Trash2, CalendarDays, Search, CheckCircle, FileText, Settings2
+  PlusCircle, Trash2, CalendarDays, Search, CheckCircle, FileText, Settings2, Printer
 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -625,7 +625,34 @@ export default function AccountingSystem({ profile }) {
                 dateFormat="dd/MM/yyyy"
               />
             </div>
-            <button className="sub-tab-btn" style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '8px' }} onClick={() => window.print()}>
+            <button 
+              className="print-report-btn" 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                background: 'linear-gradient(135deg, #0ea5e9, #3b82f6)', 
+                color: '#fff', 
+                border: 'none', 
+                borderRadius: '12px',
+                padding: '0.6rem 1.25rem',
+                fontWeight: '600',
+                fontSize: '0.95rem',
+                boxShadow: '0 4px 12px rgba(14, 165, 233, 0.3)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }} 
+              onClick={() => window.print()}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(14, 165, 233, 0.4)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(14, 165, 233, 0.3)';
+              }}
+            >
+              <Printer size={18} />
               พิมพ์รายงาน
             </button>
           </div>
