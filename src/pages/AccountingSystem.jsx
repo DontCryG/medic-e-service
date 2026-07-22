@@ -115,7 +115,7 @@ export default function AccountingSystem({ profile }) {
     e.preventDefault();
     if (!category) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุหมวดหมู่/ชื่อสิ่งของ', 'warning');
     if (activeTab === 'finance' && !amount) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุจำนวนเงิน', 'warning');
-    if (activeTab === 'item' && !quantity) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุจำนวนทั้งหมด', 'warning');
+    if (activeTab === 'item' && transactionType === 'receive' && !quantity) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุจำนวนทั้งหมด', 'warning');
 
     setIsSubmitting(true);
     try {
