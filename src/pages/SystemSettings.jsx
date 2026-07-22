@@ -403,7 +403,7 @@ export default function SystemSettings({ profile }) {
         if (usersData && usersData.length > 0) {
           const notifications = usersData.map(u => ({
             discord_id: u.discord_id,
-            title: '📣 ประกาศอัปเดตระบบ',
+            title: '📣 ประกาศจากโรงพยาบาล WIP TOWN',
             message: announcementText
           }));
           const { error: notifError } = await supabase.from('notifications').insert(notifications);
