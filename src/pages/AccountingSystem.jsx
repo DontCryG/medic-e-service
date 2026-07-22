@@ -58,14 +58,14 @@ export default function AccountingSystem({ profile }) {
 
   const fetchAvailableItems = async () => {
     try {
-      const { data, error } = await supabase.from('accounting_logs').select('category, transaction_type, quantity, distribute_total').eq('record_group', 'item');
+      const { data, error } = await supabase.from('accounting_logs').select('category, transaction_type, quantity, distribute_total, item_status').eq('record_group', 'item');
       if (!error && data) {
         const balances = {};
         data.forEach(log => {
           if (!log.category) return;
           if (!balances[log.category]) balances[log.category] = 0;
           if (log.transaction_type === 'receive') balances[log.category] += (log.quantity || 0);
-          else if (log.transaction_type === 'disburse') balances[log.category] -= (log.distribute_total || 0);
+          else if (log.transaction_type === 'disburse' && log.item_status === 'เสร็จสิ้น') balances[log.category] -= (log.distribute_total || 0);
         });
         const uniqueWithBalances = Object.keys(balances).map(k => ({ name: k, balance: balances[k] }));
         setAvailableItems(uniqueWithBalances);
@@ -116,7 +116,7 @@ export default function AccountingSystem({ profile }) {
           if (!itemBalances[log.category]) itemBalances[log.category] = 0;
           if (log.transaction_type === 'receive') {
             itemBalances[log.category] += (log.quantity || 0);
-          } else if (log.transaction_type === 'disburse') {
+          } else if (log.transaction_type === 'disburse' && log.item_status === 'เสร็จสิ้น') {
             const distributeTotal = log.distribute_total || ((log.distribute_per_person || 0) * (log.person_count || 0));
             itemBalances[log.category] -= distributeTotal;
           }
@@ -182,13 +182,13 @@ export default function AccountingSystem({ profile }) {
         if (transactionType === 'disburse') {
           const { data: allItem, error: iErr } = await supabase
             .from('accounting_logs')
-            .select('transaction_type, quantity, distribute_total')
+            .select('transaction_type, quantity, distribute_total, item_status')
             .eq('record_group', 'item')
             .eq('category', category);
             
           if (!iErr && allItem) {
             const tRec = allItem.filter(l => l.transaction_type === 'receive').reduce((sum, l) => sum + (l.quantity || 0), 0);
-            const tDis = allItem.filter(l => l.transaction_type === 'disburse').reduce((sum, l) => sum + (l.distribute_total || 0), 0);
+            const tDis = allItem.filter(l => l.transaction_type === 'disburse' && l.item_status === 'เสร็จสิ้น').reduce((sum, l) => sum + (l.distribute_total || 0), 0);
             const available = tRec - tDis;
             
             if (payload.distribute_total > available) {
@@ -243,6 +243,7 @@ export default function AccountingSystem({ profile }) {
         const { error } = await supabase.from('accounting_logs').delete().eq('id', id);
         if (error) throw error;
         fetchLogs();
+        if (activeTab === 'item') fetchAvailableItems();
       } catch (err) {
         Swal.fire('Error', err.message, 'error');
       }
@@ -254,6 +255,7 @@ export default function AccountingSystem({ profile }) {
       const { error } = await supabase.from('accounting_logs').update({ item_status: newStatus }).eq('id', id);
       if (error) throw error;
       fetchLogs();
+      if (activeTab === 'item') fetchAvailableItems();
     } catch (err) {
       Swal.fire('Error', err.message, 'error');
     }
@@ -281,7 +283,7 @@ export default function AccountingSystem({ profile }) {
     totalExpense: logs.filter(l => l.transaction_type === 'expense').reduce((sum, l) => sum + (l.amount || 0), 0),
     balance: 0,
     totalReceive: logs.filter(l => l.transaction_type === 'receive').reduce((sum, l) => sum + (l.quantity || 0), 0),
-    totalDisburse: logs.filter(l => l.transaction_type === 'disburse').reduce((sum, l) => sum + (l.distribute_total || 0), 0)
+    totalDisburse: logs.filter(l => l.transaction_type === 'disburse' && l.item_status === 'เสร็จสิ้น').reduce((sum, l) => sum + (l.distribute_total || 0), 0)
   };
   stats.balance = stats.totalIncome - stats.totalExpense;
 
