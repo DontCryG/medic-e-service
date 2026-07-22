@@ -23,7 +23,8 @@ import {
   Ban,
   Banknote,
   CalendarDays,
-  Trash2
+  Trash2,
+  Wallet
 } from 'lucide-react';
 import './Dashboard.css'; 
 import './DashboardGrid.css';
@@ -34,6 +35,7 @@ import RequestManagement from './RequestManagement';
 import PersonnelSystem from './PersonnelSystem';
 import SalarySystem from './SalarySystem';
 import SystemSettings from './SystemSettings';
+import AccountingSystem from './AccountingSystem';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -59,6 +61,8 @@ export default function Dashboard() {
     { id: 'personnel', label: 'ระบบจัดการบุคลากรแพทย์', admin: true },
     { id: 'requests', label: 'ระบบจัดการคำร้อง', admin: true },
     { id: 'salary', label: 'ระบบคำนวณเงินเดือน', admin: true },
+    { id: 'accounting', label: 'ระบบบัญชี & คลัง', admin: true },
+    { id: 'settings', label: 'ตั้งค่าระบบ', admin: true },
   ];
 
   const handleSearch = (e) => {
@@ -374,6 +378,13 @@ export default function Dashboard() {
                 <Banknote size={20} />
                 <span>ระบบคำนวณเงินเดือน</span>
               </div>
+              <div 
+                className={`nav-item ${activeTab === 'accounting' ? 'active' : ''}`}
+                onClick={() => setActiveTab('accounting')}
+              >
+                <Wallet size={20} />
+                <span>ระบบบัญชี & คลังสิ่งของ</span>
+              </div>
             </>
           )}
           
@@ -673,6 +684,15 @@ export default function Dashboard() {
                     <button className="hub-btn" onClick={() => setActiveTab('salary')}>เข้าสู่ระบบ</button>
                   </div>
 
+                  <div className="hub-card admin">
+                    <div className="hub-icon-wrapper">
+                      <Wallet size={32} strokeWidth={1.5} />
+                    </div>
+                    <h3 className="hub-card-title">ระบบบัญชี & คลังสิ่งของ</h3>
+                    <p className="hub-card-desc">บันทึกรายรับ-รายจ่ายทางการเงิน และบริหารจัดการรับเข้า-เบิกออกสิ่งของ</p>
+                    <button className="hub-btn" onClick={() => setActiveTab('accounting')}>เข้าสู่ระบบ</button>
+                  </div>
+
                 </div>
               </div>
             )}
@@ -711,6 +731,10 @@ export default function Dashboard() {
 
           {activeTab === 'salary' && (
             <SalarySystem profile={profile} />
+          )}
+
+          {activeTab === 'accounting' && (
+            <AccountingSystem profile={profile} />
           )}
 
           {activeTab === 'settings' && (
