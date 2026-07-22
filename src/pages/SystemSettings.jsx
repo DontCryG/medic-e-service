@@ -5,6 +5,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import Swal from 'sweetalert2';
 import './SystemSettings.css';
 
 export default function SystemSettings({ profile }) {
@@ -254,7 +255,7 @@ export default function SystemSettings({ profile }) {
       pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`Salary_Report_${new Date().getTime()}.pdf`);
     } catch (err) {
-      alert('เกิดข้อผิดพลาดในการสร้าง PDF');
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'เกิดข้อผิดพลาดในการสร้าง PDF' });
       console.error(err);
     } finally {
       setIsGenerating(false);
@@ -275,17 +276,26 @@ export default function SystemSettings({ profile }) {
       setNewRate('');
       fetchPositions();
     } catch (err) {
-      alert(err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: err.message });
     }
   };
 
   const handleDeletePosition = async (id) => {
-    if (!window.confirm('ลบตำแหน่งนี้?')) return;
+    const result = await Swal.fire({
+      title: 'ยืนยันการลบ',
+      text: 'ลบตำแหน่งนี้?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก'
+    });
+    if (!result.isConfirmed) return;
     try {
       await supabase.from('salary_rates').delete().eq('id', id);
       fetchPositions();
     } catch (err) {
-      alert(err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: err.message });
     }
   };
 
@@ -320,12 +330,21 @@ export default function SystemSettings({ profile }) {
       setNewAgencyCategory('Gang');
       fetchAgencies();
     } catch (err) {
-      alert(err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: err.message });
     }
   };
 
   const handleDeleteAgency = async (agencyObj) => {
-    if (!window.confirm(`ลบสังกัด ${agencyObj.name} ออกจากระบบ?`)) return;
+    const result = await Swal.fire({
+      title: 'ยืนยันการลบ',
+      text: `ลบสังกัด ${agencyObj.name} ออกจากระบบ?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก'
+    });
+    if (!result.isConfirmed) return;
     try {
       const updatedAgencies = agencies.filter(a => a.name !== agencyObj.name);
       await supabase.from('app_settings').upsert([
@@ -333,7 +352,7 @@ export default function SystemSettings({ profile }) {
       ]);
       fetchAgencies();
     } catch (err) {
-      alert(err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: err.message });
     }
   };
 
@@ -354,7 +373,7 @@ export default function SystemSettings({ profile }) {
       setEditingAgency('');
       fetchAgencies();
     } catch (err) {
-      alert(err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: err.message });
     }
   };
 
@@ -393,9 +412,9 @@ export default function SystemSettings({ profile }) {
         setNotifyAll(false); // Reset after sending
       }
 
-      alert('บันทึกการตั้งค่าเรียบร้อยแล้ว');
+      Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'บันทึกการตั้งค่าเรียบร้อยแล้ว' });
     } catch (err) {
-      alert('Error: ' + err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'Error: ' + err.message });
     } finally {
       setSavingSettings(false);
     }

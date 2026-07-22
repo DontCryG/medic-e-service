@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { Play, Pause, Square, Clock, Users, Activity, Filter, RefreshCw } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import Swal from 'sweetalert2';
 import './DutySystem.css';
 
 export default function DutySystem({ profile, avatarUrl }) {
@@ -153,7 +154,7 @@ export default function DutySystem({ profile, avatarUrl }) {
       if (error) throw error;
       fetchCurrentSession();
     } catch (err) {
-      alert('Error clocking in: ' + err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'เข้าเวรไม่สำเร็จ: ' + err.message });
     } finally {
       setLoading(false);
     }
@@ -191,7 +192,7 @@ export default function DutySystem({ profile, avatarUrl }) {
       }
       fetchCurrentSession();
     } catch (err) {
-      alert('Error changing break status: ' + err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'เปลี่ยนสถานะไม่สำเร็จ: ' + err.message });
     } finally {
       setLoading(false);
     }
@@ -224,14 +225,23 @@ export default function DutySystem({ profile, avatarUrl }) {
       fetchCurrentSession();
       fetchHistory();
     } catch (err) {
-      alert('Error clocking out: ' + err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ออกเวรไม่สำเร็จ: ' + err.message });
     } finally {
       setLoading(false);
     }
   };
 
   const handleAdminToggleBreak = async (session) => {
-    if (!window.confirm(`ต้องการเปลี่ยนสถานะการพักเบรกของ ${session.users?.ic_name} ใช่หรือไม่?`)) return;
+    const result = await Swal.fire({
+      title: 'ยืนยันการทำรายการ',
+      text: `ต้องการเปลี่ยนสถานะการพักเบรกของ ${session.users?.ic_name} ใช่หรือไม่?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก'
+    });
+    if (!result.isConfirmed) return;
+    
     setLoading(true);
     try {
       if (session.status === 'on_duty') {
@@ -258,14 +268,24 @@ export default function DutySystem({ profile, avatarUrl }) {
       }
       fetchLiveUsers();
     } catch (err) {
-      alert('Error: ' + err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: err.message });
     } finally {
       setLoading(false);
     }
   };
 
   const handleAdminClockOut = async (session) => {
-    if (!window.confirm(`ต้องการให้ ${session.users?.ic_name} ออกเวรใช่หรือไม่?`)) return;
+    const result = await Swal.fire({
+      title: 'ยืนยันการทำรายการ',
+      text: `ต้องการให้ ${session.users?.ic_name} ออกเวรใช่หรือไม่?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก',
+      confirmButtonColor: '#ef4444'
+    });
+    if (!result.isConfirmed) return;
+    
     setLoading(true);
     try {
       let finalBreakMinutes = session.total_break_minutes;
@@ -289,7 +309,7 @@ export default function DutySystem({ profile, avatarUrl }) {
          fetchCurrentSession();
       }
     } catch (err) {
-      alert('Error: ' + err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: err.message });
     } finally {
       setLoading(false);
     }

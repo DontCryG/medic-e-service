@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { CalendarDays, LogOut, Send, History, CheckCircle, XCircle, Clock, Umbrella, AlertCircle } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import Swal from 'sweetalert2';
 import './LeaveSystem.css';
 
 export default function LeaveSystem({ profile }) {
@@ -89,7 +90,7 @@ export default function LeaveSystem({ profile }) {
   const handleLeaveSubmit = async (e) => {
     e.preventDefault();
     if (!startDate || !endDate || !leaveReason) {
-      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+      Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
       return;
     }
 
@@ -110,9 +111,9 @@ export default function LeaveSystem({ profile }) {
       setStartDate(null);
       setEndDate(null);
       setLeaveReason('');
-      alert('ส่งคำร้องขอลางานสำเร็จ');
+      Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'ส่งคำร้องขอลางานสำเร็จ' });
     } catch (err) {
-      alert('เกิดข้อผิดพลาด: ' + err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: err.message });
     } finally {
       setLoading(false);
     }
@@ -121,17 +122,17 @@ export default function LeaveSystem({ profile }) {
   const handleVacationSubmit = async (e) => {
     e.preventDefault();
     if (!vacationStartDate || !vacationEndDate) {
-      alert('กรุณากรอกข้อมูลวันที่เริ่มลาและถึงวันที่ให้ครบถ้วน');
+      Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณากรอกข้อมูลวันที่เริ่มลาและถึงวันที่ให้ครบถ้วน' });
       return;
     }
     
     if (workingDays < 30) {
-      alert('ไม่สามารถลาพักร้อนได้เนื่องจากคุณยังทำงานไม่ครบ 30 วัน');
+      Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'ไม่สามารถลาพักร้อนได้เนื่องจากคุณยังทำงานไม่ครบ 30 วัน' });
       return;
     }
     
     if (hasTakenVacation) {
-      alert('คุณได้ใช้สิทธิ์ลาพักร้อนไปแล้ว');
+      Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'คุณได้ใช้สิทธิ์ลาพักร้อนไปแล้ว' });
       return;
     }
 
@@ -151,10 +152,10 @@ export default function LeaveSystem({ profile }) {
       
       setVacationStartDate(null);
       setVacationEndDate(null);
-      alert('ส่งคำร้องขอลาพักร้อนสำเร็จ');
+      Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'ส่งคำร้องขอลาพักร้อนสำเร็จ' });
       fetchHistory();
     } catch (err) {
-      alert('เกิดข้อผิดพลาด: ' + err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: err.message });
     } finally {
       setLoading(false);
     }
@@ -163,13 +164,20 @@ export default function LeaveSystem({ profile }) {
   const handleResignSubmit = async (e) => {
     e.preventDefault();
     if (!resignReason || !resignDate) {
-      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+      Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
       return;
     }
 
-    if (!window.confirm('คุณแน่ใจหรือไม่ที่จะส่งคำร้องขอลาออก?')) {
-      return;
-    }
+    const result = await Swal.fire({
+      title: 'ยืนยันการลาออก',
+      text: 'คุณแน่ใจหรือไม่ที่จะส่งคำร้องขอลาออก? การกระทำนี้ไม่สามารถย้อนกลับได้',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก'
+    });
+    if (!result.isConfirmed) return;
 
     setLoading(true);
     try {
@@ -186,9 +194,9 @@ export default function LeaveSystem({ profile }) {
       
       setResignReason('');
       setResignDate(null);
-      alert('ส่งคำร้องขอลาออกสำเร็จ กรุณารอแอดมินดำเนินการ');
+      Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'ส่งคำร้องขอลาออกสำเร็จ กรุณารอแอดมินดำเนินการ' });
     } catch (err) {
-      alert('เกิดข้อผิดพลาด: ' + err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: err.message });
     } finally {
       setLoading(false);
     }

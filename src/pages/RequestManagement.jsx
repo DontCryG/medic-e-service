@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { UserCog, Clock, CheckCircle, XCircle, CalendarDays, LogOut, Umbrella } from 'lucide-react';
+import Swal from 'sweetalert2';
 import './RequestManagement.css';
 
 export default function RequestManagement({ profile }) {
@@ -60,7 +61,15 @@ export default function RequestManagement({ profile }) {
 
   const handleAction = async (requestId, requestType, discordId, newStatus) => {
     const actionText = newStatus === 'approved' ? 'อนุมัติ' : 'ไม่อนุมัติ';
-    if (!window.confirm(`คุณต้องการ ${actionText} คำร้องนี้ใช่หรือไม่?`)) return;
+    const result = await Swal.fire({
+      title: 'ยืนยันการทำรายการ',
+      text: `คุณต้องการ ${actionText} คำร้องนี้ใช่หรือไม่?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก'
+    });
+    if (!result.isConfirmed) return;
 
     setProcessingId(requestId);
     try {
@@ -93,10 +102,10 @@ export default function RequestManagement({ profile }) {
         console.error('Error sending notification:', notifError);
       }
 
-      alert('ดำเนินการสำเร็จ');
+      Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'ดำเนินการสำเร็จ' });
       fetchData();
     } catch (error) {
-      alert('เกิดข้อผิดพลาด: ' + error.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: error.message });
     } finally {
       setProcessingId(null);
     }

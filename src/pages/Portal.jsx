@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import Swal from 'sweetalert2';
 import './Portal.css';
 
 export default function Portal() {
@@ -20,16 +21,20 @@ export default function Portal() {
     return () => subscription.unsubscribe();
   }, [navigate]);
   const handleLogin = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'discord',
-      options: {
-        redirectTo: window.location.origin + '/', 
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'discord',
+        options: {
+          redirectTo: window.location.origin + '/', 
+        }
+      });
+      
+      if (error) {
+        console.error('Error logging in:', error.message);
+        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'เกิดข้อผิดพลาดในการล็อกอิน: ' + error.message });
       }
-    });
-    
-    if (error) {
-      console.error('Error logging in:', error.message);
-      alert('เกิดข้อผิดพลาดในการล็อกอิน: ' + error.message);
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'เกิดข้อผิดพลาดในการล็อกอิน: ' + error.message });
     }
   };
 

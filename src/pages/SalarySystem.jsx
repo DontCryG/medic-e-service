@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { Settings, Calculator, Filter, CalendarDays, DollarSign, Clock, Users, X, Save, PlusCircle, Trash2, Pencil, ChevronDown } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import Swal from 'sweetalert2';
 import './SalarySystem.css';
 
 export default function SalarySystem({ profile }) {
@@ -292,11 +293,11 @@ export default function SalarySystem({ profile }) {
           .update({ hourly_rate: rate.hourly_rate })
           .eq('id', rate.id);
       }
-      alert('บันทึกเรทเงินเดือนเรียบร้อยแล้ว');
+      Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'บันทึกเรทเงินเดือนเรียบร้อยแล้ว' });
       setIsSettingsOpen(false);
       fetchRatesAndData(); // Recalculate
     } catch (error) {
-      alert('เกิดข้อผิดพลาดในการบันทึก: ' + error.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'เกิดข้อผิดพลาดในการบันทึก: ' + error.message });
     } finally {
       setSavingRates(false);
     }
@@ -304,7 +305,7 @@ export default function SalarySystem({ profile }) {
 
   const handleAddRate = async () => {
     if (!newPositionName || !newHourlyRate) {
-      alert('กรุณากรอกชื่อตำแหน่งและเรทเงินเดือนให้ครบถ้วน');
+      Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณากรอกชื่อตำแหน่งและเรทเงินเดือนให้ครบถ้วน' });
       return;
     }
     setSavingRates(true);
@@ -320,17 +321,26 @@ export default function SalarySystem({ profile }) {
       
       setNewPositionName('');
       setNewHourlyRate('');
-      alert('เพิ่มตำแหน่งใหม่สำเร็จ');
+      Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'เพิ่มตำแหน่งใหม่สำเร็จ' });
       fetchRatesAndData();
     } catch (error) {
-      alert('เกิดข้อผิดพลาด: ' + error.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: error.message });
     } finally {
       setSavingRates(false);
     }
   };
 
   const handleDeleteRate = async (id, name) => {
-    if (!window.confirm(`คุณแน่ใจหรือไม่ที่จะลบตำแหน่ง "${name}"?`)) return;
+    const result = await Swal.fire({
+      title: 'ยืนยันการลบ',
+      text: `คุณแน่ใจหรือไม่ที่จะลบตำแหน่ง "${name}"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก'
+    });
+    if (!result.isConfirmed) return;
     
     setSavingRates(true);
     try {
@@ -342,7 +352,7 @@ export default function SalarySystem({ profile }) {
       if (error) throw error;
       fetchRatesAndData();
     } catch (error) {
-      alert('เกิดข้อผิดพลาด: ' + error.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: error.message });
     } finally {
       setSavingRates(false);
     }
@@ -382,7 +392,7 @@ export default function SalarySystem({ profile }) {
 
   const handleAddAdjustment = async () => {
     if (!adjAmount || isNaN(adjAmount) || Number(adjAmount) <= 0) {
-      alert('กรุณากรอกตัวเลขให้ถูกต้อง');
+      Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณากรอกตัวเลขให้ถูกต้อง' });
       return;
     }
     
@@ -419,20 +429,29 @@ export default function SalarySystem({ profile }) {
       await loadUserAdjustments(adjModalUser.discord_id);
       fetchRatesAndData(); // Refresh main table
     } catch (err) {
-      alert('Error: ' + err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'Error: ' + err.message });
     } finally {
       setSavingAdj(false);
     }
   };
 
   const handleDeleteAdj = async (id) => {
-    if (!window.confirm('ลบรายการนี้ใช่หรือไม่?')) return;
+    const result = await Swal.fire({
+      title: 'ยืนยันการลบ',
+      text: 'ลบรายการนี้ใช่หรือไม่?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก'
+    });
+    if (!result.isConfirmed) return;
     try {
       await supabase.from('salary_adjustments').delete().eq('id', id);
       await loadUserAdjustments(adjModalUser.discord_id);
       fetchRatesAndData();
     } catch (err) {
-      alert(err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: err.message });
     }
   };
 

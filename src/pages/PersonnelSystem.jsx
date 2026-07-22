@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { Users, Search, Edit2, Trash2, X, ShieldAlert, ChevronDown, Clock } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import Swal from 'sweetalert2';
 import './PersonnelSystem.css';
 
 export default function PersonnelSystem({ profile }) {
@@ -173,11 +174,11 @@ export default function PersonnelSystem({ profile }) {
         }
       }
 
-      alert('บันทึกข้อมูลเรียบร้อยแล้ว');
+      Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'บันทึกข้อมูลเรียบร้อยแล้ว' });
       closeEditModal();
       fetchUsers();
     } catch (error) {
-      alert('เกิดข้อผิดพลาด: ' + error.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: error.message });
     } finally {
       setIsSaving(false);
     }
@@ -197,12 +198,12 @@ export default function PersonnelSystem({ profile }) {
   const handleSaveDuty = async (e) => {
     e.preventDefault();
     if (!dutyClockIn || !dutyClockOut) {
-      alert('กรุณากรอกเวลาเข้าและออกเวรให้ครบถ้วน');
+      Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณากรอกเวลาเข้าและออกเวรให้ครบถ้วน' });
       return;
     }
     
     if (dutyClockOut <= dutyClockIn) {
-      alert('เวลาออกเวรต้องอยู่หลังเวลาเข้าเวร');
+      Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'เวลาออกเวรต้องอยู่หลังเวลาเข้าเวร' });
       return;
     }
 
@@ -220,22 +221,31 @@ export default function PersonnelSystem({ profile }) {
 
       if (error) throw error;
       
-      alert('บันทึกเวลาเข้าเวรย้อนหลังสำเร็จ');
+      Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'บันทึกเวลาเข้าเวรย้อนหลังสำเร็จ' });
       closeDutyModal();
     } catch (error) {
-      alert('เกิดข้อผิดพลาด: ' + error.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: error.message });
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteUser = async (user) => {
-    if (!window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการ "ลบ" ข้อมูลของ ${user.ic_name} ออกจากระบบอย่างถาวร? การกระทำนี้ไม่สามารถย้อนกลับได้`)) {
+    const result = await Swal.fire({
+      title: 'ยืนยันการลบ',
+      text: `คุณแน่ใจหรือไม่ว่าต้องการ "ลบ" ข้อมูลของ ${user.ic_name} ออกจากระบบอย่างถาวร? การกระทำนี้ไม่สามารถย้อนกลับได้`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก'
+    });
+    
+    if (!result.isConfirmed) {
       return;
     }
 
     try {
-      // Supabase Delete
       const { error } = await supabase
         .from('users')
         .delete()
@@ -243,10 +253,10 @@ export default function PersonnelSystem({ profile }) {
 
       if (error) throw error;
       
-      alert(`ลบข้อมูลของ ${user.ic_name} เรียบร้อยแล้ว`);
+      Swal.fire({ icon: 'success', title: 'สำเร็จ', text: `ลบข้อมูลของ ${user.ic_name} เรียบร้อยแล้ว` });
       fetchUsers();
     } catch (error) {
-      alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + error.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาดในการลบข้อมูล', text: error.message });
     }
   };
 

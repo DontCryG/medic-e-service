@@ -216,7 +216,7 @@ export default function QueueSystem({ profile }) {
         
       if (error) throw error;
     } catch (err) {
-      alert('Error updating queue status: ' + err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'Error updating queue status: ' + err.message });
     }
   };
 
@@ -310,7 +310,7 @@ export default function QueueSystem({ profile }) {
       if (error) throw error;
       
     } catch (err) {
-      alert('Error updating queue status: ' + err.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'Error updating queue status: ' + err.message });
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import Swal from 'sweetalert2';
 import './Portal.css'; // Reuse some portal styles for consistency
 
 export default function ProfileSettings() {
@@ -22,7 +23,7 @@ export default function ProfileSettings() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!icName || !icPhone) {
-      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+      Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
       return;
     }
 
@@ -48,7 +49,7 @@ export default function ProfileSettings() {
       navigate('/dashboard');
     } catch (error) {
       console.error('Error saving profile:', error.message);
-      alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + error.message);
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + error.message });
     } finally {
       setLoading(false);
     }
