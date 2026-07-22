@@ -404,28 +404,28 @@ export default function AccountingSystem({ profile }) {
             </div>
           </div>
 
-          <div className="acc-table-wrapper">
-            <table className="acc-table">
+          <div className="acc-table-wrapper" style={{ overflowX: 'auto' }}>
+            <table className="acc-table" style={{ minWidth: '1000px', width: '100%' }}>
               <thead>
                 <tr>
-                  <th>วันที่</th>
-                  <th>{activeTab === 'finance' ? 'รายการ' : 'ชื่อสิ่งของ'}</th>
+                  <th style={{ whiteSpace: 'nowrap', width: '10%' }}>วันที่</th>
+                  <th style={{ whiteSpace: 'nowrap', width: '20%' }}>{activeTab === 'finance' ? 'รายการ' : 'ชื่อสิ่งของ'}</th>
                   {activeTab === 'finance' ? (
                     <>
-                      <th style={{ textAlign: 'right' }}>รายรับ</th>
-                      <th style={{ textAlign: 'right' }}>รายจ่าย</th>
+                      <th style={{ textAlign: 'right', whiteSpace: 'nowrap', width: '15%' }}>รายรับ</th>
+                      <th style={{ textAlign: 'right', whiteSpace: 'nowrap', width: '15%' }}>รายจ่าย</th>
                     </>
                   ) : (
                     <>
-                      <th style={{ textAlign: 'center' }}>จำนวนทั้งหมด</th>
-                      <th style={{ textAlign: 'center' }}>แจก(คน)</th>
-                      <th style={{ textAlign: 'center' }}>จำนวนคน</th>
-                      <th style={{ textAlign: 'center' }}>คงเหลือ</th>
-                      <th style={{ textAlign: 'center' }}>สถานะ</th>
+                      <th style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>จำนวนทั้งหมด</th>
+                      <th style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>แจก(คน)</th>
+                      <th style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>จำนวนคน</th>
+                      <th style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>คงเหลือ</th>
+                      <th style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>สถานะ</th>
                     </>
                   )}
-                  <th>ผู้บันทึก</th>
-                  <th style={{ textAlign: 'center' }}>จัดการ</th>
+                  <th style={{ whiteSpace: 'nowrap' }}>ผู้บันทึก</th>
+                  <th style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>จัดการ</th>
                 </tr>
               </thead>
               <tbody>
@@ -446,41 +446,41 @@ export default function AccountingSystem({ profile }) {
 
                     return (
                       <tr key={log.id}>
-                        <td style={{ color: '#64748b' }}>{formatDate(log.transaction_date)}</td>
+                        <td style={{ color: '#64748b', whiteSpace: 'nowrap' }}>{formatDate(log.transaction_date)}</td>
                         <td>
-                          <div style={{ fontWeight: 500, color: '#1e293b' }}>
-                            {log.transaction_type === 'income' && <span className="tag income" style={{marginRight: '0.5rem'}}>รายรับ</span>}
-                            {log.transaction_type === 'expense' && <span className="tag expense" style={{marginRight: '0.5rem'}}>รายจ่าย</span>}
-                            {log.transaction_type === 'receive' && <span className="tag receive" style={{marginRight: '0.5rem'}}>รับเข้า</span>}
-                            {log.transaction_type === 'disburse' && <span className="tag disburse" style={{marginRight: '0.5rem'}}>เบิกออก</span>}
-                            {log.category}
+                          <div style={{ fontWeight: 500, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+                            {log.transaction_type === 'income' && <span className="tag income">รายรับ</span>}
+                            {log.transaction_type === 'expense' && <span className="tag expense">รายจ่าย</span>}
+                            {log.transaction_type === 'receive' && <span className="tag receive">รับเข้า</span>}
+                            {log.transaction_type === 'disburse' && <span className="tag disburse">เบิกออก</span>}
+                            <span>{log.category}</span>
                           </div>
-                          {log.description && <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem' }}>{log.description}</div>}
+                          {log.description && <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem', whiteSpace: 'normal', minWidth: '150px' }}>{log.description}</div>}
                         </td>
                         
                         {activeTab === 'finance' ? (
                           <>
-                            <td style={{ textAlign: 'right', color: '#10b981', fontWeight: isIncome ? 'bold' : 'normal' }}>
+                            <td style={{ textAlign: 'right', color: '#10b981', fontWeight: isIncome ? 'bold' : 'normal', whiteSpace: 'nowrap' }}>
                               {isIncome ? formatCurrency(amount).replace('฿', '') : ''}
                             </td>
-                            <td style={{ textAlign: 'right', color: '#ef4444', fontWeight: !isIncome ? 'bold' : 'normal' }}>
+                            <td style={{ textAlign: 'right', color: '#ef4444', fontWeight: !isIncome ? 'bold' : 'normal', whiteSpace: 'nowrap' }}>
                               {!isIncome ? formatCurrency(amount).replace('฿', '') : ''}
                             </td>
                           </>
                         ) : (
                           <>
-                            <td style={{ textAlign: 'center' }}>{formatNumber(log.quantity)}</td>
-                            <td style={{ textAlign: 'center' }}>{log.distribute_per_person > 0 ? formatNumber(log.distribute_per_person) : '-'}</td>
-                            <td style={{ textAlign: 'center' }}>{log.person_count > 0 ? formatNumber(log.person_count) : '-'}</td>
-                            <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{formatNumber(remaining)}</td>
-                            <td style={{ textAlign: 'center' }}>{log.item_status !== '-' ? log.item_status : '-'}</td>
+                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{formatNumber(log.quantity)}</td>
+                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{log.distribute_per_person > 0 ? formatNumber(log.distribute_per_person) : '-'}</td>
+                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{log.person_count > 0 ? formatNumber(log.person_count) : '-'}</td>
+                            <td style={{ textAlign: 'center', fontWeight: 'bold', whiteSpace: 'nowrap' }}>{formatNumber(remaining)}</td>
+                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{log.item_status !== '-' ? log.item_status : '-'}</td>
                           </>
                         )}
                         
-                        <td>
+                        <td style={{ whiteSpace: 'nowrap' }}>
                           <div style={{ fontSize: '0.85rem' }}>{log.reporter_name || 'Admin'}</div>
                         </td>
-                        <td style={{ textAlign: 'center' }}>
+                        <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                           <button 
                             className="delete-adj-btn" 
                             onClick={() => handleDelete(log.id)}
