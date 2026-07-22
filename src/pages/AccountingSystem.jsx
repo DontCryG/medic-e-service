@@ -281,7 +281,7 @@ export default function AccountingSystem({ profile }) {
     totalExpense: logs.filter(l => l.transaction_type === 'expense').reduce((sum, l) => sum + (l.amount || 0), 0),
     balance: 0,
     totalReceive: logs.filter(l => l.transaction_type === 'receive').reduce((sum, l) => sum + (l.quantity || 0), 0),
-    totalDisburse: logs.filter(l => l.transaction_type === 'disburse').reduce((sum, l) => sum + (l.quantity || 0), 0)
+    totalDisburse: logs.filter(l => l.transaction_type === 'disburse').reduce((sum, l) => sum + (l.distribute_total || 0), 0)
   };
   stats.balance = stats.totalIncome - stats.totalExpense;
 
