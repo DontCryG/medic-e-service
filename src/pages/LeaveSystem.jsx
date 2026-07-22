@@ -263,6 +263,7 @@ export default function LeaveSystem({ profile }) {
                       selectsStart
                       startDate={startDate}
                       endDate={endDate}
+                      minDate={new Date()}
                       placeholderText="ระบุวันที่"
                       className="form-input"
                       dateFormat="dd/MM/yyyy"
@@ -277,7 +278,7 @@ export default function LeaveSystem({ profile }) {
                       selectsEnd
                       startDate={startDate}
                       endDate={endDate}
-                      minDate={startDate}
+                      minDate={startDate || new Date()}
                       placeholderText="ระบุวันที่"
                       className="form-input"
                       dateFormat="dd/MM/yyyy"
@@ -394,6 +395,7 @@ export default function LeaveSystem({ profile }) {
                   <DatePicker 
                     selected={resignDate} 
                     onChange={(date) => setResignDate(date)} 
+                    minDate={new Date()}
                     placeholderText="ระบุวันที่"
                     className="form-input"
                     dateFormat="dd/MM/yyyy"
