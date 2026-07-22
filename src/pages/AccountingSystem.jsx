@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { 
   Wallet, TrendingUp, TrendingDown, PackageSearch, PackagePlus, PackageMinus, 
-  PlusCircle, Trash2, CalendarDays, Search, CheckCircle, FileText, Settings2, Printer
+  PlusCircle, Trash2, CalendarDays, Search, CheckCircle, FileText, Settings2, Printer, ChevronDown
 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -36,6 +36,7 @@ export default function AccountingSystem({ profile }) {
   const [personCount, setPersonCount] = useState(''); // จำนวนคน
   const [itemStatus, setItemStatus] = useState('เสร็จสิ้น'); // สถานะ
   const [availableItems, setAvailableItems] = useState([]);
+  const [showItemDropdown, setShowItemDropdown] = useState(false);
 
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -313,17 +314,35 @@ export default function AccountingSystem({ profile }) {
       <div className="form-group" style={{ marginBottom: '1rem' }}>
         <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>{activeTab === 'finance' ? 'หมวดหมู่ / ชื่อรายการ' : 'รายการสิ่งของ'}</label>
         {activeTab === 'item' && transactionType === 'disburse' ? (
-          <select 
-            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#1e293b' }}
-            value={category}
-            onChange={e => setCategory(e.target.value)}
-            required
-          >
-            <option value="" disabled>-- เลือกสิ่งของที่ต้องการเบิก --</option>
-            {availableItems.map(item => (
-              <option key={item.name} value={item.name}>{item.name} (คงเหลือ {formatNumber(item.balance)} ชิ้น)</option>
-            ))}
-          </select>
+          <div className="custom-dropdown" style={{ position: 'relative' }}>
+            <div 
+              className="dropdown-selected"
+              onClick={() => setShowItemDropdown(!showItemDropdown)}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', color: category ? '#1e293b' : '#94a3b8', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            >
+              <span>{category ? `${category} (คงเหลือ ${formatNumber(availableItems.find(i => i.name === category)?.balance || 0)} ชิ้น)` : '-- เลือกสิ่งของที่ต้องการเบิก --'}</span>
+              <ChevronDown size={16} color="#64748b" />
+            </div>
+            {showItemDropdown && (
+              <div className="dropdown-options" style={{ position: 'absolute', top: '100%', left: 0, width: '100%', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', marginTop: '4px', zIndex: 10, maxHeight: '200px', overflowY: 'auto', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}>
+                {availableItems.map(item => (
+                  <div 
+                    key={item.name} 
+                    className="dropdown-option"
+                    onClick={() => {
+                      setCategory(item.name);
+                      setShowItemDropdown(false);
+                    }}
+                    style={{ padding: '0.75rem', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', color: '#1e293b', transition: 'background-color 0.2s' }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    {item.name} <span style={{ color: '#64748b', fontSize: '0.875rem' }}>(คงเหลือ {formatNumber(item.balance)} ชิ้น)</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         ) : (
           <input 
             type="text" 
