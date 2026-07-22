@@ -108,12 +108,52 @@ export default function AccountingSystem({ profile }) {
 
       if (activeTab === 'finance') {
         payload.amount = parseFloat(amount);
+        
+        if (transactionType === 'expense') {
+          const { data: allFinance, error: fErr } = await supabase
+            .from('accounting_logs')
+            .select('transaction_type, amount')
+            .eq('record_group', 'finance');
+            
+          if (!fErr && allFinance) {
+            const tInc = allFinance.filter(l => l.transaction_type === 'income').reduce((sum, l) => sum + (l.amount || 0), 0);
+            const tExp = allFinance.filter(l => l.transaction_type === 'expense').reduce((sum, l) => sum + (l.amount || 0), 0);
+            const trueBal = tInc - tExp;
+            
+            if (payload.amount > trueBal) {
+              Swal.fire('ข้อผิดพลาด', `ยอดเงินคงเหลือไม่เพียงพอ (คงเหลือ ${formatNumber(trueBal)} บาท)`, 'error');
+              setIsSubmitting(false);
+              return;
+            }
+          }
+        }
+        
       } else {
         payload.quantity = parseInt(quantity, 10) || 0;
         payload.distribute_per_person = parseInt(distributePerPerson, 10) || 0;
         payload.person_count = parseInt(personCount, 10) || 0;
         payload.distribute_total = payload.distribute_per_person * payload.person_count;
         payload.item_status = transactionType === 'receive' ? '-' : 'รอดำเนินการ';
+        
+        if (transactionType === 'disburse') {
+          const { data: allItem, error: iErr } = await supabase
+            .from('accounting_logs')
+            .select('transaction_type, quantity, distribute_total')
+            .eq('record_group', 'item')
+            .eq('category', category);
+            
+          if (!iErr && allItem) {
+            const tRec = allItem.filter(l => l.transaction_type === 'receive').reduce((sum, l) => sum + (l.quantity || 0), 0);
+            const tDis = allItem.filter(l => l.transaction_type === 'disburse').reduce((sum, l) => sum + (l.distribute_total || 0), 0);
+            const available = tRec - tDis;
+            
+            if (payload.distribute_total > available) {
+              Swal.fire('ข้อผิดพลาด', `ของไม่เพียงพอ! "${category}" คงเหลือ ${formatNumber(available)} ชิ้น (ต้องการเบิก ${formatNumber(payload.distribute_total)} ชิ้น)`, 'error');
+              setIsSubmitting(false);
+              return;
+            }
+          }
+        }
       }
 
       const { error } = await supabase.from('accounting_logs').insert([payload]);
