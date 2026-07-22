@@ -113,7 +113,7 @@ export default function AccountingSystem({ profile }) {
         payload.distribute_per_person = parseInt(distributePerPerson, 10) || 0;
         payload.person_count = parseInt(personCount, 10) || 0;
         payload.distribute_total = payload.distribute_per_person * payload.person_count;
-        payload.item_status = 'รอดำเนินการ';
+        payload.item_status = transactionType === 'receive' ? '-' : 'รอดำเนินการ';
       }
 
       const { error } = await supabase.from('accounting_logs').insert([payload]);
