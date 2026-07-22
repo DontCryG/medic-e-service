@@ -99,7 +99,8 @@ export default function DutySystem({ profile, avatarUrl }) {
           *,
           users (
             ic_name,
-            position
+            position,
+            avatar_url
           )
         `)
         .in('status', ['on_duty', 'on_break'])
@@ -414,8 +415,17 @@ export default function DutySystem({ profile, avatarUrl }) {
                 {liveUsers.length > 0 ? liveUsers.map(user => (
                   <tr key={user.id}>
                     <td>
-                      <div style={{ fontWeight: 600 }}>{user.users?.ic_name}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{user.users?.position}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', background: '#e2e8f0', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontWeight: 'bold' }}>
+                          {user.users?.avatar_url ? (
+                            <img src={user.users.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : getInitial(user.users?.ic_name)}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 600 }}>{user.users?.ic_name}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{user.users?.position}</div>
+                        </div>
+                      </div>
                     </td>
                     <td>
                       <span className={`status-badge ${user.status}`}>

@@ -271,6 +271,16 @@ export default function Dashboard() {
       
       if (user.user_metadata?.avatar_url) {
         setAvatarUrl(user.user_metadata.avatar_url);
+        
+        // Sync avatar_url to users table
+        try {
+          await supabase
+            .from('users')
+            .update({ avatar_url: user.user_metadata.avatar_url })
+            .eq('discord_id', discordId);
+        } catch(e) {
+          console.error('Error syncing avatar:', e);
+        }
       }
 
       const { data, error } = await supabase

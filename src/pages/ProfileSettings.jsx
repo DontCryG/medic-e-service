@@ -40,7 +40,8 @@ export default function ProfileSettings() {
           ic_name: icName,
           ic_phone: icPhone,
           role: 'user', // Default system role
-          position: 'นักเรียนแพทย์' // Default display position
+          position: 'นักเรียนแพทย์', // Default display position
+          avatar_url: user.user_metadata.avatar_url || ''
         });
 
       if (error) throw error;
