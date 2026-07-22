@@ -261,10 +261,13 @@
   
 /* Report Styles */  
 @media print {  
+  @page { size: landscape; margin: 1cm; }
   body * { visibility: hidden; }  
   .report-container, .report-container * { visibility: visible; }  
   .report-container { position: absolute; left: 0; top: 0; width: 100%; }  
-  .sub-tabs-container, .accounting-header, .filter-group, button { display: none !important; }  
+  .sub-tabs-container, .accounting-header, .filter-group, button { display: none !important; }
+  .report-table-wrapper { overflow: visible !important; border: none !important; box-shadow: none !important; }
+  .report-table { min-width: 100% !important; width: 100% !important; }
 }  
 .report-table th { border-right: 1px solid rgba(0,0,0,0.1); }  
 .report-table th:last-child { border-right: none; }  
