@@ -164,7 +164,7 @@ export default function AccountingSystem({ profile }) {
     }
   };
 
-  const formatCurrency = (amt) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amt || 0);
+  const formatCurrency = (amt) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amt || 0);
   const formatNumber = (num) => new Intl.NumberFormat('th-TH').format(num || 0);
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
