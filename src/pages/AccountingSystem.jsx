@@ -12,6 +12,7 @@ import './AccountingSystem.css';
 export default function AccountingSystem({ profile }) {
   const [activeTab, setActiveTab] = useState('finance'); // 'finance' | 'item'
   const [subTab, setSubTab] = useState('manage'); // 'manage' | 'report'
+  const [showAddModal, setShowAddModal] = useState(false);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -132,6 +133,7 @@ export default function AccountingSystem({ profile }) {
       setDistributePerPerson('');
       setPersonCount('');
       setDescription('');
+      setShowAddModal(false);
       fetchLogs();
     } catch (err) {
       Swal.fire('Error', err.message, 'error');
@@ -178,201 +180,175 @@ export default function AccountingSystem({ profile }) {
   // Reverse logs for Manage table (newest first)
   const manageLogs = [...filteredLogs].reverse();
 
-  // Calculate Summaries
-  const totalIncome = logs.filter(l => l.transaction_type === 'income').reduce((sum, l) => sum + (l.amount || 0), 0);
-  const totalExpense = logs.filter(l => l.transaction_type === 'expense').reduce((sum, l) => sum + (l.amount || 0), 0);
-  const netBalance = totalIncome - totalExpense;
-
-  const totalReceive = logs.filter(l => l.transaction_type === 'receive').reduce((sum, l) => sum + (l.quantity || 0), 0);
-  const totalDisburse = logs.filter(l => l.transaction_type === 'disburse').reduce((sum, l) => sum + (l.quantity || 0), 0);
+  // Calculate Stats for display
+  const stats = {
+    totalIncome: logs.filter(l => l.transaction_type === 'income').reduce((sum, l) => sum + (l.amount || 0), 0),
+    totalExpense: logs.filter(l => l.transaction_type === 'expense').reduce((sum, l) => sum + (l.amount || 0), 0),
+    balance: 0,
+    totalReceive: logs.filter(l => l.transaction_type === 'receive').reduce((sum, l) => sum + (l.quantity || 0), 0),
+    totalDisburse: logs.filter(l => l.transaction_type === 'disburse').reduce((sum, l) => sum + (l.quantity || 0), 0)
+  };
+  stats.balance = stats.totalIncome - stats.totalExpense;
 
   if (profile?.role !== 'admin') return null;
 
-  const renderManageView = () => (
-    <>
+  const renderForm = () => (
+    <form onSubmit={handleSave}>
+      <div className="type-selector" style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem' }}>
+        {activeTab === 'finance' ? (
+          <>
+            <button type="button" className={`type-btn income ${transactionType === 'income' ? 'active' : ''}`} onClick={() => setTransactionType('income')} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: transactionType === 'income' ? 'rgba(16, 185, 129, 0.1)' : 'transparent', color: '#10b981', fontWeight: 600, cursor: 'pointer' }}>
+              <TrendingUp size={18} /> รายรับ
+            </button>
+            <button type="button" className={`type-btn expense ${transactionType === 'expense' ? 'active' : ''}`} onClick={() => setTransactionType('expense')} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid #ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: transactionType === 'expense' ? 'rgba(239, 68, 68, 0.1)' : 'transparent', color: '#ef4444', fontWeight: 600, cursor: 'pointer' }}>
+              <TrendingDown size={18} /> รายจ่าย
+            </button>
+          </>
+        ) : (
+          <>
+            <button type="button" className={`type-btn receive ${transactionType === 'receive' ? 'active' : ''}`} onClick={() => setTransactionType('receive')} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: transactionType === 'receive' ? 'rgba(16, 185, 129, 0.1)' : 'transparent', color: '#10b981', fontWeight: 600, cursor: 'pointer' }}>
+              <PackagePlus size={18} /> รับของ
+            </button>
+            <button type="button" className={`type-btn disburse ${transactionType === 'disburse' ? 'active' : ''}`} onClick={() => setTransactionType('disburse')} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid #f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: transactionType === 'disburse' ? 'rgba(245, 158, 11, 0.1)' : 'transparent', color: '#f59e0b', fontWeight: 600, cursor: 'pointer' }}>
+              <PackageMinus size={18} /> แจกจ่าย
+            </button>
+          </>
+        )}
+      </div>
+
+      <div className="form-group" style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>{activeTab === 'finance' ? 'หมวดหมู่ / ชื่อรายการ' : 'รายการสิ่งของ'}</label>
+        <input 
+          type="text" 
+          style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)' }}
+          placeholder={activeTab === 'finance' ? 'เช่น เงินเดือน, สปอนเซอร์, ซื้ออุปกรณ์' : 'เช่น Ticket Rainy, GACHA IC'}
+          value={category}
+          onChange={e => setCategory(e.target.value)}
+          required
+        />
+      </div>
+
       {activeTab === 'finance' && (
-        <div className="summary-cards animate-fade-in">
-          <div className="summary-card income">
-            <div className="icon-wrapper"><TrendingUp size={24} /></div>
-            <div>
-              <h3>รายรับทั้งหมด</h3>
-              <p>{formatCurrency(totalIncome)}</p>
-            </div>
-          </div>
-          <div className="summary-card expense">
-            <div className="icon-wrapper"><TrendingDown size={24} /></div>
-            <div>
-              <h3>รายจ่ายทั้งหมด</h3>
-              <p>{formatCurrency(totalExpense)}</p>
-            </div>
-          </div>
-          <div className="summary-card balance">
-            <div className="icon-wrapper"><Wallet size={24} /></div>
-            <div>
-              <h3>ยอดคงเหลือ</h3>
-              <p>{formatCurrency(netBalance)}</p>
-            </div>
-          </div>
+        <div className="form-group" style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>จำนวนเงิน (THB)</label>
+          <input 
+            type="number" 
+            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)' }}
+            placeholder="0"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            min="0"
+            step="0.01"
+            required
+          />
         </div>
       )}
 
       {activeTab === 'item' && (
-        <div className="summary-cards animate-fade-in">
-          <div className="summary-card receive">
-            <div className="icon-wrapper"><PackagePlus size={24} /></div>
-            <div>
-              <h3>รับเข้าทั้งหมด</h3>
-              <p>{formatNumber(totalReceive)} ชิ้น</p>
-            </div>
+        <>
+          <div className="form-group" style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>จำนวนทั้งหมด</label>
+            <input 
+              type="number" 
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)' }}
+              placeholder="0"
+              value={quantity}
+              onChange={e => setQuantity(e.target.value)}
+              min="0"
+              required
+            />
           </div>
-          <div className="summary-card disburse">
-            <div className="icon-wrapper"><PackageMinus size={24} /></div>
-            <div>
-              <h3>เบิกออกทั้งหมด</h3>
-              <p>{formatNumber(totalDisburse)} ชิ้น</p>
-            </div>
-          </div>
-          <div className="summary-card total-item">
-            <div className="icon-wrapper"><CheckCircle size={24} /></div>
-            <div>
-              <h3>ทำรายการทั้งหมด</h3>
-              <p>{formatNumber(logs.length)} รายการ</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="content-grid">
-        {/* Form Panel */}
-        <div className="form-card">
-          <h3 style={{ margin: '0 0 1.5rem 0', color: '#1e293b' }}>
-            {activeTab === 'finance' ? 'บันทึกธุรกรรมใหม่' : 'บันทึกรายการสิ่งของ'}
-          </h3>
-          
-          <form onSubmit={handleSave}>
-            <div className="type-selector">
-              {activeTab === 'finance' ? (
-                <>
-                  <button type="button" className={`type-btn income ${transactionType === 'income' ? 'active' : ''}`} onClick={() => setTransactionType('income')}>
-                    <TrendingUp size={18} /> รายรับ
-                  </button>
-                  <button type="button" className={`type-btn expense ${transactionType === 'expense' ? 'active' : ''}`} onClick={() => setTransactionType('expense')}>
-                    <TrendingDown size={18} /> รายจ่าย
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button type="button" className={`type-btn receive ${transactionType === 'receive' ? 'active' : ''}`} onClick={() => setTransactionType('receive')}>
-                    <PackagePlus size={18} /> รับของ
-                  </button>
-                  <button type="button" className={`type-btn disburse ${transactionType === 'disburse' ? 'active' : ''}`} onClick={() => setTransactionType('disburse')}>
-                    <PackageMinus size={18} /> แจกจ่าย
-                  </button>
-                </>
-              )}
-            </div>
-
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
             <div className="form-group">
-              <label>{activeTab === 'finance' ? 'หมวดหมู่ / ชื่อรายการ' : 'รายการสิ่งของ'}</label>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>จำนวนแจก(คน)</label>
               <input 
-                type="text" 
-                className="modal-input" 
-                placeholder={activeTab === 'finance' ? 'เช่น เงินเดือน, สปอนเซอร์, ซื้ออุปกรณ์' : 'เช่น Ticket Rainy, GACHA IC'}
-                value={category}
-                onChange={e => setCategory(e.target.value)}
-                required
+                type="number" 
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)' }}
+                placeholder="0"
+                value={distributePerPerson}
+                onChange={e => setDistributePerPerson(e.target.value)}
+                min="0"
               />
             </div>
-
-            {activeTab === 'finance' && (
-              <div className="form-group">
-                <label>จำนวนเงิน (THB)</label>
-                <input 
-                  type="number" 
-                  className="modal-input" 
-                  placeholder="0"
-                  value={amount}
-                  onChange={e => setAmount(e.target.value)}
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
-            )}
-
-            {activeTab === 'item' && (
-              <>
-                <div className="form-group">
-                  <label>จำนวนทั้งหมด</label>
-                  <input 
-                    type="number" 
-                    className="modal-input" 
-                    placeholder="0"
-                    value={quantity}
-                    onChange={e => setQuantity(e.target.value)}
-                    min="0"
-                    required
-                  />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div className="form-group">
-                    <label>จำนวนแจก(คน)</label>
-                    <input 
-                      type="number" 
-                      className="modal-input" 
-                      placeholder="0"
-                      value={distributePerPerson}
-                      onChange={e => setDistributePerPerson(e.target.value)}
-                      min="0"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>จำนวนคน</label>
-                    <input 
-                      type="number" 
-                      className="modal-input" 
-                      placeholder="0"
-                      value={personCount}
-                      onChange={e => setPersonCount(e.target.value)}
-                      min="0"
-                    />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label>สถานะ</label>
-                  <select 
-                    className="modal-input"
-                    value={itemStatus}
-                    onChange={e => setItemStatus(e.target.value)}
-                  >
-                    <option value="เสร็จสิ้น">เสร็จสิ้น</option>
-                    <option value="รอดำเนินการ">รอดำเนินการ</option>
-                    <option value="-">-</option>
-                  </select>
-                </div>
-              </>
-            )}
-
             <div className="form-group">
-              <label>รายละเอียดเพิ่มเติม (Optional)</label>
-              <textarea 
-                className="modal-input" 
-                rows="3"
-                placeholder="ระบุหมายเหตุหรือผู้ที่เกี่ยวข้อง..."
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-              ></textarea>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>จำนวนคน</label>
+              <input 
+                type="number" 
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)' }}
+                placeholder="0"
+                value={personCount}
+                onChange={e => setPersonCount(e.target.value)}
+                min="0"
+              />
             </div>
+          </div>
+          <div className="form-group" style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>สถานะ</label>
+            <select 
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+              value={itemStatus}
+              onChange={e => setItemStatus(e.target.value)}
+            >
+              <option value="เสร็จสิ้น">เสร็จสิ้น</option>
+              <option value="รอดำเนินการ">รอดำเนินการ</option>
+              <option value="-">-</option>
+            </select>
+          </div>
+        </>
+      )}
 
-            <button type="submit" className="submit-btn" disabled={isSubmitting}>
-              <PlusCircle size={20} /> {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}
-            </button>
-          </form>
+      <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>รายละเอียดเพิ่มเติม (Optional)</label>
+        <textarea 
+          style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)', resize: 'vertical' }}
+          rows="3"
+          placeholder="ระบุหมายเหตุหรือผู้ที่เกี่ยวข้อง..."
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+        ></textarea>
+      </div>
+
+      <button type="submit" className="submit-btn" disabled={isSubmitting} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1 }}>
+        <PlusCircle size={20} /> {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}
+      </button>
+    </form>
+  );
+
+  const renderManageView = () => (
+    <div className="manage-container animate-fade-in">
+      {/* Summary Cards */}
+      <div className="summary-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+        <div className="summary-card receive" style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1.25rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+          <div className="icon-wrapper" style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {activeTab === 'finance' ? <TrendingUp size={24} /> : <PackagePlus size={24} />}
+          </div>
+          <div>
+            <h3 style={{ margin: '0 0 0.25rem 0', color: '#64748b', fontSize: '0.875rem' }}>{activeTab === 'finance' ? 'รายรับทั้งหมด' : 'รับเข้าทั้งหมด'}</h3>
+            <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: 700 }}>{activeTab === 'finance' ? formatCurrency(stats.totalIncome) : `${formatNumber(stats.totalReceive)} ชิ้น`}</p>
+          </div>
         </div>
+        <div className="summary-card disburse" style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1.25rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+          <div className="icon-wrapper" style={{ width: '48px', height: '48px', borderRadius: '12px', background: activeTab === 'finance' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)', color: activeTab === 'finance' ? '#ef4444' : '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {activeTab === 'finance' ? <TrendingDown size={24} /> : <PackageMinus size={24} />}
+          </div>
+          <div>
+            <h3 style={{ margin: '0 0 0.25rem 0', color: '#64748b', fontSize: '0.875rem' }}>{activeTab === 'finance' ? 'รายจ่ายทั้งหมด' : 'เบิกออกทั้งหมด'}</h3>
+            <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: 700 }}>{activeTab === 'finance' ? formatCurrency(stats.totalExpense) : `${formatNumber(stats.totalDisburse)} ชิ้น`}</p>
+          </div>
+        </div>
+        <div className="summary-card balance" style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1.25rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+          <div className="icon-wrapper" style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {activeTab === 'finance' ? <Wallet size={24} /> : <CheckCircle size={24} />}
+          </div>
+          <div>
+            <h3 style={{ margin: '0 0 0.25rem 0', color: '#64748b', fontSize: '0.875rem' }}>{activeTab === 'finance' ? 'ยอดคงเหลือ' : 'ทำรายการทั้งหมด'}</h3>
+            <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: 700 }}>{activeTab === 'finance' ? formatCurrency(stats.balance) : `${formatNumber(logs.length)} รายการ`}</p>
+          </div>
+        </div>
+      </div>
 
-        {/* Table Panel for Manage View */}
-        <div className="table-card">
-          <div className="table-header">
+      <div className="table-container" style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
             <h3 style={{ margin: 0, color: '#1e293b' }}>ประวัติการบันทึก</h3>
             
             <div style={{ display: 'flex', gap: '1rem' }}>
@@ -498,9 +474,7 @@ export default function AccountingSystem({ profile }) {
           </div>
         </div>
       </div>
-    </>
   );
-
   const renderReportView = () => {
     let currentBalance = 0;
 
@@ -640,25 +614,58 @@ export default function AccountingSystem({ profile }) {
         </div>
       </div>
 
-      {/* Sub Tabs */}
-      <div className="sub-tabs-container" style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
-        <button 
-          className={`accounting-tab-btn ${subTab === 'manage' ? 'active' : ''}`}
-          style={{ background: subTab === 'manage' ? 'rgba(59, 130, 246, 0.1)' : 'transparent', color: subTab === 'manage' ? '#3b82f6' : 'var(--text-secondary)' }}
-          onClick={() => setSubTab('manage')}
-        >
-          <Settings2 size={16} /> จัดการข้อมูล
-        </button>
-        <button 
-          className={`accounting-tab-btn ${subTab === 'report' ? 'active' : ''}`}
-          style={{ background: subTab === 'report' ? 'rgba(59, 130, 246, 0.1)' : 'transparent', color: subTab === 'report' ? '#3b82f6' : 'var(--text-secondary)' }}
-          onClick={() => setSubTab('report')}
-        >
-          <FileText size={16} /> รายงานสรุป
-        </button>
+      {/* Header and Sub Tabs */}
+      <div className="sub-tabs-container" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface)', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button 
+            className={`accounting-tab-btn ${subTab === 'manage' ? 'active' : ''}`}
+            style={{ background: subTab === 'manage' ? 'rgba(59, 130, 246, 0.1)' : 'transparent', color: subTab === 'manage' ? '#3b82f6' : 'var(--text-secondary)' }}
+            onClick={() => setSubTab('manage')}
+          >
+            <Settings2 size={16} /> จัดการข้อมูล
+          </button>
+          <button 
+            className={`accounting-tab-btn ${subTab === 'report' ? 'active' : ''}`}
+            style={{ background: subTab === 'report' ? 'rgba(59, 130, 246, 0.1)' : 'transparent', color: subTab === 'report' ? '#3b82f6' : 'var(--text-secondary)' }}
+            onClick={() => setSubTab('report')}
+          >
+            <FileText size={16} /> รายงานสรุป
+          </button>
+        </div>
+        
+        {subTab === 'manage' && (
+          <button 
+            onClick={() => setShowAddModal(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#8b5cf6', color: '#fff', border: 'none', padding: '0.75rem 1.25rem', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(139, 92, 246, 0.3)' }}
+          >
+            <PlusCircle size={18} /> 
+            {activeTab === 'finance' ? 'บันทึกธุรกรรมใหม่' : 'บันทึกรายการสิ่งของ'}
+          </button>
+        )}
       </div>
 
       {subTab === 'manage' ? renderManageView() : renderReportView()}
+      
+      {/* Add Modal */}
+      {showAddModal && (
+        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+          <div className="modal-content animate-fade-in" style={{ background: 'var(--bg-main)', padding: '2rem', borderRadius: '16px', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--border)', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {activeTab === 'finance' ? <Wallet size={20} color="#3b82f6"/> : <PackagePlus size={20} color="#0ea5e9"/>}
+                {activeTab === 'finance' ? 'บันทึกธุรกรรมใหม่' : 'บันทึกรายการสิ่งของ'}
+              </h3>
+              <button 
+                onClick={() => setShowAddModal(false)}
+                style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '0.25rem' }}
+              >
+                ✕
+              </button>
+            </div>
+            {renderForm()}
+          </div>
+        </div>
+      )}
       
     </div>
   );
