@@ -24,7 +24,8 @@ import {
   Banknote,
   CalendarDays,
   Trash2,
-  Wallet
+  Wallet,
+  Contact
 } from 'lucide-react';
 import './Dashboard.css'; 
 import './DashboardGrid.css';
@@ -36,6 +37,7 @@ import PersonnelSystem from './PersonnelSystem';
 import SalarySystem from './SalarySystem';
 import SystemSettings from './SystemSettings';
 import AccountingSystem from './AccountingSystem';
+import MedicList from './MedicList';
 
 const playNotificationSound = () => {
   try {
@@ -397,6 +399,13 @@ export default function Dashboard() {
           >
             <CalendarDays size={20} />
             <span>ระบบลางาน</span>
+          </div>
+          <div 
+            className={`nav-item ${activeTab === 'medic-list' ? 'active' : ''}`}
+            onClick={() => setActiveTab('medic-list')}
+          >
+            <Contact size={20} />
+            <span>รายชื่อแพทย์</span>
           </div>
 
           {profile?.role === 'admin' && (
@@ -766,6 +775,10 @@ export default function Dashboard() {
 
           {activeTab === 'accident' && (
             <LeaveSystem profile={profile} />
+          )}
+
+          {activeTab === 'medic-list' && (
+            <MedicList profile={profile} />
           )}
 
           {activeTab === 'personnel' && (
