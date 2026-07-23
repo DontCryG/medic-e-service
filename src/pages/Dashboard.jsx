@@ -400,13 +400,6 @@ export default function Dashboard() {
             <CalendarDays size={20} />
             <span>ระบบลางาน</span>
           </div>
-          <div 
-            className={`nav-item ${activeTab === 'medic-list' ? 'active' : ''}`}
-            onClick={() => setActiveTab('medic-list')}
-          >
-            <Contact size={20} />
-            <span>รายชื่อแพทย์</span>
-          </div>
 
           {profile?.role === 'admin' && (
             <>
@@ -702,6 +695,15 @@ export default function Dashboard() {
                   <h3 className="hub-card-title">ระบบลางาน</h3>
                   <p className="hub-card-desc">ระบบส่งใบลาพักผ่อน ลาป่วย และตรวจสอบประวัติการลางานของบุคลากร</p>
                   <button className="hub-btn" onClick={() => setActiveTab('accident')}>เข้าใช้งาน</button>
+                </div>
+
+                <div className="hub-card medic">
+                  <div className="hub-icon-wrapper">
+                    <Contact size={32} strokeWidth={1.5} />
+                  </div>
+                  <h3 className="hub-card-title">ทำเนียบรายชื่อแพทย์</h3>
+                  <p className="hub-card-desc">ตรวจสอบรายชื่อ ตำแหน่ง และข้อมูลการติดต่อเบื้องต้นของบุคลากรทางการแพทย์ทั้งหมด</p>
+                  <button className="hub-btn" onClick={() => setActiveTab('medic-list')}>เข้าใช้งาน</button>
                 </div>
 
               </div>
