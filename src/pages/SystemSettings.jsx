@@ -24,10 +24,22 @@ export default function SystemSettings({ profile }) {
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const categoryDropdownRef = useRef();
 
+  const [isNewCategoryDropdownOpen, setIsNewCategoryDropdownOpen] = useState(false);
+  const newCategoryRef = useRef();
+  
+  const [isEditCategoryDropdownOpen, setIsEditCategoryDropdownOpen] = useState(false);
+  const editCategoryRef = useRef();
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target)) {
         setIsCategoryDropdownOpen(false);
+      }
+      if (newCategoryRef.current && !newCategoryRef.current.contains(event.target)) {
+        setIsNewCategoryDropdownOpen(false);
+      }
+      if (editCategoryRef.current && !editCategoryRef.current.contains(event.target)) {
+        setIsEditCategoryDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -648,15 +660,22 @@ export default function SystemSettings({ profile }) {
                     onChange={e => setNewAgencyName(e.target.value)} 
                     style={{ flex: 1 }}
                   />
-                  <select 
-                    className="modal-input" 
-                    value={newAgencyCategory} 
-                    onChange={e => setNewAgencyCategory(e.target.value)}
-                    style={{ width: '150px' }}
-                  >
-                    <option value="Gang">Gang</option>
-                    <option value="Family">Family</option>
-                  </select>
+                  <div className="custom-dropdown-container" ref={newCategoryRef} style={{ width: '150px' }}>
+                    <div 
+                      className="modal-input custom-dropdown-trigger"
+                      onClick={() => setIsNewCategoryDropdownOpen(!isNewCategoryDropdownOpen)}
+                      style={{ padding: '0.75rem 1rem' }}
+                    >
+                      <span>{newAgencyCategory}</span>
+                      <ChevronDown size={18} color="#64748b" style={{ transform: isNewCategoryDropdownOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
+                    </div>
+                    {isNewCategoryDropdownOpen && (
+                      <div className="custom-dropdown-menu">
+                        <div className={`custom-dropdown-item ${newAgencyCategory === 'Gang' ? 'active' : ''}`} onClick={() => { setNewAgencyCategory('Gang'); setIsNewCategoryDropdownOpen(false); }}>Gang</div>
+                        <div className={`custom-dropdown-item ${newAgencyCategory === 'Family' ? 'active' : ''}`} onClick={() => { setNewAgencyCategory('Family'); setIsNewCategoryDropdownOpen(false); }}>Family</div>
+                      </div>
+                    )}
+                  </div>
                   <button className="export-btn" style={{ padding: '0.75rem 1.5rem', borderRadius: '12px' }} onClick={handleAddAgency}>
                     <PlusCircle size={18} /> เพิ่ม
                   </button>
@@ -691,15 +710,22 @@ export default function SystemSettings({ profile }) {
                             autoFocus
                             onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEditAgency(); }}
                           />
-                          <select 
-                            className="modal-input" 
-                            value={editAgencyCategory} 
-                            onChange={e => setEditAgencyCategory(e.target.value)}
-                            style={{ width: '130px', padding: '0.5rem' }}
-                          >
-                            <option value="Gang">Gang</option>
-                            <option value="Family">Family</option>
-                          </select>
+                          <div className="custom-dropdown-container" ref={editCategoryRef} style={{ width: '130px' }}>
+                            <div 
+                              className="modal-input custom-dropdown-trigger"
+                              onClick={() => setIsEditCategoryDropdownOpen(!isEditCategoryDropdownOpen)}
+                              style={{ padding: '0.5rem 1rem' }}
+                            >
+                              <span>{editAgencyCategory}</span>
+                              <ChevronDown size={16} color="#64748b" style={{ transform: isEditCategoryDropdownOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
+                            </div>
+                            {isEditCategoryDropdownOpen && (
+                              <div className="custom-dropdown-menu">
+                                <div className={`custom-dropdown-item ${editAgencyCategory === 'Gang' ? 'active' : ''}`} onClick={() => { setEditAgencyCategory('Gang'); setIsEditCategoryDropdownOpen(false); }}>Gang</div>
+                                <div className={`custom-dropdown-item ${editAgencyCategory === 'Family' ? 'active' : ''}`} onClick={() => { setEditAgencyCategory('Family'); setIsEditCategoryDropdownOpen(false); }}>Family</div>
+                              </div>
+                            )}
+                          </div>
                           <button className="add-btn" onClick={handleSaveEditAgency} style={{ padding: '0.5rem', background: '#059669', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
                             <Save size={16} />
                           </button>
