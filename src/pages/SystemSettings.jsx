@@ -664,7 +664,6 @@ export default function SystemSettings({ profile }) {
                     <div 
                       className="modal-input custom-dropdown-trigger"
                       onClick={() => setIsNewCategoryDropdownOpen(!isNewCategoryDropdownOpen)}
-                      style={{ padding: '0.75rem 1rem' }}
                     >
                       <span>{newAgencyCategory}</span>
                       <ChevronDown size={18} color="#64748b" style={{ transform: isNewCategoryDropdownOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
@@ -714,7 +713,6 @@ export default function SystemSettings({ profile }) {
                             <div 
                               className="modal-input custom-dropdown-trigger"
                               onClick={() => setIsEditCategoryDropdownOpen(!isEditCategoryDropdownOpen)}
-                              style={{ padding: '0.5rem 1rem' }}
                             >
                               <span>{editAgencyCategory}</span>
                               <ChevronDown size={16} color="#64748b" style={{ transform: isEditCategoryDropdownOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
