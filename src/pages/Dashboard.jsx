@@ -24,8 +24,7 @@ import {
   Banknote,
   CalendarDays,
   Trash2,
-  Wallet,
-  Contact
+  Wallet
 } from 'lucide-react';
 import './Dashboard.css'; 
 import './DashboardGrid.css';
@@ -37,7 +36,6 @@ import PersonnelSystem from './PersonnelSystem';
 import SalarySystem from './SalarySystem';
 import SystemSettings from './SystemSettings';
 import AccountingSystem from './AccountingSystem';
-import MedicList from './MedicList';
 
 const playNotificationSound = () => {
   try {
@@ -697,15 +695,6 @@ export default function Dashboard() {
                   <button className="hub-btn" onClick={() => setActiveTab('accident')}>เข้าใช้งาน</button>
                 </div>
 
-                <div className="hub-card medic">
-                  <div className="hub-icon-wrapper">
-                    <Contact size={32} strokeWidth={1.5} />
-                  </div>
-                  <h3 className="hub-card-title">ทำเนียบรายชื่อแพทย์</h3>
-                  <p className="hub-card-desc">ตรวจสอบรายชื่อ ตำแหน่ง และข้อมูลการติดต่อเบื้องต้นของบุคลากรทางการแพทย์ทั้งหมด</p>
-                  <button className="hub-btn" onClick={() => setActiveTab('medic-list')}>เข้าใช้งาน</button>
-                </div>
-
               </div>
             </div>
 
@@ -777,10 +766,6 @@ export default function Dashboard() {
 
           {activeTab === 'accident' && (
             <LeaveSystem profile={profile} />
-          )}
-
-          {activeTab === 'medic-list' && (
-            <MedicList profile={profile} />
           )}
 
           {activeTab === 'personnel' && (
