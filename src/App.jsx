@@ -18,33 +18,7 @@ function AutoUpdateChecker() {
           if (currentVersion && currentVersion !== data.version) {
             console.log('New version detected! Reloading...', data.version);
             setCurrentVersion(data.version); // Prevent multiple triggers
-            
-            // Show SweetAlert notification with 5-second countdown
-            let timerInterval;
-            Swal.fire({
-              title: 'มีการอัปเดตระบบใหม่! 🚀',
-              html: 'ระบบกำลังจะรีเฟรชเพื่ออัปเดตข้อมูลในอีก <b>5</b> วินาที...',
-              icon: 'info',
-              timer: 5000,
-              timerProgressBar: true,
-              showConfirmButton: true,
-              confirmButtonText: 'อัปเดตทันที',
-              confirmButtonColor: '#0ea5e9',
-              allowOutsideClick: false,
-              allowEscapeKey: false,
-              didOpen: () => {
-                const b = Swal.getHtmlContainer().querySelector('b');
-                timerInterval = setInterval(() => {
-                  if (b) b.textContent = Math.ceil(Swal.getTimerLeft() / 1000);
-                }, 1000);
-              },
-              willClose: () => {
-                clearInterval(timerInterval);
-              }
-            }).then(() => {
-              window.location.reload(true);
-            });
-            
+            window.location.reload(true);
           } else if (!currentVersion) {
             setCurrentVersion(data.version);
           }
