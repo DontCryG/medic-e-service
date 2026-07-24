@@ -31,7 +31,8 @@ export default function LeaveSystem({ profile }) {
     profile.position.includes('เลขา') || 
     profile.position.includes('รอง') || 
     profile.position.includes('ผอ') || 
-    profile.position.includes('ผู้อำนวยการ')
+    profile.position.includes('ผู้อำนวยการ') ||
+    profile.position.toLowerCase().includes('developer')
   ) && !profile.position.includes('นักศึกษา') && !profile.position.includes('นศพ');
 
   useEffect(() => {
