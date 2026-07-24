@@ -256,7 +256,7 @@ export default function SalarySystem({ profile }) {
         finalSalaryData.push({
           discord_id: discordId,
           ic_name: user.ic_name,
-          position: user.position,
+          position: user.role === 'resigned' ? `${user.position} (พ้นสภาพ)` : user.position,
           avatar_url: user.avatar_url,
           totalMinutes: totalMinutes,
           bonusDutyMinutes: userWorkData[discordId].bonusDutyMinutes || 0,

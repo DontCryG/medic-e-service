@@ -256,8 +256,7 @@ export default function PersonnelSystem({ profile }) {
       const { error } = await supabase
         .from('users')
         .update({
-          role: 'resigned',
-          position: 'ลาออก'
+          role: 'resigned'
         })
         .eq('discord_id', user.discord_id);
 

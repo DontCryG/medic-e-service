@@ -235,7 +235,7 @@ export default function SystemSettings({ profile }) {
         finalData.push({
           discord_id: discordId,
           name: user.ic_name,
-          position: user.position,
+          position: user.role === 'resigned' ? `${user.position} (พ้นสภาพ)` : user.position,
           hours: tHours,
           bonusDutyMinutes: userWorkData[discordId].bonusDutyMinutes || 0,
           basePayout: base,
