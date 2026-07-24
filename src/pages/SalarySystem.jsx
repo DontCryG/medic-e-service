@@ -281,6 +281,7 @@ export default function SalarySystem({ profile }) {
       setSummary({
         totalPayout,
         totalHours: totalMinutesGlobal / 60,
+        totalMinutesGlobal,
         totalStaff: finalSalaryData.length,
         totalOcMoney: totalOcMoneyGlobal
       });
@@ -558,7 +559,7 @@ export default function SalarySystem({ profile }) {
           </div>
           <div className="summary-details">
             <h4>ชั่วโมงทำงานรวม</h4>
-            <p className="summary-value">{Math.floor(summary.totalHours)}<span style={{fontSize: '1rem', fontWeight: '500', color: '#64748b'}}> ชม.</span></p>
+            <p className="summary-value">{Math.floor(summary.totalHours || 0)}<span style={{fontSize: '1rem', fontWeight: '500', color: '#64748b'}}> ชม. </span>{(summary.totalMinutesGlobal || 0) % 60}<span style={{fontSize: '1rem', fontWeight: '500', color: '#64748b'}}> นาที</span></p>
           </div>
         </div>
         <div className="summary-card">

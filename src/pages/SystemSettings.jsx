@@ -252,7 +252,7 @@ export default function SystemSettings({ profile }) {
 
       finalData.sort((a,b) => b.payout - a.payout);
       setReportData(finalData);
-      setSummaryData({ totalPayout: totalPayout, totalHours: totalMinutesGlobal / 60 });
+      setSummaryData({ totalPayout: totalPayout, totalHours: totalMinutesGlobal / 60, totalMinutesGlobal: totalMinutesGlobal });
     } catch (err) {
       console.error(err);
     }
@@ -681,7 +681,7 @@ export default function SystemSettings({ profile }) {
                       <div className="pdf-summary">
                         <p>จำนวนบุคลากรทั้งหมด: <strong>{filteredReportData.length} คน</strong></p>
                         {(reportCategory === 'all' || reportCategory === 'ic') && (
-                          <p>รวมชั่วโมงเข้าเวร: <strong>{Math.floor(summaryData.totalHours)} ชั่วโมง</strong></p>
+                          <p>รวมชั่วโมงเข้าเวร: <strong>{Math.floor(summaryData.totalHours)} ชั่วโมง {summaryData.totalMinutesGlobal % 60} นาที</strong></p>
                         )}
                         {(reportCategory === 'all' || reportCategory === 'bonus') && (
                           <div style={{ marginTop: '0.5rem', marginBottom: '0.5rem' }}>
