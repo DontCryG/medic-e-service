@@ -80,6 +80,7 @@ export default function Dashboard() {
   const [searchResults, setSearchResults] = useState([]);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [announcement, setAnnouncement] = useState(null);
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   
   // Notifications State
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -245,6 +246,7 @@ export default function Dashboard() {
         data.forEach(item => {
           if (item.setting_key === 'announcement_text') text = item.setting_value;
           if (item.setting_key === 'announcement_active') active = item.setting_value === 'true';
+          if (item.setting_key === 'maintenance_mode') setIsMaintenanceMode(item.setting_value === 'true');
         });
         if (active && text) {
           setAnnouncement(text);
@@ -312,6 +314,45 @@ export default function Dashboard() {
     return (
       <div className="portal-container">
         <h2 style={{ color: 'var(--primary)' }}>กำลังโหลด...</h2>
+      </div>
+    );
+  }
+
+  // Maintenance Mode Check
+  if (isMaintenanceMode && profile?.role !== 'admin') {
+    return (
+      <div className="portal-container animate-fade-in" style={{ backgroundColor: '#f8fafc' }}>
+        <div className="portal-content glass-panel animate-slide-up" style={{ width: '450px', padding: '3rem', border: '1px solid #cbd5e1', boxShadow: '0 8px 32px 0 rgba(100, 116, 139, 0.15)' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', color: '#64748b' }}>
+            <Settings size={64} style={{ animation: 'spin 4s linear infinite' }} />
+          </div>
+          <h2 style={{ color: '#1e293b', fontSize: '1.75rem', marginBottom: '1rem', fontWeight: 600 }}>กำลังปรับปรุงระบบ</h2>
+          <p style={{ color: '#475569', marginBottom: '2rem', fontSize: '1.05rem', lineHeight: '1.6' }}>
+            ขณะนี้ระบบกำลังอยู่ในช่วงเวลาปิดปรับปรุง<br/>กรุณารอประกาศจากทางผู้ดูแลระบบอีกครั้ง
+          </p>
+          <button 
+            onClick={handleLogout}
+            style={{
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem 2rem',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '1rem',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              transition: 'all 0.2s',
+              fontWeight: 500
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#2563eb'}
+            onMouseOut={(e) => e.target.style.backgroundColor = '#3b82f6'}
+          >
+            ออกจากระบบ
+          </button>
+        </div>
+        <style>{`
+          @keyframes spin { 100% { transform: rotate(360deg); } }
+        `}</style>
       </div>
     );
   }

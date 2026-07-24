@@ -71,6 +71,7 @@ export default function SystemSettings({ profile }) {
   const [announcementText, setAnnouncementText] = useState('');
   const [announcementActive, setAnnouncementActive] = useState(true);
   const [notifyAll, setNotifyAll] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
 
   useEffect(() => {
@@ -405,6 +406,7 @@ export default function SystemSettings({ profile }) {
       data.forEach(setting => {
         if (setting.setting_key === 'announcement_text') setAnnouncementText(setting.setting_value);
         if (setting.setting_key === 'announcement_active') setAnnouncementActive(setting.setting_value === 'true');
+        if (setting.setting_key === 'maintenance_mode') setMaintenanceMode(setting.setting_value === 'true');
       });
     }
   };
@@ -414,7 +416,8 @@ export default function SystemSettings({ profile }) {
     try {
       await supabase.from('app_settings').upsert([
         { setting_key: 'announcement_text', setting_value: announcementText },
-        { setting_key: 'announcement_active', setting_value: announcementActive ? 'true' : 'false' }
+        { setting_key: 'announcement_active', setting_value: announcementActive ? 'true' : 'false' },
+        { setting_key: 'maintenance_mode', setting_value: maintenanceMode ? 'true' : 'false' }
       ]);
       
       if (announcementText && notifyAll) {
@@ -878,6 +881,16 @@ export default function SystemSettings({ profile }) {
                     />
                     <label htmlFor="notify-all" style={{ fontWeight: 500, color: '#0f172a', cursor: 'pointer' }}>
                       ส่งการแจ้งเตือนนี้ไปยังบุคลากรทุกคน 🔔
+                    </label>
+                  </div>
+
+                  <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid #e2e8f0' }}>
+                    <label style={{ display: 'block', fontWeight: 600, color: '#ef4444', fontSize: '1.1rem', marginBottom: '1rem' }}>โหมดปิดปรับปรุงระบบ (Maintenance Mode)</label>
+                    <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1rem' }}>เมื่อเปิดโหมดนี้ ผู้ใช้งานทั่วไปจะไม่สามารถเข้าถึงระบบได้ (ยกเว้น Admin)</p>
+                    <label className="toggle-switch">
+                      <input type="checkbox" style={{ display: 'none' }} checked={maintenanceMode} onChange={e => setMaintenanceMode(e.target.checked)} />
+                      <span className="toggle-slider" style={{ background: maintenanceMode ? '#ef4444' : '#cbd5e1' }}></span>
+                      <span style={{ fontWeight: 600, color: '#1e293b' }}>ปิดปรับปรุงระบบ</span>
                     </label>
                   </div>
 
