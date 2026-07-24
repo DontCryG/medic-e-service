@@ -9,10 +9,14 @@ import './SalarySystem.css';
 export default function SalarySystem({ profile }) {
   const [loading, setLoading] = useState(true);
   const [calculating, setCalculating] = useState(false);
-  const [startDate, setStartDate] = useState(
-    new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-  );
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    return d;
+  });
   const [endDate, setEndDate] = useState(new Date());
+  const [salaryPage, setSalaryPage] = useState(1);
+  const itemsPerPage = 50;
   
   const [salaryData, setSalaryData] = useState([]);
   const [rates, setRates] = useState({});
@@ -469,6 +473,8 @@ export default function SalarySystem({ profile }) {
 
   if (!profile || profile.role !== 'admin') return null;
 
+  const paginatedSalaryData = salaryData.slice((salaryPage - 1) * itemsPerPage, salaryPage * itemsPerPage);
+
   return (
     <div className="salary-container">
       
@@ -480,7 +486,7 @@ export default function SalarySystem({ profile }) {
             <label>ตั้งแต่:</label>
             <DatePicker 
               selected={startDate} 
-              onChange={(date) => setStartDate(date)} 
+              onChange={(date) => { setStartDate(date); setSalaryPage(1); }} 
               selectsStart
               startDate={startDate}
               endDate={endDate}
@@ -492,7 +498,7 @@ export default function SalarySystem({ profile }) {
             <label>ถึง:</label>
             <DatePicker 
               selected={endDate} 
-              onChange={(date) => setEndDate(date)} 
+              onChange={(date) => { setEndDate(date); setSalaryPage(1); }} 
               selectsEnd
               startDate={startDate}
               endDate={endDate}
@@ -501,6 +507,28 @@ export default function SalarySystem({ profile }) {
               dateFormat="dd/MM/yyyy"
             />
           </div>
+          <button 
+            onClick={() => {
+              setStartDate(null);
+              setEndDate(null);
+              setSalaryPage(1);
+            }}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '6px',
+              border: '1px solid var(--border-color)',
+              background: 'var(--surface-color)',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              marginTop: '1.2rem'
+            }}
+          >
+            ดูทั้งหมด
+          </button>
         </div>
 
         <button className="settings-btn" onClick={() => setIsSettingsOpen(true)}>
@@ -575,7 +603,7 @@ export default function SalarySystem({ profile }) {
                 </tr>
               </thead>
               <tbody>
-                {salaryData.length > 0 ? salaryData.map(data => (
+                {paginatedSalaryData.length > 0 ? paginatedSalaryData.map(data => (
                   <tr key={data.discord_id}>
                     <td>
                       <div style={{ fontWeight: 600, color: '#1e293b' }}>{data.ic_name}</div>
@@ -637,6 +665,42 @@ export default function SalarySystem({ profile }) {
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+        
+        {!loading && salaryData.length > itemsPerPage && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', padding: '1rem', borderTop: '1px solid var(--border-color)' }}>
+            <button 
+              onClick={() => setSalaryPage(p => Math.max(1, p - 1))}
+              disabled={salaryPage === 1}
+              style={{ 
+                padding: '6px 16px', 
+                borderRadius: '6px',
+                background: salaryPage === 1 ? 'var(--bg-color)' : 'var(--surface-color)', 
+                color: salaryPage === 1 ? 'var(--text-tertiary)' : 'var(--text-primary)', 
+                border: '1px solid var(--border-color)',
+                cursor: salaryPage === 1 ? 'not-allowed' : 'pointer'
+              }}
+            >
+              ก่อนหน้า
+            </button>
+            <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+              หน้า {salaryPage} จาก {Math.ceil(salaryData.length / itemsPerPage)}
+            </span>
+            <button 
+              onClick={() => setSalaryPage(p => Math.min(Math.ceil(salaryData.length / itemsPerPage), p + 1))}
+              disabled={salaryPage >= Math.ceil(salaryData.length / itemsPerPage)}
+              style={{ 
+                padding: '6px 16px', 
+                borderRadius: '6px',
+                background: salaryPage >= Math.ceil(salaryData.length / itemsPerPage) ? 'var(--bg-color)' : 'var(--surface-color)', 
+                color: salaryPage >= Math.ceil(salaryData.length / itemsPerPage) ? 'var(--text-tertiary)' : 'var(--text-primary)', 
+                border: '1px solid var(--border-color)',
+                cursor: salaryPage >= Math.ceil(salaryData.length / itemsPerPage) ? 'not-allowed' : 'pointer'
+              }}
+            >
+              ถัดไป
+            </button>
           </div>
         )}
       </div>

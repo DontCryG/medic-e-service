@@ -12,14 +12,20 @@ export default function SystemSettings({ profile }) {
   const [activeTab, setActiveTab] = useState('reports');
   const [loading, setLoading] = useState(true);
 
-  // === Reports State ===
-  const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    return d;
+  });
   const [endDate, setEndDate] = useState(new Date());
   const [reportCategory, setReportCategory] = useState('all');
   const [reportData, setReportData] = useState([]);
   const [summaryData, setSummaryData] = useState({ totalPayout: 0, totalHours: 0 });
   const [isGenerating, setIsGenerating] = useState(false);
   const pdfRef = useRef();
+  
+  const [reportPage, setReportPage] = useState(1);
+  const itemsPerPage = 50;
   
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const categoryDropdownRef = useRef();
@@ -498,17 +504,40 @@ export default function SystemSettings({ profile }) {
                     <CalendarDays size={18} color="#94a3b8" />
                     <label style={{ marginRight: '0.5rem', fontWeight: 600 }}>ตั้งแต่:</label>
                     <DatePicker 
-                      selected={startDate} onChange={d => setStartDate(d)} selectsStart startDate={startDate} endDate={endDate}
+                      selected={startDate} onChange={d => { setStartDate(d); setReportPage(1); }} selectsStart startDate={startDate} endDate={endDate}
                       className="modal-input" dateFormat="dd/MM/yyyy"
                     />
                   </div>
                   <div className="filter-group">
                     <label style={{ marginRight: '0.5rem', fontWeight: 600 }}>ถึง:</label>
                     <DatePicker 
-                      selected={endDate} onChange={d => setEndDate(d)} selectsEnd startDate={startDate} endDate={endDate} minDate={startDate}
+                      selected={endDate} onChange={d => { setEndDate(d); setReportPage(1); }} selectsEnd startDate={startDate} endDate={endDate} minDate={startDate}
                       className="modal-input" dateFormat="dd/MM/yyyy"
                     />
                   </div>
+                  <button 
+                    onClick={() => {
+                      setStartDate(null);
+                      setEndDate(null);
+                      setReportPage(1);
+                    }}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--surface-color)',
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      height: '42px',
+                      marginTop: '22px'
+                    }}
+                  >
+                    ดูทั้งหมด
+                  </button>
                   <div className="filter-group">
                     <label style={{ marginRight: '0.5rem', fontWeight: 600 }}>หมวดหมู่:</label>
                     <div className="custom-dropdown-container" ref={categoryDropdownRef}>
@@ -576,9 +605,9 @@ export default function SystemSettings({ profile }) {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredReportData.map((d, i) => (
+                        {filteredReportData.slice((reportPage - 1) * itemsPerPage, reportPage * itemsPerPage).map((d, i) => (
                           <tr key={i}>
-                            <td style={{textAlign: 'center'}}>{i + 1}</td>
+                            <td style={{textAlign: 'center'}}>{(reportPage - 1) * itemsPerPage + i + 1}</td>
                             <td>{d.name}</td>
                             <td>{d.position}</td>
                             {(reportCategory === 'all' || reportCategory === 'ic' || reportCategory === 'oc') && (
@@ -641,10 +670,44 @@ export default function SystemSettings({ profile }) {
                     )}
                   </div>
                 </div>
+
+                {!loading && filteredReportData.length > itemsPerPage && (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', padding: '1rem' }}>
+                    <button 
+                      onClick={() => setReportPage(p => Math.max(1, p - 1))}
+                      disabled={reportPage === 1}
+                      style={{ 
+                        padding: '6px 16px', 
+                        borderRadius: '6px',
+                        background: reportPage === 1 ? 'var(--bg-color)' : 'var(--surface-color)', 
+                        color: reportPage === 1 ? 'var(--text-tertiary)' : 'var(--text-primary)', 
+                        border: '1px solid var(--border-color)',
+                        cursor: reportPage === 1 ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      ก่อนหน้า
+                    </button>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                      หน้า {reportPage} จาก {Math.ceil(filteredReportData.length / itemsPerPage)}
+                    </span>
+                    <button 
+                      onClick={() => setReportPage(p => Math.min(Math.ceil(filteredReportData.length / itemsPerPage), p + 1))}
+                      disabled={reportPage >= Math.ceil(filteredReportData.length / itemsPerPage)}
+                      style={{ 
+                        padding: '6px 16px', 
+                        borderRadius: '6px',
+                        background: reportPage >= Math.ceil(filteredReportData.length / itemsPerPage) ? 'var(--bg-color)' : 'var(--surface-color)', 
+                        color: reportPage >= Math.ceil(filteredReportData.length / itemsPerPage) ? 'var(--text-tertiary)' : 'var(--text-primary)', 
+                        border: '1px solid var(--border-color)',
+                        cursor: reportPage >= Math.ceil(filteredReportData.length / itemsPerPage) ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      ถัดไป
+                    </button>
+                  </div>
+                )}
               </div>
             )}
-
-
 
             {/* AGENCIES TAB */}
             {activeTab === 'agencies' && (

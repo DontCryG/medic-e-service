@@ -11,8 +11,15 @@ export default function DutySystem({ profile, avatarUrl }) {
   const [liveUsers, setLiveUsers] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    return d;
+  });
+  const [endDate, setEndDate] = useState(new Date());
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyTotal, setHistoryTotal] = useState(0);
+  const itemsPerPage = 50;
   
   // Timer state
   const [dutyTime, setDutyTime] = useState(0);
@@ -41,7 +48,7 @@ export default function DutySystem({ profile, avatarUrl }) {
         supabase.removeChannel(subscription);
       };
     }
-  }, [profile, startDate, endDate]);
+  }, [profile, startDate, endDate, historyPage]);
 
   // Timer effect
   useEffect(() => {
@@ -117,11 +124,10 @@ export default function DutySystem({ profile, avatarUrl }) {
     try {
       let query = supabase
         .from('duty_sessions')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('discord_id', profile.discord_id)
         .eq('status', 'completed')
-        .order('clock_in', { ascending: false })
-        .limit(20);
+        .order('clock_in', { ascending: false });
 
       if (startDate) {
         const start = new Date(startDate);
@@ -135,9 +141,14 @@ export default function DutySystem({ profile, avatarUrl }) {
         query = query.lte('clock_in', end.toISOString());
       }
 
-      const { data, error } = await query;
+      const from = (historyPage - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+      query = query.range(from, to);
+
+      const { data, count, error } = await query;
       if (error) throw error;
       setHistory(data || []);
+      if (count !== null) setHistoryTotal(count);
     } catch (err) {
       console.error('Error fetching history:', err);
     }
@@ -502,7 +513,7 @@ export default function DutySystem({ profile, avatarUrl }) {
                 <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>ตั้งแต่:</span>
                 <DatePicker 
                   selected={startDate} 
-                  onChange={(date) => setStartDate(date)} 
+                  onChange={(date) => { setStartDate(date); setHistoryPage(1); }} 
                   selectsStart
                   startDate={startDate}
                   endDate={endDate}
@@ -515,7 +526,7 @@ export default function DutySystem({ profile, avatarUrl }) {
                 <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>ถึง:</span>
                 <DatePicker 
                   selected={endDate} 
-                  onChange={(date) => setEndDate(date)} 
+                  onChange={(date) => { setEndDate(date); setHistoryPage(1); }} 
                   selectsEnd
                   startDate={startDate}
                   endDate={endDate}
@@ -525,6 +536,27 @@ export default function DutySystem({ profile, avatarUrl }) {
                   dateFormat="dd/MM/yyyy"
                 />
               </div>
+              <button 
+                onClick={() => {
+                  setStartDate(null);
+                  setEndDate(null);
+                  setHistoryPage(1);
+                }}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--surface-color)',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                ดูทั้งหมด
+              </button>
             </div>
           </div>
           <div style={{ overflowX: 'auto' }}>
@@ -570,6 +602,42 @@ export default function DutySystem({ profile, avatarUrl }) {
               </tbody>
             </table>
           </div>
+          
+          {historyTotal > itemsPerPage && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', padding: '1rem', borderTop: '1px solid var(--border-color)' }}>
+              <button 
+                onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
+                disabled={historyPage === 1}
+                style={{ 
+                  padding: '6px 16px', 
+                  borderRadius: '6px',
+                  background: historyPage === 1 ? 'var(--bg-color)' : 'var(--surface-color)', 
+                  color: historyPage === 1 ? 'var(--text-tertiary)' : 'var(--text-primary)', 
+                  border: '1px solid var(--border-color)',
+                  cursor: historyPage === 1 ? 'not-allowed' : 'pointer'
+                }}
+              >
+                ก่อนหน้า
+              </button>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                หน้า {historyPage} จาก {Math.ceil(historyTotal / itemsPerPage)}
+              </span>
+              <button 
+                onClick={() => setHistoryPage(p => Math.min(Math.ceil(historyTotal / itemsPerPage), p + 1))}
+                disabled={historyPage >= Math.ceil(historyTotal / itemsPerPage)}
+                style={{ 
+                  padding: '6px 16px', 
+                  borderRadius: '6px',
+                  background: historyPage >= Math.ceil(historyTotal / itemsPerPage) ? 'var(--bg-color)' : 'var(--surface-color)', 
+                  color: historyPage >= Math.ceil(historyTotal / itemsPerPage) ? 'var(--text-tertiary)' : 'var(--text-primary)', 
+                  border: '1px solid var(--border-color)',
+                  cursor: historyPage >= Math.ceil(historyTotal / itemsPerPage) ? 'not-allowed' : 'pointer'
+                }}
+              >
+                ถัดไป
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

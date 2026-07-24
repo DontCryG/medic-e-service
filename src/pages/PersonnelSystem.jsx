@@ -78,7 +78,14 @@ export default function PersonnelSystem({ profile }) {
   const filteredUsers = users.filter(user => {
     const matchesSearch = (user.ic_name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
                           (user.discord_id || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = filterRole === 'all' || user.role === filterRole;
+    
+    let matchesRole = false;
+    if (filterRole === 'all') {
+      matchesRole = user.role !== 'resigned';
+    } else {
+      matchesRole = user.role === filterRole;
+    }
+    
     return matchesSearch && matchesRole;
   });
 
@@ -232,12 +239,12 @@ export default function PersonnelSystem({ profile }) {
 
   const handleDeleteUser = async (user) => {
     const result = await Swal.fire({
-      title: 'ยืนยันการลบ',
-      text: `คุณแน่ใจหรือไม่ว่าต้องการ "ลบ" ข้อมูลของ ${user.ic_name} ออกจากระบบอย่างถาวร? การกระทำนี้ไม่สามารถย้อนกลับได้`,
+      title: 'ยืนยันการพ้นสภาพ',
+      text: `คุณแน่ใจหรือไม่ว่าต้องการเปลี่ยนสถานะของ ${user.ic_name} เป็น "พ้นสภาพ"? ข้อมูลประวัติการทำงานเก่าจะยังคงอยู่ครบถ้วน`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
-      confirmButtonText: 'ยืนยัน',
+      confirmButtonText: 'ยืนยันพ้นสภาพ',
       cancelButtonText: 'ยกเลิก'
     });
     
@@ -248,15 +255,66 @@ export default function PersonnelSystem({ profile }) {
     try {
       const { error } = await supabase
         .from('users')
-        .delete()
+        .update({
+          role: 'resigned',
+          position: 'ลาออก'
+        })
         .eq('discord_id', user.discord_id);
 
       if (error) throw error;
       
-      Swal.fire({ icon: 'success', title: 'สำเร็จ', text: `ลบข้อมูลของ ${user.ic_name} เรียบร้อยแล้ว` });
+      try {
+        const { data: activeSession } = await supabase
+          .from('duty_sessions')
+          .select('*')
+          .eq('discord_id', user.discord_id)
+          .in('status', ['on_duty', 'on_break'])
+          .order('clock_in', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (activeSession) {
+          let finalBreakMinutes = activeSession.total_break_minutes || 0;
+          if (activeSession.status === 'on_break' && activeSession.last_break_start) {
+            const breakStart = new Date(activeSession.last_break_start).getTime();
+            const now = new Date().getTime();
+            finalBreakMinutes += Math.floor((now - breakStart) / 60000);
+          }
+
+          await supabase
+            .from('duty_sessions')
+            .update({ 
+              status: 'completed',
+              clock_out: new Date().toISOString(),
+              total_break_minutes: finalBreakMinutes,
+              queue_state: 'available',
+              manager_start_time: null,
+              current_manager_log_id: null,
+              story_time: null
+            })
+            .eq('id', activeSession.id);
+            
+          if (activeSession.current_manager_log_id) {
+            const startTime = new Date(activeSession.manager_start_time).getTime();
+            const durationMinutes = Math.floor((Date.now() - startTime) / 60000);
+            
+            await supabase
+              .from('queue_manager_logs')
+              .update({ 
+                end_time: new Date().toISOString(),
+                duration_minutes: durationMinutes
+              })
+              .eq('id', activeSession.current_manager_log_id);
+          }
+        }
+      } catch (err) {
+        console.error('Error auto clock-out during delete:', err);
+      }
+      
+      Swal.fire({ icon: 'success', title: 'สำเร็จ', text: `เปลี่ยนสถานะ ${user.ic_name} เป็นพ้นสภาพเรียบร้อยแล้ว` });
       fetchUsers();
     } catch (error) {
-      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาดในการลบข้อมูล', text: error.message });
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะ', text: error.message });
     }
   };
 
@@ -298,7 +356,8 @@ export default function PersonnelSystem({ profile }) {
           <button className={`personnel-tab-btn ${filterRole === 'all' ? 'active all' : ''}`} onClick={() => setFilterRole('all')}>ทั้งหมด</button>
           <button className={`personnel-tab-btn ${filterRole === 'admin' ? 'active admin' : ''}`} onClick={() => setFilterRole('admin')}>แอดมิน (Admin)</button>
           <button className={`personnel-tab-btn ${filterRole === 'medic' ? 'active medic' : ''}`} onClick={() => setFilterRole('medic')}>แพทย์ (Medic)</button>
-          <button className={`personnel-tab-btn ${filterRole === 'user' ? 'active user' : ''}`} onClick={() => setFilterRole('user')}>รออนุมัติ (User)</button>
+          <button className={`personnel-tab-btn ${filterRole === 'user' ? 'active' : ''}`} onClick={() => setFilterRole('user')}>บุคคลทั่วไป (User)</button>
+          <button className={`personnel-tab-btn ${filterRole === 'resigned' ? 'active' : ''}`} onClick={() => setFilterRole('resigned')} style={filterRole === 'resigned' ? {backgroundColor: '#fef2f2', color: '#ef4444', borderColor: '#ef4444'} : {}}>พ้นสภาพ</button>
         </div>
       </div>
 

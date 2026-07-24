@@ -85,10 +85,62 @@ export default function RequestManagement({ profile }) {
       if (requestType === 'resign' && newStatus === 'approved') {
         const { error: roleError } = await supabase
           .from('users')
-          .update({ role: 'user' }) // 'user' role revokes access
+          .update({ 
+            role: 'resigned',
+            position: 'ลาออก' 
+          })
           .eq('discord_id', discordId);
           
         if (roleError) console.error('Error updating user role:', roleError);
+        
+        // Auto clock-out just in case they were on duty
+        try {
+          const { data: activeSession } = await supabase
+            .from('duty_sessions')
+            .select('*')
+            .eq('discord_id', discordId)
+            .in('status', ['on_duty', 'on_break'])
+            .order('clock_in', { ascending: false })
+            .limit(1)
+            .single();
+
+          if (activeSession) {
+            let finalBreakMinutes = activeSession.total_break_minutes || 0;
+            if (activeSession.status === 'on_break' && activeSession.last_break_start) {
+              const breakStart = new Date(activeSession.last_break_start).getTime();
+              const now = new Date().getTime();
+              finalBreakMinutes += Math.floor((now - breakStart) / 60000);
+            }
+
+            await supabase
+              .from('duty_sessions')
+              .update({ 
+                status: 'completed',
+                clock_out: new Date().toISOString(),
+                total_break_minutes: finalBreakMinutes,
+                queue_state: 'available',
+                manager_start_time: null,
+                current_manager_log_id: null,
+                story_time: null
+              })
+              .eq('id', activeSession.id);
+              
+            if (activeSession.current_manager_log_id) {
+              const startTime = new Date(activeSession.manager_start_time).getTime();
+              const durationMinutes = Math.floor((Date.now() - startTime) / 60000);
+              
+              await supabase
+                .from('queue_manager_logs')
+                .update({ 
+                  end_time: new Date().toISOString(),
+                  duration_minutes: durationMinutes
+                })
+                .eq('id', activeSession.current_manager_log_id);
+            }
+          }
+        } catch (err) {
+          console.error('Error auto clock-out during resignation approval:', err);
+        }
       }
 
       // 3. Send Notification
