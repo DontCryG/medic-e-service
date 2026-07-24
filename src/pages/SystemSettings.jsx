@@ -21,6 +21,7 @@ export default function SystemSettings({ profile }) {
   const [reportCategory, setReportCategory] = useState('all');
   const [reportData, setReportData] = useState([]);
   const [summaryData, setSummaryData] = useState({ totalPayout: 0, totalHours: 0 });
+  const [showResigned, setShowResigned] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const pdfRef = useRef();
   
@@ -76,7 +77,7 @@ export default function SystemSettings({ profile }) {
     if (profile?.role === 'admin') {
       fetchData();
     }
-  }, [profile, startDate, endDate, activeTab]);
+  }, [profile, startDate, endDate, activeTab, reportCategory, showResigned]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -210,7 +211,10 @@ export default function SystemSettings({ profile }) {
       const finalData = [];
       Object.keys(userWorkData).forEach(discordId => {
         const user = userMap[discordId];
-        if (!user || user.role === 'resigned') return;
+        if (!user) return;
+        const isResigned = user.role === 'resigned';
+        if (showResigned && !isResigned) return;
+        if (!showResigned && isResigned) return;
 
         const tMins = userWorkData[discordId].totalMinutes;
         const tHours = tMins / 60;
@@ -565,6 +569,27 @@ export default function SystemSettings({ profile }) {
                         </div>
                       )}
                     </div>
+                    
+                    <div className="filter-group" style={{ flexShrink: 0, background: 'transparent', border: 'none', padding: 0 }}>
+                      <label 
+                        style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', margin: 0, whiteSpace: 'nowrap' }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowResigned(!showResigned);
+                        }}
+                      >
+                        <div className="checkbox-container" style={{ margin: 0 }}>
+                          <input 
+                            type="checkbox" 
+                            checked={showResigned}
+                            readOnly
+                          />
+                          <span className="checkmark checkmark-blue"></span>
+                        </div>
+                        <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
+                      </label>
+                    </div>
+
                   </div>
                   <button className="export-btn" onClick={handleDownloadPDF} disabled={isGenerating || reportData.length === 0}>
                     {isGenerating ? 'กำลังสร้าง PDF...' : <><Download size={20} /> ดาวน์โหลด PDF</>}

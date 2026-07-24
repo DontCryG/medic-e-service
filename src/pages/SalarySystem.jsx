@@ -37,6 +37,7 @@ export default function SalarySystem({ profile }) {
   const [adjAmount, setAdjAmount] = useState('');
   const [adjReason, setAdjReason] = useState('');
   const [savingAdj, setSavingAdj] = useState(false);
+  const [showResigned, setShowResigned] = useState(false);
 
   useEffect(() => {
     if (profile?.role === 'admin') {
@@ -59,7 +60,7 @@ export default function SalarySystem({ profile }) {
         supabase.removeChannel(subscription);
       };
     }
-  }, [profile, startDate, endDate]);
+  }, [profile, startDate, endDate, showResigned]);
 
   const fetchRatesAndData = async () => {
     setLoading(true);
@@ -229,7 +230,10 @@ export default function SalarySystem({ profile }) {
 
       Object.keys(userWorkData).forEach(discordId => {
         const user = userMap[discordId];
-        if (!user || user.role === 'resigned') return; // Ignore if user deleted or resigned
+        if (!user) return;
+        const isResigned = user.role === 'resigned';
+        if (showResigned && !isResigned) return;
+        if (!showResigned && isResigned) return;
 
         const totalMinutes = userWorkData[discordId].totalMinutes;
         const totalHours = totalMinutes / 60;
@@ -579,9 +583,31 @@ export default function SalarySystem({ profile }) {
 
       {/* Table Card */}
       <div className="salary-card">
-        <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', color: '#16a34a' }}>
-          <Calculator size={28} /> สรุปเงินเดือนบุคลากรแพทย์
-        </h2>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', gap: '1rem' }}>
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 0, color: '#16a34a' }}>
+            <Calculator size={28} /> สรุปเงินเดือนบุคลากรแพทย์
+          </h2>
+          
+          <div className="filter-group" style={{ flexShrink: 0, paddingRight: '1rem', background: 'transparent', border: 'none', padding: 0 }}>
+            <label 
+              style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', margin: 0, whiteSpace: 'nowrap' }}
+              onClick={(e) => {
+                e.preventDefault();
+                setShowResigned(!showResigned);
+              }}
+            >
+              <div className="checkbox-container" style={{ margin: 0 }}>
+                <input 
+                  type="checkbox" 
+                  checked={showResigned}
+                  readOnly
+                />
+                <span className="checkmark checkmark-blue"></span>
+              </div>
+              <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
+            </label>
+          </div>
+        </div>
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>กำลังคำนวณข้อมูล...</div>
