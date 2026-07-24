@@ -514,12 +514,18 @@ export default function AccountingSystem({ profile }) {
                 />
               </div>
               <div className="filter-group" style={{ flexShrink: 0, paddingRight: '1rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', margin: 0, whiteSpace: 'nowrap' }}>
+                <label 
+                  style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', margin: 0, whiteSpace: 'nowrap' }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowResigned(!showResigned);
+                  }}
+                >
                   <div className="checkbox-container" style={{ margin: 0 }}>
                     <input 
                       type="checkbox" 
                       checked={showResigned}
-                      onChange={(e) => setShowResigned(e.target.checked)}
+                      readOnly
                     />
                     <span className="checkmark"></span>
                   </div>
@@ -673,12 +679,18 @@ export default function AccountingSystem({ profile }) {
               />
             </div>
             <div className="filter-group" style={{ flexShrink: 0, paddingRight: '1rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', margin: 0, whiteSpace: 'nowrap' }}>
+              <label 
+                style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', margin: 0, whiteSpace: 'nowrap' }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowResigned(!showResigned);
+                }}
+              >
                 <div className="checkbox-container" style={{ margin: 0 }}>
                   <input 
                     type="checkbox" 
                     checked={showResigned}
-                    onChange={(e) => setShowResigned(e.target.checked)}
+                    readOnly
                   />
                   <span className="checkmark"></span>
                 </div>
