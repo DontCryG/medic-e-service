@@ -198,7 +198,6 @@ export default function SalarySystem({ profile }) {
         const totalMinutes = Math.floor(diffMs / 60000) - (session.total_break_minutes || 0);
         if (totalMinutes > 0) {
           userWorkData[session.discord_id].totalMinutes += totalMinutes;
-          totalMinutesGlobal += totalMinutes;
         }
       });
 
@@ -211,7 +210,6 @@ export default function SalarySystem({ profile }) {
           }
           userWorkData[discordId].totalMinutes += bonusMins;
           userWorkData[discordId].bonusDutyMinutes = bonusMins;
-          totalMinutesGlobal += bonusMins;
         }
       });
 
@@ -252,6 +250,7 @@ export default function SalarySystem({ profile }) {
         
         totalPayout += payout;
         totalOcMoneyGlobal += ocMoney;
+        totalMinutesGlobal += totalMinutes;
 
         finalSalaryData.push({
           discord_id: discordId,
@@ -586,7 +585,7 @@ export default function SalarySystem({ profile }) {
       <div className="salary-card">
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', gap: '1rem' }}>
           <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 0, color: '#16a34a' }}>
-            <Calculator size={28} /> สรุปเงินเดือนบุคลากรแพทย์
+            <Calculator size={28} /> สรุปเงินเดือนบุคลากรแพทย์ {showResigned && <span style={{ color: '#ef4444', fontSize: '1.2rem' }}>(พ้นสภาพ)</span>}
           </h2>
           
           <div className="filter-group" style={{ flexShrink: 0, paddingRight: '1rem', background: 'transparent', border: 'none', padding: 0 }}>

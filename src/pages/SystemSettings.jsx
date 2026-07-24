@@ -183,7 +183,6 @@ export default function SystemSettings({ profile }) {
         const mins = Math.floor((end - start) / 60000) - (session.total_break_minutes || 0);
         if (mins > 0) {
           userWorkData[session.discord_id].totalMinutes += mins;
-          totalMinutesGlobal += mins;
         }
       });
 
@@ -193,7 +192,6 @@ export default function SystemSettings({ profile }) {
           if (!userWorkData[discordId]) userWorkData[discordId] = { totalMinutes: 0, bonusDutyMinutes: 0 };
           userWorkData[discordId].totalMinutes += bonusMins;
           userWorkData[discordId].bonusDutyMinutes = bonusMins;
-          totalMinutesGlobal += bonusMins;
         }
       });
 
@@ -232,6 +230,7 @@ export default function SystemSettings({ profile }) {
         const payout = Math.max(0, base + adj.bonus + adj.storyMoney + ocMoney - adj.deduction);
         
         totalPayout += payout;
+        totalMinutesGlobal += tMins;
         finalData.push({
           discord_id: discordId,
           name: user.ic_name,
@@ -610,6 +609,7 @@ export default function SystemSettings({ profile }) {
                          reportCategory === 'oc' ? 'รายงานสรุปหมวดเงิน OC' :
                          reportCategory === 'bonus' ? 'รายงานสรุปหมวดเงินโบนัส' :
                          'รายงานสรุปหมวดเงินดูสตอรี่'}
+                        {showResigned ? ' (พ้นสภาพ)' : ''}
                       </h1>
                       <p className="pdf-subtitle">
                         ประจำวันที่ {startDate.toLocaleDateString('th-TH')} ถึง {endDate.toLocaleDateString('th-TH')}
