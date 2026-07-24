@@ -484,10 +484,10 @@ export default function AccountingSystem({ profile }) {
       </div>
 
       <div className="table-container" style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-        <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div className="table-header" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '1rem' }}>
             <h3 style={{ margin: 0, color: '#1e293b' }}>ประวัติการบันทึก</h3>
             
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
               <div className="filter-group">
                 <Search size={18} color="#94a3b8" />
                 <input 
@@ -651,13 +651,13 @@ export default function AccountingSystem({ profile }) {
 
     return (
       <div className="report-container animate-fade-in">
-        <div className="table-header" style={{ marginBottom: '1.5rem', background: '#ffffff', padding: '1rem 1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+        <div className="table-header" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: '1.5rem', background: '#ffffff', padding: '1rem 1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', gap: '1rem' }}>
           <h2 style={{ margin: 0, color: '#1e293b', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <FileText size={24} color={activeTab === 'finance' ? '#3b82f6' : '#f59e0b'} />
             {activeTab === 'finance' ? 'รายงานสรุปการเงิน' : 'รายงานสรุปสิ่งของ'}
           </h2>
           
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
             <div className="filter-group">
               <CalendarDays size={18} color="#94a3b8" />
               <DatePicker 
