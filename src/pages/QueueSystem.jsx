@@ -15,6 +15,7 @@ export default function QueueSystem({ profile }) {
   const [showHistory, setShowHistory] = useState(false);
   const [historyData, setHistoryData] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [showResigned, setShowResigned] = useState(false);
 
   // Story Modal State
   const [storyModalUser, setStoryModalUser] = useState(null);
@@ -112,7 +113,7 @@ export default function QueueSystem({ profile }) {
     if (showCaseHistory) {
       fetchCaseHistory();
     }
-  }, [showCaseHistory, caseStartDate, caseEndDate]);
+  }, [showCaseHistory, caseStartDate, caseEndDate, showResigned]);
 
   const fetchCaseHistory = async () => {
     setLoadingCaseHistory(true);
@@ -130,7 +131,19 @@ export default function QueueSystem({ profile }) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCaseHistoryData(data || []);
+      
+      const { data: usersData } = await supabase.from('users').select('discord_id, role');
+      const userRoleMap = {};
+      if (usersData) {
+        usersData.forEach(u => { userRoleMap[u.discord_id] = u.role; });
+      }
+      
+      const filteredData = (data || []).filter(item => {
+        if (!showResigned && userRoleMap[item.medic_discord_id] === 'resigned') return false;
+        return true;
+      });
+      
+      setCaseHistoryData(filteredData);
     } catch (err) {
       console.error('Error fetching case history:', err);
     } finally {
@@ -385,7 +398,7 @@ export default function QueueSystem({ profile }) {
 
       const { data: usersData, error: usersError } = await supabase
         .from('users')
-        .select('discord_id, ic_name');
+        .select('discord_id, ic_name, role');
 
       if (usersError) throw usersError;
 
@@ -393,13 +406,14 @@ export default function QueueSystem({ profile }) {
       const grouped = {};
       
       usersData.forEach(u => { 
+        if (!showResigned && u.role === 'resigned') return;
         userMap[u.discord_id] = u.ic_name; 
         grouped[u.discord_id] = 0; // Initialize everyone with 0 minutes
       });
 
       data.forEach(log => {
         if (!log.duration_minutes) return;
-        if (grouped[log.discord_id] === undefined) grouped[log.discord_id] = 0;
+        if (userMap[log.discord_id] === undefined) return; // Skip resigned or unknown if hidden
         grouped[log.discord_id] += log.duration_minutes;
       });
 
@@ -420,7 +434,7 @@ export default function QueueSystem({ profile }) {
     if (showHistory) {
       fetchHistory();
     }
-  }, [showHistory, startDate, endDate]);
+  }, [showHistory, startDate, endDate, showResigned]);
 
   if (!profile) return null;
 
@@ -661,6 +675,17 @@ export default function QueueSystem({ profile }) {
                   className="date-input custom-datepicker"
                 />
               </div>
+              <div className="filter-group">
+                <label className="checkbox-container" style={{ marginLeft: '1rem', marginTop: '0', display: 'flex', alignItems: 'center' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={showResigned}
+                    onChange={(e) => setShowResigned(e.target.checked)}
+                  />
+                  <span className="checkmark"></span>
+                  <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
+                </label>
+              </div>
             </div>
 
             <div className="history-table-container">
@@ -743,6 +768,17 @@ export default function QueueSystem({ profile }) {
                   dateFormat="dd/MM/yyyy"
                   className="date-input custom-datepicker"
                 />
+              </div>
+              <div className="filter-group">
+                <label className="checkbox-container" style={{ marginLeft: '1rem', marginTop: '0', display: 'flex', alignItems: 'center' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={showResigned}
+                    onChange={(e) => setShowResigned(e.target.checked)}
+                  />
+                  <span className="checkmark"></span>
+                  <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
+                </label>
               </div>
             </div>
 

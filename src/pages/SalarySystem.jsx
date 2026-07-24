@@ -229,7 +229,7 @@ export default function SalarySystem({ profile }) {
 
       Object.keys(userWorkData).forEach(discordId => {
         const user = userMap[discordId];
-        if (!user) return; // Ignore if user deleted
+        if (!user || user.role === 'resigned') return; // Ignore if user deleted or resigned
 
         const totalMinutes = userWorkData[discordId].totalMinutes;
         const totalHours = totalMinutes / 60;

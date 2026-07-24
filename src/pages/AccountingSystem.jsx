@@ -15,6 +15,8 @@ export default function AccountingSystem({ profile }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showResigned, setShowResigned] = useState(false);
+  const [userRoles, setUserRoles] = useState({});
 
   // Filters
   const getLocalDateString = () => {
@@ -103,6 +105,14 @@ export default function AccountingSystem({ profile }) {
         }
         throw error;
       }
+      
+      const { data: usersData } = await supabase.from('users').select('discord_id, role');
+      const rolesMap = {};
+      if (usersData) {
+        usersData.forEach(u => rolesMap[u.discord_id] = u.role);
+      }
+      setUserRoles(rolesMap);
+      
       // Calculate running balances
       let currentFinanceBal = 0;
       const itemBalances = {};
@@ -269,10 +279,13 @@ export default function AccountingSystem({ profile }) {
     return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
   };
 
-  const filteredLogs = logs.filter(l => 
-    (l.category || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
-    (l.description || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredLogs = logs.filter(l => {
+    const isResigned = userRoles[l.discord_id] === 'resigned';
+    if (!showResigned && isResigned) return false;
+    
+    return (l.category || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+           (l.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   // Reverse logs for Manage table (newest first)
   const manageLogs = [...filteredLogs].reverse();
@@ -500,6 +513,17 @@ export default function AccountingSystem({ profile }) {
                   dateFormat="dd/MM/yyyy"
                 />
               </div>
+              <div className="filter-group">
+                <label className="checkbox-container" style={{ marginLeft: '1rem', marginTop: '0', display: 'flex', alignItems: 'center' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={showResigned}
+                    onChange={(e) => setShowResigned(e.target.checked)}
+                  />
+                  <span className="checkmark"></span>
+                  <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -645,6 +669,17 @@ export default function AccountingSystem({ profile }) {
                 customInput={<input style={{ background: 'transparent', border: 'none', outline: 'none', color: '#1e293b', width: '80px', cursor: 'pointer' }} />}
                 dateFormat="dd/MM/yyyy"
               />
+            </div>
+            <div className="filter-group">
+              <label className="checkbox-container" style={{ marginLeft: '1rem', marginTop: '0', display: 'flex', alignItems: 'center' }}>
+                <input 
+                  type="checkbox" 
+                  checked={showResigned}
+                  onChange={(e) => setShowResigned(e.target.checked)}
+                />
+                <span className="checkmark"></span>
+                <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
+              </label>
             </div>
             <button 
               className="print-report-btn" 

@@ -210,7 +210,7 @@ export default function SystemSettings({ profile }) {
       const finalData = [];
       Object.keys(userWorkData).forEach(discordId => {
         const user = userMap[discordId];
-        if (!user) return;
+        if (!user || user.role === 'resigned') return;
 
         const tMins = userWorkData[discordId].totalMinutes;
         const tHours = tMins / 60;
