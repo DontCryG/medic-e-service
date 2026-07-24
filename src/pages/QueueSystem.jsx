@@ -675,25 +675,27 @@ export default function QueueSystem({ profile }) {
                   className="date-input custom-datepicker"
                 />
               </div>
-              <div className="filter-group" style={{ flexShrink: 0, paddingRight: '1rem' }}>
-                <label 
-                  style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', margin: 0, whiteSpace: 'nowrap' }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowResigned(!showResigned);
-                  }}
-                >
-                  <div className="checkbox-container" style={{ margin: 0 }}>
-                    <input 
-                      type="checkbox" 
-                      checked={showResigned}
-                      readOnly
-                    />
-                    <span className="checkmark"></span>
-                  </div>
-                  <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
-                </label>
-              </div>
+              {isAdmin && (
+                <div className="filter-group" style={{ flexShrink: 0, paddingRight: '1rem' }}>
+                  <label 
+                    style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', margin: 0, whiteSpace: 'nowrap' }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowResigned(!showResigned);
+                    }}
+                  >
+                    <div className="checkbox-container" style={{ margin: 0 }}>
+                      <input 
+                        type="checkbox" 
+                        checked={showResigned}
+                        readOnly
+                      />
+                      <span className="checkmark"></span>
+                    </div>
+                    <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
+                  </label>
+                </div>
+              )}
             </div>
 
             <div className="history-table-container">
@@ -777,25 +779,27 @@ export default function QueueSystem({ profile }) {
                   className="date-input custom-datepicker"
                 />
               </div>
-              <div className="filter-group" style={{ flexShrink: 0, paddingRight: '1rem' }}>
-                <label 
-                  style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', margin: 0, whiteSpace: 'nowrap' }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowResigned(!showResigned);
-                  }}
-                >
-                  <div className="checkbox-container" style={{ margin: 0 }}>
-                    <input 
-                      type="checkbox" 
-                      checked={showResigned}
-                      readOnly
-                    />
-                    <span className="checkmark"></span>
-                  </div>
-                  <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
-                </label>
-              </div>
+              {isAdmin && (
+                <div className="filter-group" style={{ flexShrink: 0, paddingRight: '1rem' }}>
+                  <label 
+                    style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', margin: 0, whiteSpace: 'nowrap' }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowResigned(!showResigned);
+                    }}
+                  >
+                    <div className="checkbox-container" style={{ margin: 0 }}>
+                      <input 
+                        type="checkbox" 
+                        checked={showResigned}
+                        readOnly
+                      />
+                      <span className="checkmark"></span>
+                    </div>
+                    <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
+                  </label>
+                </div>
+              )}
             </div>
 
             <div className="history-table-container">
