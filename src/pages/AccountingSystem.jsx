@@ -514,14 +514,16 @@ export default function AccountingSystem({ profile }) {
                 />
               </div>
               <div className="filter-group">
-                <label className="checkbox-container" style={{ marginLeft: '1rem', marginTop: '0', display: 'flex', alignItems: 'center' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={showResigned}
-                    onChange={(e) => setShowResigned(e.target.checked)}
-                  />
-                  <span className="checkmark"></span>
-                  <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
+                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginLeft: '1rem', marginTop: '0' }}>
+                  <div className="checkbox-container" style={{ margin: 0 }}>
+                    <input 
+                      type="checkbox" 
+                      checked={showResigned}
+                      onChange={(e) => setShowResigned(e.target.checked)}
+                    />
+                    <span className="checkmark"></span>
+                  </div>
+                  <span style={{ marginLeft: '0.75rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
                 </label>
               </div>
             </div>
@@ -671,14 +673,16 @@ export default function AccountingSystem({ profile }) {
               />
             </div>
             <div className="filter-group">
-              <label className="checkbox-container" style={{ marginLeft: '1rem', marginTop: '0', display: 'flex', alignItems: 'center' }}>
-                <input 
-                  type="checkbox" 
-                  checked={showResigned}
-                  onChange={(e) => setShowResigned(e.target.checked)}
-                />
-                <span className="checkmark"></span>
-                <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
+              <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginLeft: '1rem', marginTop: '0' }}>
+                <div className="checkbox-container" style={{ margin: 0 }}>
+                  <input 
+                    type="checkbox" 
+                    checked={showResigned}
+                    onChange={(e) => setShowResigned(e.target.checked)}
+                  />
+                  <span className="checkmark"></span>
+                </div>
+                <span style={{ marginLeft: '0.75rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
               </label>
             </div>
             <button 
