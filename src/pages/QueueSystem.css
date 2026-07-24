@@ -222,7 +222,7 @@
 
 .history-filters {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 24px;
   align-items: center;
@@ -230,7 +230,6 @@
   padding: 12px;
   border-radius: 8px;
   border: 1px solid #e9ecef;
-  overflow-x: auto;
 }
 
 .filter-group {

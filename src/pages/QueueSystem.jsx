@@ -675,8 +675,8 @@ export default function QueueSystem({ profile }) {
                   className="date-input custom-datepicker"
                 />
               </div>
-              <div className="filter-group">
-                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginLeft: '1rem' }}>
+              <div className="filter-group" style={{ flexShrink: 0, paddingRight: '1rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', margin: 0, whiteSpace: 'nowrap' }}>
                   <div className="checkbox-container" style={{ margin: 0 }}>
                     <input 
                       type="checkbox" 
@@ -685,7 +685,7 @@ export default function QueueSystem({ profile }) {
                     />
                     <span className="checkmark"></span>
                   </div>
-                  <span style={{ marginLeft: '0.75rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
+                  <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
                 </label>
               </div>
             </div>
@@ -771,8 +771,8 @@ export default function QueueSystem({ profile }) {
                   className="date-input custom-datepicker"
                 />
               </div>
-              <div className="filter-group">
-                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginLeft: '1rem', marginTop: '0' }}>
+              <div className="filter-group" style={{ flexShrink: 0, paddingRight: '1rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', margin: 0, whiteSpace: 'nowrap' }}>
                   <div className="checkbox-container" style={{ margin: 0 }}>
                     <input 
                       type="checkbox" 
@@ -781,7 +781,7 @@ export default function QueueSystem({ profile }) {
                     />
                     <span className="checkmark"></span>
                   </div>
-                  <span style={{ marginLeft: '0.75rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
+                  <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
                 </label>
               </div>
             </div>
