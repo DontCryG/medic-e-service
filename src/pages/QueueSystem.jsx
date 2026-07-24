@@ -139,7 +139,9 @@ export default function QueueSystem({ profile }) {
       }
       
       const filteredData = (data || []).filter(item => {
-        if (!showResigned && userRoleMap[item.medic_discord_id] === 'resigned') return false;
+        const isResigned = userRoleMap[item.medic_discord_id] === 'resigned';
+        if (showResigned && !isResigned) return false;
+        if (!showResigned && isResigned) return false;
         return true;
       });
       
@@ -406,7 +408,11 @@ export default function QueueSystem({ profile }) {
       const grouped = {};
       
       usersData.forEach(u => { 
-        if (!showResigned && u.role === 'resigned') return;
+        if (showResigned) {
+          if (u.role !== 'resigned') return;
+        } else {
+          if (u.role === 'resigned') return;
+        }
         userMap[u.discord_id] = u.ic_name; 
         grouped[u.discord_id] = 0; // Initialize everyone with 0 minutes
       });

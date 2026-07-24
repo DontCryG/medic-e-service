@@ -281,6 +281,7 @@ export default function AccountingSystem({ profile }) {
 
   const filteredLogs = logs.filter(l => {
     const isResigned = userRoles[l.discord_id] === 'resigned';
+    if (showResigned && !isResigned) return false;
     if (!showResigned && isResigned) return false;
     
     return (l.category || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
