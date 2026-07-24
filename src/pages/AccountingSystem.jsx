@@ -528,7 +528,7 @@ export default function AccountingSystem({ profile }) {
                       checked={showResigned}
                       readOnly
                     />
-                    <span className="checkmark"></span>
+                    <span className="checkmark checkmark-blue"></span>
                   </div>
                   <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
                 </label>
@@ -693,7 +693,7 @@ export default function AccountingSystem({ profile }) {
                     checked={showResigned}
                     readOnly
                   />
-                  <span className="checkmark"></span>
+                  <span className="checkmark checkmark-blue"></span>
                 </div>
                 <span style={{ marginLeft: '0.5rem', color: '#1e293b', fontWeight: 500 }}>แสดงประวัติคนพ้นสภาพ</span>
               </label>
