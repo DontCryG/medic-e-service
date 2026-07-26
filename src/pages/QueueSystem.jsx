@@ -188,6 +188,18 @@ export default function QueueSystem({ profile }) {
     }
   };
 
+  const handleStoryPeopleChange = async (userId, value) => {
+    try {
+      const { error } = await supabase
+        .from('duty_sessions')
+        .update({ story_people: value })
+        .eq('id', userId);
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error updating story people:', err);
+    }
+  };
+
   const handleStatusChange = async (user, newStatus, currentStatus) => {
     const finalStatus = currentStatus === newStatus ? 'available' : newStatus;
     
@@ -226,10 +238,27 @@ export default function QueueSystem({ profile }) {
           });
           return;
         }
-        setStoryModalUser({ user, finalStatus });
-        setStoryPeopleCount('1');
-        setIsStoryDropdownOpen(false);
-        return; // Wait for modal confirmation
+        
+        // Immediately distribute bonus without modal
+        const peopleCount = user.story_people || '1';
+        const amount = peopleCount === '1' ? 200000 : 100000;
+        const reasonText = `จบสตอรี่ (${user.story_agency})`;
+        
+        await supabase.from('salary_adjustments').insert({
+          discord_id: user.discord_id,
+          type: 'bonus',
+          amount: amount,
+          reason: reasonText
+        });
+        
+        await supabase.from('story_logs').insert({
+          medic_discord_id: user.discord_id,
+          medic_ic_name: user.users?.ic_name || 'Unknown',
+          agency_name: user.story_agency,
+          people_count: parseInt(peopleCount)
+        });
+        
+        // Notice we DO NOT return here, we let the status update proceed.
       }
 
       // If they are STARTING to be a manager
@@ -599,29 +628,49 @@ export default function QueueSystem({ profile }) {
                             }}
                           />
                           {user.story_time && (
-                            <input
-                              type="text"
-                              className="remark-input"
-                              style={{ 
-                                width: '100%', 
-                                minWidth: '120px',
-                                backgroundColor: '#f1f5f9', 
-                                padding: '8px 12px',
-                                border: '1px solid #e2e8f0',
-                                borderRadius: '6px'
-                              }}
-                              defaultValue={user.story_agency || ''}
-                              placeholder="รายละเอียดสังกัด..."
-                              disabled={!canEdit}
-                              onBlur={(e) => {
-                                if (e.target.value !== user.story_agency) {
-                                  handleStoryAgencyChange(user.id, e.target.value);
-                                }
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') e.target.blur();
-                              }}
-                            />
+                            <>
+                              <input
+                                type="text"
+                                className="remark-input"
+                                style={{ 
+                                  width: '100%', 
+                                  minWidth: '120px',
+                                  backgroundColor: '#f1f5f9', 
+                                  padding: '8px 12px',
+                                  border: '1px solid #e2e8f0',
+                                  borderRadius: '6px'
+                                }}
+                                defaultValue={user.story_agency || ''}
+                                placeholder="รายละเอียดสังกัด..."
+                                disabled={!canEdit}
+                                onBlur={(e) => {
+                                  if (e.target.value !== user.story_agency) {
+                                    handleStoryAgencyChange(user.id, e.target.value);
+                                  }
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') e.target.blur();
+                                }}
+                              />
+                              <select 
+                                defaultValue={user.story_people || '1'} 
+                                onChange={(e) => handleStoryPeopleChange(user.id, e.target.value)}
+                                style={{ 
+                                  width: '100px', 
+                                  padding: '8px', 
+                                  borderRadius: '6px', 
+                                  border: '1px solid #e2e8f0', 
+                                  backgroundColor: '#f1f5f9',
+                                  color: '#334155',
+                                  outline: 'none',
+                                  fontFamily: 'inherit'
+                                }}
+                                disabled={!canEdit}
+                              >
+                                <option value="1">ไป 1 คน</option>
+                                <option value="2">มากกว่า 1</option>
+                              </select>
+                            </>
                           )}
                         </div>
                       </td>
@@ -877,52 +926,6 @@ export default function QueueSystem({ profile }) {
                   )}
                 </tbody>
               </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Story Dropdown Modal */}
-      {storyModalUser && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '420px', padding: '2.5rem 2rem' }}>
-            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-              <h2 style={{ fontSize: '1.75rem', color: '#1e293b', marginBottom: '0.5rem', fontWeight: 600 }}>จบสตอรี่</h2>
-              <p style={{ color: '#64748b', fontSize: '1.1rem' }}>สตอรี่ที่คุณเพิ่งไป มีคนไปทั้งหมดกี่คน?</p>
-            </div>
-            
-            <div className="story-custom-dropdown" style={{ marginBottom: '1.5rem' }}>
-              <div 
-                className={`story-dropdown-selected ${isStoryDropdownOpen ? 'open' : ''}`}
-                onClick={() => setIsStoryDropdownOpen(!isStoryDropdownOpen)}
-              >
-                {storyPeopleCount === '1' ? 'ไป 1 คน (โบนัส 200,000)' : 'ไปมากกว่า 1 คน (โบนัส 100,000)'}
-                <ChevronDown size={20} style={{ transition: 'transform 0.2s', transform: isStoryDropdownOpen ? 'rotate(180deg)' : 'none', color: '#64748b' }} />
-              </div>
-              {isStoryDropdownOpen && (
-                <div className="story-dropdown-options">
-                  <div className={`story-dropdown-option ${storyPeopleCount === '1' ? 'selected' : ''}`} onClick={() => { setStoryPeopleCount('1'); setIsStoryDropdownOpen(false); }}>
-                    ไป 1 คน (โบนัส 200,000)
-                  </div>
-                  <div className={`story-dropdown-option ${storyPeopleCount === '2' ? 'selected' : ''}`} onClick={() => { setStoryPeopleCount('2'); setIsStoryDropdownOpen(false); }}>
-                    ไปมากกว่า 1 คน (โบนัส 100,000)
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                onClick={confirmStoryMoney} 
-                style={{ flex: 1, padding: '0.75rem', fontSize: '1.05rem', backgroundColor: '#7c3aed', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.2s' }} 
-                onMouseOver={e => { e.target.style.transform = 'translateY(-1px)' }} 
-                onMouseOut={e => e.target.style.transform = 'none'}
-              >
-                ยืนยัน
-              </button>
-              <button onClick={() => setStoryModalUser(null)} style={{ flex: 1, padding: '0.75rem', fontSize: '1.05rem', backgroundColor: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.2s' }} onMouseOver={e => e.target.style.backgroundColor = '#e2e8f0'} onMouseOut={e => e.target.style.backgroundColor = '#f1f5f9'}>
-                ยกเลิก
-              </button>
             </div>
           </div>
         </div>
