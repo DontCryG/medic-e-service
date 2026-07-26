@@ -28,6 +28,7 @@ export default function QueueSystem({ profile }) {
   const [showCaseHistory, setShowCaseHistory] = useState(false);
   const [caseHistoryData, setCaseHistoryData] = useState([]);
   const [loadingCaseHistory, setLoadingCaseHistory] = useState(false);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
   
   const getLocalDateString = () => {
     const d = new Date();
@@ -652,24 +653,60 @@ export default function QueueSystem({ profile }) {
                                   if (e.key === 'Enter') e.target.blur();
                                 }}
                               />
-                              <select 
-                                defaultValue={user.story_people || '1'} 
-                                onChange={(e) => handleStoryPeopleChange(user.id, e.target.value)}
-                                style={{ 
-                                  width: '100px', 
-                                  padding: '8px', 
-                                  borderRadius: '6px', 
-                                  border: '1px solid #e2e8f0', 
-                                  backgroundColor: '#f1f5f9',
-                                  color: '#334155',
-                                  outline: 'none',
-                                  fontFamily: 'inherit'
-                                }}
-                                disabled={!canEdit}
-                              >
-                                <option value="1">ไป 1 คน</option>
-                                <option value="2">มากกว่า 1</option>
-                              </select>
+                              <div style={{ position: 'relative' }}>
+                                <div 
+                                  onClick={() => canEdit && setOpenDropdownId(openDropdownId === user.id ? null : user.id)}
+                                  style={{ 
+                                    width: '105px', 
+                                    padding: '8px 12px', 
+                                    borderRadius: '6px', 
+                                    border: '1px solid #e2e8f0', 
+                                    backgroundColor: '#f1f5f9',
+                                    color: '#334155',
+                                    cursor: canEdit ? 'pointer' : 'not-allowed',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    userSelect: 'none',
+                                    height: '35px'
+                                  }}
+                                >
+                                  <span style={{ fontSize: '0.9rem' }}>{user.story_people === '2' ? 'ไป 2 คน' : 'ไป 1 คน'}</span>
+                                  <ChevronDown size={14} style={{ transform: openDropdownId === user.id ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', color: '#64748b' }} />
+                                </div>
+                                {openDropdownId === user.id && (
+                                  <div style={{ 
+                                    position: 'absolute', 
+                                    top: '100%', 
+                                    left: 0, 
+                                    right: 0, 
+                                    marginTop: '4px',
+                                    backgroundColor: 'white', 
+                                    border: '1px solid #e2e8f0', 
+                                    borderRadius: '6px', 
+                                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                    zIndex: 50,
+                                    overflow: 'hidden'
+                                  }}>
+                                    <div 
+                                      onClick={() => { handleStoryPeopleChange(user.id, '1'); setOpenDropdownId(null); }}
+                                      style={{ padding: '8px 12px', cursor: 'pointer', fontSize: '0.9rem', backgroundColor: (user.story_people || '1') === '1' ? '#f1f5f9' : 'transparent', color: (user.story_people || '1') === '1' ? '#7c3aed' : '#334155', fontWeight: (user.story_people || '1') === '1' ? 500 : 400 }}
+                                      onMouseOver={(e) => e.target.style.backgroundColor = '#f8fafc'}
+                                      onMouseOut={(e) => e.target.style.backgroundColor = (user.story_people || '1') === '1' ? '#f1f5f9' : 'transparent'}
+                                    >
+                                      ไป 1 คน
+                                    </div>
+                                    <div 
+                                      onClick={() => { handleStoryPeopleChange(user.id, '2'); setOpenDropdownId(null); }}
+                                      style={{ padding: '8px 12px', cursor: 'pointer', fontSize: '0.9rem', backgroundColor: user.story_people === '2' ? '#f1f5f9' : 'transparent', color: user.story_people === '2' ? '#7c3aed' : '#334155', fontWeight: user.story_people === '2' ? 500 : 400 }}
+                                      onMouseOver={(e) => e.target.style.backgroundColor = '#f8fafc'}
+                                      onMouseOut={(e) => e.target.style.backgroundColor = user.story_people === '2' ? '#f1f5f9' : 'transparent'}
+                                    >
+                                      ไป 2 คน
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             </>
                           )}
                         </div>
