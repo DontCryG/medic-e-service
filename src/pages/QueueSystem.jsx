@@ -653,7 +653,7 @@ export default function QueueSystem({ profile }) {
                                   if (e.key === 'Enter') e.target.blur();
                                 }}
                               />
-                              <div style={{ position: 'relative' }}>
+                              <div style={{ position: 'relative', zIndex: openDropdownId === user.id ? 999 : 1 }}>
                                 <div 
                                   onClick={() => canEdit && setOpenDropdownId(openDropdownId === user.id ? null : user.id)}
                                   style={{ 
