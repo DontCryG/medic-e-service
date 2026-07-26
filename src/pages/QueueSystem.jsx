@@ -617,29 +617,70 @@ export default function QueueSystem({ profile }) {
                           />
                           {user.story_time && (
                             <>
-                              <input
-                                type="text"
-                                className="remark-input"
-                                style={{ 
-                                  width: '100%', 
-                                  minWidth: '120px',
-                                  backgroundColor: '#f1f5f9', 
-                                  padding: '8px 12px',
-                                  border: '1px solid #e2e8f0',
-                                  borderRadius: '6px'
-                                }}
-                                defaultValue={user.story_agency || ''}
-                                placeholder="รายละเอียดสังกัด..."
-                                disabled={!canEdit}
-                                onBlur={(e) => {
-                                  if (e.target.value !== user.story_agency) {
-                                    handleStoryAgencyChange(user.id, e.target.value);
-                                  }
-                                }}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') e.target.blur();
-                                }}
-                              />
+                              {(() => {
+                                const parts = (user.story_agency || '').split(' vs ');
+                                const team1 = parts[0] || '';
+                                const team2 = parts.slice(1).join(' vs ') || '';
+                                return (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: '160px' }}>
+                                    <input
+                                      type="text"
+                                      className="remark-input"
+                                      style={{ 
+                                        flex: 1,
+                                        width: 0,
+                                        backgroundColor: '#f1f5f9', 
+                                        padding: '8px',
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: '6px',
+                                        textAlign: 'center'
+                                      }}
+                                      defaultValue={team1}
+                                      placeholder="ชื่อแก๊ง"
+                                      disabled={!canEdit}
+                                      onBlur={(e) => {
+                                        const t1 = e.target.value.trim();
+                                        const t2 = e.target.nextElementSibling.nextElementSibling.value.trim();
+                                        const newVal = (t1 || t2) ? `${t1} vs ${t2}` : '';
+                                        if (newVal !== user.story_agency && newVal !== ' vs ') {
+                                          handleStoryAgencyChange(user.id, newVal);
+                                        }
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') e.target.blur();
+                                      }}
+                                    />
+                                    <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>vs</span>
+                                    <input
+                                      type="text"
+                                      className="remark-input"
+                                      style={{ 
+                                        flex: 1,
+                                        width: 0,
+                                        backgroundColor: '#f1f5f9', 
+                                        padding: '8px',
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: '6px',
+                                        textAlign: 'center'
+                                      }}
+                                      defaultValue={team2}
+                                      placeholder="ชื่อแก๊ง"
+                                      disabled={!canEdit}
+                                      onBlur={(e) => {
+                                        const t2 = e.target.value.trim();
+                                        const t1 = e.target.previousElementSibling.previousElementSibling.value.trim();
+                                        const newVal = (t1 || t2) ? `${t1} vs ${t2}` : '';
+                                        if (newVal !== user.story_agency && newVal !== ' vs ') {
+                                          handleStoryAgencyChange(user.id, newVal);
+                                        }
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') e.target.blur();
+                                      }}
+                                    />
+                                  </div>
+                                );
+                              })()}
                               <div style={{ position: 'relative', zIndex: openDropdownId === user.id ? 999 : 1 }}>
                                 <div 
                                   onClick={() => canEdit && setOpenDropdownId(openDropdownId === user.id ? null : user.id)}
