@@ -67,7 +67,7 @@ export default function Portal() {
       </div>
 
       <footer className="portal-footer">
-        <p>(สงวนลิขสิทธิ์ © 2567 หน่วยงานแพทย์ WIP TOWN)</p>
+        <p>(สงวนลิขสิทธิ์ © 2569 หน่วยงานแพทย์ WIP TOWN)</p>
       </footer>
     </div>
   );
