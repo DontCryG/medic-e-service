@@ -84,9 +84,15 @@ export default function PersonnelSystem({ profile }) {
 
   const fetchPositions = async () => {
     try {
-      const { data } = await supabase.from('salary_rates').select('position_name').order('position_name');
+      const { data } = await supabase.from('salary_rates').select('position_name');
       if (data) {
-        setAvailablePositions(data.map(p => p.position_name));
+        const sortedPositions = data.map(p => p.position_name).sort((a, b) => {
+          const rankA = getPositionRank(a);
+          const rankB = getPositionRank(b);
+          if (rankA !== rankB) return rankA - rankB;
+          return a.localeCompare(b, 'th'); // fallback to alphabetical if rank is same
+        });
+        setAvailablePositions(sortedPositions);
       }
     } catch (e) {
       console.error(e);
