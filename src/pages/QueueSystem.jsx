@@ -496,7 +496,7 @@ export default function QueueSystem({ profile }) {
       </div>
 
       <div className="queue-card">
-        <div style={{ overflowX: 'auto' }}>
+        <div style={{ overflow: 'visible' }}>
           <table className="queue-table">
             <thead>
               <tr>
