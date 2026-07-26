@@ -563,7 +563,7 @@ export default function QueueSystem({ profile }) {
                             defaultValue={user.story_time || ''}
                             placeholder="--:--"
                             disabled={!canEdit}
-                            style={{ width: '60px', textAlign: 'center' }}
+                            style={{ width: '60px', textAlign: 'center', padding: '8px' }}
                             onBlur={(e) => {
                               let val = e.target.value.trim();
                               if (!val) {
@@ -602,7 +602,14 @@ export default function QueueSystem({ profile }) {
                             <input
                               type="text"
                               className="remark-input"
-                              style={{ width: '120px', backgroundColor: '#f1f5f9' }}
+                              style={{ 
+                                width: '100%', 
+                                minWidth: '120px',
+                                backgroundColor: '#f1f5f9', 
+                                padding: '8px 12px',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '6px'
+                              }}
                               defaultValue={user.story_agency || ''}
                               placeholder="รายละเอียดสังกัด..."
                               disabled={!canEdit}
