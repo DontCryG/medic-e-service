@@ -125,6 +125,44 @@ export default function Dashboard() {
     setSearchResults([]);
   };
 
+  const getAuthDay = () => {
+    const now = new Date();
+    if (now.getHours() < 12) {
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      return yesterday.toDateString();
+    }
+    return now.toDateString();
+  };
+
+  useEffect(() => {
+    const checkDailyReset = () => {
+      const currentAuthDay = getAuthDay();
+      const savedAuthDay = localStorage.getItem('daily_auth_day');
+
+      if (!savedAuthDay) {
+        localStorage.setItem('daily_auth_day', currentAuthDay);
+      } else if (savedAuthDay !== currentAuthDay) {
+        Swal.fire({
+          icon: 'info',
+          title: 'หมดเวลาการเข้าใช้งาน',
+          text: 'ระบบทำการรีเซ็ตสิทธิ์การเข้าใช้งานประจำวัน (12:00 น.) กรุณาล็อกอินใหม่อีกครั้ง',
+          confirmButtonText: 'ตกลง',
+          allowOutsideClick: false,
+          allowEscapeKey: false
+        }).then(async () => {
+          localStorage.removeItem('daily_auth_day');
+          await supabase.auth.signOut();
+          navigate('/');
+        });
+      }
+    };
+
+    checkDailyReset();
+    const interval = setInterval(checkDailyReset, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [navigate]);
+
   useEffect(() => {
     checkUser();
     fetchAnnouncement();
@@ -306,6 +344,7 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
+    localStorage.removeItem('daily_auth_day');
     await supabase.auth.signOut();
     navigate('/');
   };

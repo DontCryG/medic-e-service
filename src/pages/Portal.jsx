@@ -22,6 +22,7 @@ export default function Portal() {
   }, [navigate]);
   const handleLogin = async () => {
     try {
+      localStorage.removeItem('daily_auth_day');
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'discord',
         options: {
