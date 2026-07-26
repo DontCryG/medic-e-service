@@ -636,6 +636,7 @@ export default function QueueSystem({ profile }) {
                                         textAlign: 'center'
                                       }}
                                       defaultValue={team1}
+                                      list="agencies-list"
                                       placeholder="ชื่อแก๊ง"
                                       disabled={!canEdit}
                                       onBlur={(e) => {
@@ -664,6 +665,7 @@ export default function QueueSystem({ profile }) {
                                         textAlign: 'center'
                                       }}
                                       defaultValue={team2}
+                                      list="agencies-list"
                                       placeholder="ชื่อแก๊ง"
                                       disabled={!canEdit}
                                       onBlur={(e) => {
@@ -973,6 +975,13 @@ export default function QueueSystem({ profile }) {
           </div>
         </div>
       )}
+      {/* Agencies Datalist for Searchable Inputs */}
+      <datalist id="agencies-list">
+        {agencies.map((agency, idx) => (
+          <option key={idx} value={agency.name} />
+        ))}
+      </datalist>
+
     </div>
   );
 }
