@@ -366,19 +366,6 @@ export default function QueueSystem({ profile }) {
     setStoryModalUser(null);
   };
 
-  const handleRemarkChange = async (sessionId, newRemark) => {
-    try {
-      const { error } = await supabase
-        .from('duty_sessions')
-        .update({ queue_remark: newRemark })
-        .eq('id', sessionId);
-        
-      if (error) throw error;
-    } catch (err) {
-      console.error('Error updating remark:', err);
-    }
-  };
-
   const handleStoryTimeChange = async (sessionId, newTime) => {
     try {
       const { error } = await supabase
@@ -506,7 +493,7 @@ export default function QueueSystem({ profile }) {
                 <th className="col-manager" style={{ backgroundColor: '#457b9d', color: 'white' }}>หมอรันคิว</th>
                 <th className="col-story" style={{ backgroundColor: '#9d4edd', color: 'white' }}>สตอรี่</th>
                 <th className="col-story-time" style={{ backgroundColor: '#e0aaff', color: 'black' }}>เวลาไป</th>
-                <th className="col-remark">หมายเหตุ</th>
+
               </tr>
             </thead>
             <tbody>
@@ -712,29 +699,7 @@ export default function QueueSystem({ profile }) {
                         </div>
                       </td>
 
-                      <td className="col-remark">
-                        <div className="remark-input-container">
-                          <input 
-                            key={`remark-${user.id}-${user.queue_remark || ''}`}
-                            type="text" 
-                            className="remark-input"
-                            defaultValue={user.queue_remark || ''}
-                            placeholder={canEdit ? "พิมพ์หมายเหตุ..." : ""}
-                            disabled={!canEdit}
-                            onBlur={(e) => {
-                              if (e.target.value !== user.queue_remark) {
-                                handleRemarkChange(user.id, e.target.value);
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.target.blur();
-                              }
-                            }}
-                          />
-                          {canEdit && <Edit3 size={14} className="edit-icon" />}
-                        </div>
-                      </td>
+
                     </tr>
                   );
                 })
