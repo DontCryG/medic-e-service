@@ -273,8 +273,26 @@ export default function SalarySystem({ profile }) {
         });
       });
 
-      // Sort by payout descending
-      finalSalaryData.sort((a, b) => b.payout - a.payout);
+      const getPositionRank = (position) => {
+        if (!position) return 99;
+        const p = position.toLowerCase();
+        if (p.includes('web developer')) return 1;
+        if (p.includes('ผอ') || p.includes('ผู้อำนวยการ')) return 2;
+        if (p.includes('รอง')) return 3;
+        if (p.includes('เลขา')) return 4;
+        if (p.includes('ชำนาญการ')) return 5;
+        if (p.includes('นักเรียนแพทย์')) return 7; 
+        if (p.includes('แพทย์')) return 6;
+        return 99;
+      };
+
+      // Sort by position rank, then by payout descending
+      finalSalaryData.sort((a, b) => {
+        const rankA = getPositionRank(a.position);
+        const rankB = getPositionRank(b.position);
+        if (rankA !== rankB) return rankA - rankB;
+        return b.payout - a.payout;
+      });
 
       setSalaryData(finalSalaryData);
       setSummary({
