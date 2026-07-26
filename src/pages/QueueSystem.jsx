@@ -176,6 +176,18 @@ export default function QueueSystem({ profile }) {
     }
   };
 
+  const handleStoryAgencyChange = async (userId, agencyText) => {
+    try {
+      const { error } = await supabase
+        .from('duty_sessions')
+        .update({ story_agency: agencyText })
+        .eq('id', userId);
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error updating story agency:', err);
+    }
+  };
+
   const handleStatusChange = async (user, newStatus, currentStatus) => {
     const finalStatus = currentStatus === newStatus ? 'available' : newStatus;
     
@@ -204,6 +216,16 @@ export default function QueueSystem({ profile }) {
 
       // If they are STOPPING being a story
       if (currentStatus === 'story' && finalStatus !== 'story') {
+        if (!user.story_agency || user.story_agency.trim() === '') {
+          Swal.fire({
+            title: 'แจ้งเตือน',
+            text: 'กรุณาพิมพ์รายละเอียด/สังกัด ในช่องข้างๆเวลาสตอรี่ก่อนจบสตอรี่',
+            icon: 'warning',
+            confirmButtonColor: '#7c3aed',
+            customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title' }
+          });
+          return;
+        }
         setStoryModalUser({ user, finalStatus });
         setStoryPeopleCount('1');
         setIsStoryDropdownOpen(false);
@@ -238,32 +260,13 @@ export default function QueueSystem({ profile }) {
   const confirmStoryMoney = async () => {
     if (!storyModalUser) return;
     
-    if (!storyAgencySearchA.trim() && !storyAgencySearchB.trim()) {
-      Swal.fire({
-        title: 'แจ้งเตือน',
-        text: 'กรุณาระบุสังกัดอย่างน้อย 1 ฝั่ง',
-        icon: 'warning',
-        confirmButtonColor: '#7c3aed',
-        customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title' }
-      });
-      return;
-    }
-
     const { user, finalStatus } = storyModalUser;
     
     setStoryModalUser(null);
     
     const amount = storyPeopleCount === '1' ? 200000 : 100000;
     
-    let finalAgencyText = '';
-    if (storyAgencySearchA && storyAgencySearchB) {
-      finalAgencyText = `${storyAgencySearchA} vs ${storyAgencySearchB}`;
-    } else if (storyAgencySearchA) {
-      finalAgencyText = storyAgencySearchA;
-    } else if (storyAgencySearchB) {
-      finalAgencyText = storyAgencySearchB;
-    }
-
+    const finalAgencyText = user.story_agency || '';
     const reasonText = finalAgencyText ? `จบสตอรี่ (${finalAgencyText})` : 'จบสตอรี่';
     try {
       const { error: adjError } = await supabase.from('salary_adjustments').insert({
@@ -552,7 +555,7 @@ export default function QueueSystem({ profile }) {
                       </td>
 
                       <td className="col-story-time" style={{ backgroundColor: '#f9f5ff' }}>
-                        <div className="remark-input-container">
+                        <div className="remark-input-container" style={{ display: 'flex', gap: '4px' }}>
                           <input 
                             key={`story-${user.id}-${user.story_time || ''}`}
                             type="text"
@@ -560,6 +563,7 @@ export default function QueueSystem({ profile }) {
                             defaultValue={user.story_time || ''}
                             placeholder="--:--"
                             disabled={!canEdit}
+                            style={{ width: '60px', textAlign: 'center' }}
                             onBlur={(e) => {
                               let val = e.target.value.trim();
                               if (!val) {
@@ -594,6 +598,24 @@ export default function QueueSystem({ profile }) {
                               if (e.key === 'Enter') e.target.blur();
                             }}
                           />
+                          {user.story_time && (
+                            <input
+                              type="text"
+                              className="remark-input"
+                              style={{ width: '120px', backgroundColor: '#f1f5f9' }}
+                              defaultValue={user.story_agency || ''}
+                              placeholder="รายละเอียดสังกัด..."
+                              disabled={!canEdit}
+                              onBlur={(e) => {
+                                if (e.target.value !== user.story_agency) {
+                                  handleStoryAgencyChange(user.id, e.target.value);
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') e.target.blur();
+                              }}
+                            />
+                          )}
                         </div>
                       </td>
 
@@ -882,83 +904,16 @@ export default function QueueSystem({ profile }) {
               )}
             </div>
 
-            <div style={{ marginBottom: '2.5rem', textAlign: 'left' }}>
-              <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '0.5rem', fontWeight: 500 }}>สังกัดที่ไปช่วยสตอรี่ (ถ้ามี)</p>
-              
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <div style={{ flex: 1, position: 'relative' }}>
-                  <input 
-                    type="text" 
-                    placeholder="ฝั่งที่ 1..." 
-                    value={storyAgencySearchA}
-                    onChange={e => setStoryAgencySearchA(e.target.value)}
-                    className="modal-input"
-                    style={{ width: '100%', padding: '0.75rem' }}
-                  />
-                  {agencies.length > 0 && storyAgencySearchA && !agencies.find(a => a.name.toLowerCase() === storyAgencySearchA.toLowerCase()) && agencies.filter(a => a.name.toLowerCase().includes(storyAgencySearchA.toLowerCase())).length > 0 && (
-                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, maxHeight: '120px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: '#f8fafc', marginTop: '4px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
-                      {agencies.filter(a => a.name.toLowerCase().includes(storyAgencySearchA.toLowerCase())).map((ag, idx) => (
-                        <div 
-                          key={`agA-${idx}`} 
-                          onClick={() => setStoryAgencySearchA(ag.name)}
-                          style={{ padding: '0.5rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                          onMouseOver={e => e.currentTarget.style.backgroundColor = '#e2e8f0'}
-                          onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                        >
-                          <span style={{ fontWeight: 500 }}>{ag.name}</span>
-                          <span className={`agency-tag ${ag.category?.toLowerCase() === 'family' ? 'family' : 'gang'}`} style={{ fontSize: '0.65rem', padding: '0.15rem 0.5rem' }}>
-                            {ag.category || 'Gang'}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <span style={{ fontWeight: 600, color: '#94a3b8' }}>vs</span>
-
-                <div style={{ flex: 1, position: 'relative' }}>
-                  <input 
-                    type="text" 
-                    placeholder="ฝั่งที่ 2..." 
-                    value={storyAgencySearchB}
-                    onChange={e => setStoryAgencySearchB(e.target.value)}
-                    className="modal-input"
-                    style={{ width: '100%', padding: '0.75rem' }}
-                  />
-                  {agencies.length > 0 && storyAgencySearchB && !agencies.find(a => a.name.toLowerCase() === storyAgencySearchB.toLowerCase()) && agencies.filter(a => a.name.toLowerCase().includes(storyAgencySearchB.toLowerCase())).length > 0 && (
-                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, maxHeight: '120px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: '#f8fafc', marginTop: '4px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
-                      {agencies.filter(a => a.name.toLowerCase().includes(storyAgencySearchB.toLowerCase())).map((ag, idx) => (
-                        <div 
-                          key={`agB-${idx}`} 
-                          onClick={() => setStoryAgencySearchB(ag.name)}
-                          style={{ padding: '0.5rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                          onMouseOver={e => e.currentTarget.style.backgroundColor = '#e2e8f0'}
-                          onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                        >
-                          <span style={{ fontWeight: 500 }}>{ag.name}</span>
-                          <span className={`agency-tag ${ag.category?.toLowerCase() === 'family' ? 'family' : 'gang'}`} style={{ fontSize: '0.65rem', padding: '0.15rem 0.5rem' }}>
-                            {ag.category || 'Gang'}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button 
                 onClick={confirmStoryMoney} 
-                disabled={!storyAgencySearchA.trim() && !storyAgencySearchB.trim()}
-                style={{ flex: 1, padding: '0.75rem', fontSize: '1.05rem', backgroundColor: (!storyAgencySearchA.trim() && !storyAgencySearchB.trim()) ? '#cbd5e1' : '#7c3aed', color: 'white', border: 'none', borderRadius: '8px', cursor: (!storyAgencySearchA.trim() && !storyAgencySearchB.trim()) ? 'not-allowed' : 'pointer', fontWeight: 500, transition: 'all 0.2s' }} 
-                onMouseOver={e => { if (storyAgencySearchA.trim() || storyAgencySearchB.trim()) e.target.style.transform = 'translateY(-1px)' }} 
+                style={{ flex: 1, padding: '0.75rem', fontSize: '1.05rem', backgroundColor: '#7c3aed', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.2s' }} 
+                onMouseOver={e => { e.target.style.transform = 'translateY(-1px)' }} 
                 onMouseOut={e => e.target.style.transform = 'none'}
               >
                 ยืนยัน
               </button>
-              <button onClick={cancelStoryMoney} style={{ flex: 1, padding: '0.75rem', fontSize: '1.05rem', backgroundColor: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.2s' }} onMouseOver={e => e.target.style.backgroundColor = '#e2e8f0'} onMouseOut={e => e.target.style.backgroundColor = '#f1f5f9'}>
+              <button onClick={() => setStoryModalUser(null)} style={{ flex: 1, padding: '0.75rem', fontSize: '1.05rem', backgroundColor: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.2s' }} onMouseOver={e => e.target.style.backgroundColor = '#e2e8f0'} onMouseOut={e => e.target.style.backgroundColor = '#f1f5f9'}>
                 ยกเลิก
               </button>
             </div>
