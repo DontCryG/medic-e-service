@@ -898,12 +898,12 @@ export default function SystemSettings({ profile }) {
                   </div>
 
                   <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid #e2e8f0' }}>
-                    <label style={{ display: 'block', fontWeight: 600, color: '#0ea5e9', fontSize: '1.1rem', marginBottom: '1rem' }}>ระบบออกเวรอัตโนมัติ (Auto Clock-Out)</label>
-                    <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1rem' }}>เมื่อเปิดใช้งาน ฐานข้อมูลจะทำการออกเวรให้ทุกคนอัตโนมัติในเวลา 12:00 น. และ 18:00 น. ของทุกวัน</p>
+                    <label style={{ display: 'block', fontWeight: 600, color: '#0ea5e9', fontSize: '1.1rem', marginBottom: '1rem' }}>ระบบบังคับออกเวรอัตโนมัติ (Auto Clock-Out)</label>
+                    <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1rem' }}>เมื่อเปิดใช้งาน ฐานข้อมูลจะทำการออกเวรให้ทุกคนอัตโนมัติในเวลา 12:00 น. ของทุกวัน</p>
                     <label className="toggle-switch">
                       <input type="checkbox" style={{ display: 'none' }} checked={autoClockout} onChange={e => setAutoClockout(e.target.checked)} />
                       <span className="toggle-slider" style={{ background: autoClockout ? '#0ea5e9' : '#cbd5e1' }}></span>
-                      <span style={{ fontWeight: 600, color: '#1e293b' }}>เปิดใช้งานระบบออกเวรอัตโนมัติ 24 ชม.</span>
+                      <span style={{ fontWeight: 600, color: '#1e293b' }}>เปิดใช้งานระบบบังคับออกเวรอัตโนมัติเวลาเที่ยงวัน</span>
                     </label>
                   </div>
 

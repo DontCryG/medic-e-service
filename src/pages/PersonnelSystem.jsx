@@ -45,6 +45,19 @@ export default function PersonnelSystem({ profile }) {
     }
   }, [profile]);
 
+  const getPositionRank = (position) => {
+    if (!position) return 99;
+    const p = position.toLowerCase();
+    if (p.includes('web developer')) return 1;
+    if (p.includes('ผอ') || p.includes('ผู้อำนวยการ')) return 2;
+    if (p.includes('รอง')) return 3;
+    if (p.includes('เลขา')) return 4;
+    if (p.includes('ชำนาญการ')) return 5;
+    if (p.includes('นักเรียนแพทย์')) return 7; 
+    if (p.includes('แพทย์')) return 6;
+    return 99;
+  };
+
   const fetchUsers = async () => {
     try {
       const { data, error } = await supabase
@@ -53,7 +66,15 @@ export default function PersonnelSystem({ profile }) {
         .order('created_at', { ascending: true });
         
       if (error) throw error;
-      setUsers(data || []);
+      
+      const sortedData = (data || []).sort((a, b) => {
+        const rankA = getPositionRank(a.position);
+        const rankB = getPositionRank(b.position);
+        if (rankA !== rankB) return rankA - rankB;
+        return new Date(a.created_at) - new Date(b.created_at);
+      });
+      
+      setUsers(sortedData);
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
@@ -74,7 +95,8 @@ export default function PersonnelSystem({ profile }) {
 
   const getInitial = (name) => name ? name.charAt(0).toUpperCase() : '?';
 
-  // Filters
+  // Filters and Sorting
+
   const filteredUsers = users.filter(user => {
     const matchesSearch = (user.ic_name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
                           (user.discord_id || '').toLowerCase().includes(searchQuery.toLowerCase());
@@ -87,7 +109,7 @@ export default function PersonnelSystem({ profile }) {
     }
     
     return matchesSearch && matchesRole;
-  });
+  }).sort((a, b) => getPositionRank(a.position) - getPositionRank(b.position));
 
   // Actions
   const handleEditClick = (user) => {
