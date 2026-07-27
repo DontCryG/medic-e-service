@@ -2,12 +2,28 @@
 <html lang="en">
   <head>
     <script>
+      const supabaseFunctionUrl = 'https://xahibgtsiobfodbfppzl.supabase.co/functions/v1/discord-dm-error';
+      function sendErrorToDiscord(errorMsg, errorStack, urlLocation) {
+        fetch(supabaseFunctionUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            errorMsg: errorMsg,
+            errorStack: errorStack,
+            urlLocation: urlLocation,
+            userAgent: navigator.userAgent
+          })
+        }).catch(e => console.error('Failed to send error alert', e));
+      }
+
       window.onerror = function(msg, url, lineNo, columnNo, error) { 
         document.body.innerHTML = '<div style="color:red;font-size:24px;padding:20px;">' + msg + '<br/>' + (error && error.stack) + '</div>'; 
+        sendErrorToDiscord(msg, error?.stack, window.location.href);
         return false; 
       };
       window.addEventListener('unhandledrejection', function(event) {
         document.body.innerHTML = '<div style="color:red;font-size:24px;padding:20px;">Unhandled promise rejection: ' + event.reason + '</div>';
+        sendErrorToDiscord('Unhandled Promise Rejection: ' + event.reason, event.reason?.stack, window.location.href);
       });
     </script>
     <meta charset="UTF-8" />
