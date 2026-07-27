@@ -1,6 +1,15 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      window.onerror = function(msg, url, lineNo, columnNo, error) { 
+        document.body.innerHTML = '<div style="color:red;font-size:24px;padding:20px;">' + msg + '<br/>' + (error && error.stack) + '</div>'; 
+        return false; 
+      };
+      window.addEventListener('unhandledrejection', function(event) {
+        document.body.innerHTML = '<div style="color:red;font-size:24px;padding:20px;">Unhandled promise rejection: ' + event.reason + '</div>';
+      });
+    </script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
