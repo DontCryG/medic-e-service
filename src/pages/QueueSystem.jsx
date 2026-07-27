@@ -978,7 +978,7 @@ export default function QueueSystem({ profile }) {
       {/* Agencies Datalist for Searchable Inputs */}
       <datalist id="agencies-list">
         {agencies.map((agency, idx) => (
-          <option key={idx} value={agency.name} />
+          <option key={idx} value={agency?.name || (typeof agency === 'string' ? agency : '')} />
         ))}
       </datalist>
 
