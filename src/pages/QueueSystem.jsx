@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../supabaseClient';
 import { Users, Edit3, History, Calendar, X, ChevronDown } from 'lucide-react';
 import DatePicker from 'react-datepicker';
@@ -7,27 +8,20 @@ import Swal from 'sweetalert2';
 import './QueueSystem.css';
 
 export default function QueueSystem({ profile }) {
-  const [liveUsers, setLiveUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   // Timer & History State
   const [currentTimeMs, setCurrentTimeMs] = useState(Date.now());
   const [showHistory, setShowHistory] = useState(false);
-  const [historyData, setHistoryData] = useState([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
   const [showResigned, setShowResigned] = useState(false);
 
   // Story Modal State
   const [storyModalUser, setStoryModalUser] = useState(null);
   const [storyPeopleCount, setStoryPeopleCount] = useState('1');
   const [isStoryDropdownOpen, setIsStoryDropdownOpen] = useState(false);
-  const [agencies, setAgencies] = useState([]);
-  const [storyAgencySearchA, setStoryAgencySearchA] = useState('');
   const [storyAgencySearchB, setStoryAgencySearchB] = useState('');
 
   const [showCaseHistory, setShowCaseHistory] = useState(false);
-  const [caseHistoryData, setCaseHistoryData] = useState([]);
-  const [loadingCaseHistory, setLoadingCaseHistory] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState(null);
   
   const getLocalDateString = () => {
@@ -67,58 +61,21 @@ export default function QueueSystem({ profile }) {
     return `${h}:${m}:${s}`;
   };
 
-  useEffect(() => {
-    fetchLiveUsers();
-
-    // Subscribe to live users changes
-    const subscription = supabase
-      .channel('live-queue')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'duty_sessions'
-      }, () => {
-        fetchLiveUsers();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(subscription);
-    };
-  }, []);
-
-  useEffect(() => {
-    fetchAgencies();
-  }, []);
-
-  const fetchAgencies = async () => {
-    try {
+  const { data: agencies = [] } = useQuery({
+    queryKey: ['agencies'],
+    queryFn: async () => {
       const { data } = await supabase.from('app_settings').select('*').eq('setting_key', 'agencies_list').single();
       if (data && data.setting_value) {
         const parsed = JSON.parse(data.setting_value);
-        const migrated = parsed.map(item => {
-          if (typeof item === 'string') return { name: item, category: 'Gang' };
-          return item;
-        });
-        setAgencies(migrated);
-      } else {
-        setAgencies([]);
+        return parsed.map(item => typeof item === 'string' ? { name: item, category: 'Gang' } : item);
       }
-    } catch (err) {
-      console.error('Error fetching agencies:', err);
-      setAgencies([]);
+      return [];
     }
-  };
+  });
 
-  useEffect(() => {
-    if (showCaseHistory) {
-      fetchCaseHistory();
-    }
-  }, [showCaseHistory, caseStartDate, caseEndDate, showResigned]);
-
-  const fetchCaseHistory = async () => {
-    setLoadingCaseHistory(true);
-    try {
+  const { data: caseHistoryData = [], isLoading: loadingCaseHistory } = useQuery({
+    queryKey: ['caseHistory', caseStartDate, caseEndDate, showResigned],
+    queryFn: async () => {
       const start = new Date(caseStartDate);
       start.setHours(0, 0, 0, 0);
       const end = new Date(caseEndDate);
@@ -139,23 +96,19 @@ export default function QueueSystem({ profile }) {
         usersData.forEach(u => { userRoleMap[u.discord_id] = u.role; });
       }
       
-      const filteredData = (data || []).filter(item => {
+      return (data || []).filter(item => {
         const isResigned = userRoleMap[item.medic_discord_id] === 'resigned';
         if (showResigned && !isResigned) return false;
         if (!showResigned && isResigned) return false;
         return true;
       });
-      
-      setCaseHistoryData(filteredData);
-    } catch (err) {
-      console.error('Error fetching case history:', err);
-    } finally {
-      setLoadingCaseHistory(false);
-    }
-  };
+    },
+    enabled: showCaseHistory
+  });
 
-  const fetchLiveUsers = async () => {
-    try {
+  const { data: liveUsers = [], isLoading: loading } = useQuery({
+    queryKey: ['liveUsers'],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('duty_sessions')
         .select(`
@@ -169,13 +122,27 @@ export default function QueueSystem({ profile }) {
         .order('clock_in', { ascending: true });
 
       if (error) throw error;
-      setLiveUsers(data || []);
-    } catch (err) {
-      console.error('Error fetching live users for queue:', err);
-    } finally {
-      setLoading(false);
+      return data || [];
     }
-  };
+  });
+
+  useEffect(() => {
+    // Subscribe to live users changes
+    const subscription = supabase
+      .channel('live-queue')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'duty_sessions'
+      }, () => {
+        queryClient.invalidateQueries({ queryKey: ['liveUsers'] });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [queryClient]);
 
   const handleStoryAgencyChange = async (userId, agencyText) => {
     try {
@@ -201,16 +168,13 @@ export default function QueueSystem({ profile }) {
     }
   };
 
-  const handleStatusChange = async (user, newStatus, currentStatus) => {
-    const finalStatus = currentStatus === newStatus ? 'available' : newStatus;
-    
-    try {
+  const statusChangeMutation = useMutation({
+    mutationFn: async ({ user, newStatus, currentStatus }) => {
+      const finalStatus = currentStatus === newStatus ? 'available' : newStatus;
       let updatePayload = { queue_state: finalStatus };
 
-      // If they are STOPPING being a manager
       if (currentStatus === 'manager' && finalStatus !== 'manager') {
         if (user.current_manager_log_id) {
-          // Calculate duration
           const startTime = new Date(user.manager_start_time).getTime();
           const durationMinutes = Math.floor((Date.now() - startTime) / 60000);
           
@@ -222,25 +186,15 @@ export default function QueueSystem({ profile }) {
             })
             .eq('id', user.current_manager_log_id);
         }
-        
         updatePayload.manager_start_time = null;
         updatePayload.current_manager_log_id = null;
       }
 
-      // If they are STOPPING being a story
       if (currentStatus === 'story' && finalStatus !== 'story') {
         if (!user.story_agency || user.story_agency.trim() === '') {
-          Swal.fire({
-            title: 'แจ้งเตือน',
-            text: 'กรุณาพิมพ์รายละเอียด/สังกัด ในช่องข้างๆเวลาสตอรี่ก่อนจบสตอรี่',
-            icon: 'warning',
-            confirmButtonColor: '#7c3aed',
-            customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title' }
-          });
-          return;
+          throw new Error('กรุณาพิมพ์รายละเอียด/สังกัด ในช่องข้างๆเวลาสตอรี่ก่อนจบสตอรี่');
         }
         
-        // Immediately distribute bonus without modal
         const peopleCount = user.story_people || '1';
         const amount = peopleCount === '1' ? 200000 : 100000;
         const reasonText = `จบสตอรี่ (${user.story_agency})`;
@@ -258,11 +212,8 @@ export default function QueueSystem({ profile }) {
           agency_name: user.story_agency,
           people_count: parseInt(peopleCount)
         });
-        
-        // Notice we DO NOT return here, we let the status update proceed.
       }
 
-      // If they are STARTING to be a manager
       if (finalStatus === 'manager') {
         const { data: logData, error: logError } = await supabase
           .from('queue_manager_logs')
@@ -282,9 +233,39 @@ export default function QueueSystem({ profile }) {
         .eq('id', user.id);
         
       if (error) throw error;
-    } catch (err) {
-      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'Error updating queue status: ' + err.message });
+    },
+    onMutate: async ({ user, newStatus, currentStatus }) => {
+      const finalStatus = currentStatus === newStatus ? 'available' : newStatus;
+      if (currentStatus === 'story' && finalStatus !== 'story' && (!user.story_agency || user.story_agency.trim() === '')) {
+        return; // Handled in onError
+      }
+      await queryClient.cancelQueries({ queryKey: ['liveUsers'] });
+      const previousUsers = queryClient.getQueryData(['liveUsers']);
+      queryClient.setQueryData(['liveUsers'], old => 
+        old?.map(u => u.id === user.id ? { ...u, queue_state: finalStatus } : u)
+      );
+      return { previousUsers };
+    },
+    onError: (err, { user }, context) => {
+      if (context?.previousUsers) {
+        queryClient.setQueryData(['liveUsers'], context.previousUsers);
+      }
+      if (err.message === 'กรุณาพิมพ์รายละเอียด/สังกัด ในช่องข้างๆเวลาสตอรี่ก่อนจบสตอรี่') {
+        Swal.fire({
+          title: 'แจ้งเตือน',
+          text: err.message,
+          icon: 'warning',
+          confirmButtonColor: '#7c3aed',
+          customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title' }
+        });
+      } else {
+        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'Error updating queue status: ' + err.message });
+      }
     }
+  });
+
+  const handleStatusChange = (user, newStatus, currentStatus) => {
+    statusChangeMutation.mutate({ user, newStatus, currentStatus });
   };
 
   const confirmStoryMoney = async () => {
@@ -403,10 +384,9 @@ export default function QueueSystem({ profile }) {
     return () => clearInterval(checkTimeInterval);
   }, [liveUsers, profile]);
 
-  const fetchHistory = async () => {
-    if (!startDate || !endDate) return;
-    setLoadingHistory(true);
-    try {
+  const { data: historyData = [], isLoading: loadingHistory } = useQuery({
+    queryKey: ['queueHistory', startDate, endDate, showResigned],
+    queryFn: async () => {
       const start = new Date(`${startDate}T00:00:00+07:00`).toISOString();
       const end = new Date(`${endDate}T23:59:59+07:00`).toISOString();
 
@@ -434,33 +414,22 @@ export default function QueueSystem({ profile }) {
           if (u.role === 'resigned') return;
         }
         userMap[u.discord_id] = u.ic_name; 
-        grouped[u.discord_id] = 0; // Initialize everyone with 0 minutes
+        grouped[u.discord_id] = 0; 
       });
 
       data.forEach(log => {
         if (!log.duration_minutes) return;
-        if (userMap[log.discord_id] === undefined) return; // Skip resigned or unknown if hidden
+        if (userMap[log.discord_id] === undefined) return;
         grouped[log.discord_id] += log.duration_minutes;
       });
 
-      const result = Object.keys(grouped).map(did => ({
+      return Object.keys(grouped).map(did => ({
         ic_name: userMap[did] || did,
         total_minutes: grouped[did]
       })).sort((a, b) => b.total_minutes - a.total_minutes);
-
-      setHistoryData(result);
-    } catch (err) {
-      console.error('Error fetching history:', err);
-    } finally {
-      setLoadingHistory(false);
-    }
-  };
-
-  useEffect(() => {
-    if (showHistory) {
-      fetchHistory();
-    }
-  }, [showHistory, startDate, endDate, showResigned]);
+    },
+    enabled: showHistory && !!startDate && !!endDate
+  });
 
   if (!profile) return null;
 
