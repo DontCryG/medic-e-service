@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../supabaseClient';
 import Swal from 'sweetalert2';
 import { 
@@ -73,6 +74,7 @@ const playNotificationSound = () => {
 };
 
 export default function Dashboard() {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
@@ -80,12 +82,9 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [avatarUrl, setAvatarUrl] = useState('');
-  const [announcement, setAnnouncement] = useState(null);
-  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   
   // Notifications State
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
   const notifRef = useRef(null);
   const searchRef = useRef(null);
 
@@ -164,9 +163,56 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [navigate]);
 
+  // ----------------------------------------------------
+  // TanStack Query: Fetch Announcement & Maintenance Mode
+  // ----------------------------------------------------
+  const { data: appSettings } = useQuery({
+    queryKey: ['app_settings', 'announcement'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('app_settings').select('*');
+      if (error) throw error;
+      let text = '';
+      let active = false;
+      let maintenance = false;
+      data.forEach(item => {
+        if (item.setting_key === 'announcement_text') text = item.setting_value;
+        if (item.setting_key === 'announcement_active') active = item.setting_value === 'true';
+        if (item.setting_key === 'maintenance_mode') maintenance = item.setting_value === 'true';
+      });
+      return { announcement: active && text ? text : null, isMaintenanceMode: maintenance };
+    }
+  });
+
+  const announcement = appSettings?.announcement || null;
+  const isMaintenanceMode = appSettings?.isMaintenanceMode || false;
+
+  // ----------------------------------------------------
+  // TanStack Query: Fetch Notifications
+  // ----------------------------------------------------
+  const { data: notifications = [], refetch: refetchNotifications } = useQuery({
+    queryKey: ['notifications', profile?.discord_id],
+    queryFn: async () => {
+      if (!profile?.discord_id) return [];
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('discord_id', profile.discord_id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data.map(n => ({
+        id: n.id,
+        title: n.title,
+        desc: n.message,
+        time: new Date(n.created_at).toLocaleString('th-TH'),
+        unread: !n.is_read
+      }));
+    },
+    enabled: !!profile?.discord_id
+  });
+
   useEffect(() => {
     checkUser();
-    fetchAnnouncement();
     
     let subscription;
     let notifSub;
@@ -193,7 +239,7 @@ export default function Dashboard() {
             table: 'notifications',
             filter: `discord_id=eq.${discordId}`
           }, (payload) => {
-            fetchNotifications(discordId);
+            queryClient.invalidateQueries({ queryKey: ['notifications', discordId] });
             if (payload.eventType === 'INSERT') {
               playNotificationSound();
             }
@@ -205,7 +251,7 @@ export default function Dashboard() {
     const settingsSub = supabase
       .channel('app_settings_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings' }, () => {
-        fetchAnnouncement();
+        queryClient.invalidateQueries({ queryKey: ['app_settings', 'announcement'] });
       })
       .subscribe();
 
@@ -230,72 +276,69 @@ export default function Dashboard() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fetchNotifications = async (discordId) => {
-    try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('discord_id', discordId)
-        .order('created_at', { ascending: false })
-        .limit(20);
-        
-      if (data) {
-        setNotifications(data.map(n => ({
-          id: n.id,
-          title: n.title,
-          desc: n.message,
-          time: new Date(n.created_at).toLocaleString('th-TH'),
-          unread: !n.is_read
-        })));
-      }
-    } catch(e) {
-      console.error(e);
+  // ----------------------------------------------------
+  // TanStack Query: Mutations
+  // ----------------------------------------------------
+  const markAsReadMutation = useMutation({
+    mutationFn: async (id) => {
+      const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+      if (error) throw error;
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['notifications', profile?.discord_id] });
+      const previousNotifs = queryClient.getQueryData(['notifications', profile?.discord_id]);
+      queryClient.setQueryData(['notifications', profile?.discord_id], old => 
+        old?.map(n => n.id === id ? { ...n, unread: false } : n)
+      );
+      return { previousNotifs };
+    },
+    onError: (err, id, context) => {
+      queryClient.setQueryData(['notifications', profile?.discord_id], context.previousNotifs);
     }
-  };
+  });
 
-  const markAsRead = async (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
-    try {
-      await supabase.from('notifications').update({ is_read: true }).eq('id', id);
-    } catch(e) {}
-  };
+  const markAllAsReadMutation = useMutation({
+    mutationFn: async () => {
+      if (!profile?.discord_id) return;
+      const { error } = await supabase.from('notifications').update({ is_read: true }).eq('discord_id', profile.discord_id).eq('is_read', false);
+      if (error) throw error;
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['notifications', profile?.discord_id] });
+      const previousNotifs = queryClient.getQueryData(['notifications', profile?.discord_id]);
+      queryClient.setQueryData(['notifications', profile?.discord_id], old => 
+        old?.map(n => ({ ...n, unread: false }))
+      );
+      return { previousNotifs };
+    },
+    onError: (err, newTodo, context) => {
+      queryClient.setQueryData(['notifications', profile?.discord_id], context.previousNotifs);
+    }
+  });
 
-  const markAllAsRead = async () => {
-    if (!profile) return;
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
-    try {
-      await supabase.from('notifications').update({ is_read: true }).eq('discord_id', profile.discord_id).eq('is_read', false);
-    } catch(e) {}
-  };
+  const deleteNotificationMutation = useMutation({
+    mutationFn: async (id) => {
+      const { error } = await supabase.from('notifications').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['notifications', profile?.discord_id] });
+      const previousNotifs = queryClient.getQueryData(['notifications', profile?.discord_id]);
+      queryClient.setQueryData(['notifications', profile?.discord_id], old => 
+        old?.filter(n => n.id !== id)
+      );
+      return { previousNotifs };
+    },
+    onError: (err, id, context) => {
+      queryClient.setQueryData(['notifications', profile?.discord_id], context.previousNotifs);
+    }
+  });
 
-  const deleteNotification = async (e, id) => {
+  const markAsRead = (id) => markAsReadMutation.mutate(id);
+  const markAllAsRead = () => markAllAsReadMutation.mutate();
+  const deleteNotification = (e, id) => {
     e.stopPropagation();
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    try {
-      await supabase.from('notifications').delete().eq('id', id);
-    } catch(e) {}
-  };
-
-  const fetchAnnouncement = async () => {
-    try {
-      const { data } = await supabase.from('app_settings').select('*');
-      if (data) {
-        let text = '';
-        let active = false;
-        data.forEach(item => {
-          if (item.setting_key === 'announcement_text') text = item.setting_value;
-          if (item.setting_key === 'announcement_active') active = item.setting_value === 'true';
-          if (item.setting_key === 'maintenance_mode') setIsMaintenanceMode(item.setting_value === 'true');
-        });
-        if (active && text) {
-          setAnnouncement(text);
-        } else {
-          setAnnouncement(null);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    deleteNotificationMutation.mutate(id);
   };
 
   const checkUser = async () => {
@@ -336,7 +379,6 @@ export default function Dashboard() {
       }
 
       setProfile(data);
-      fetchNotifications(discordId);
     } catch (error) {
       console.error('Error checking user:', error);
     } finally {
