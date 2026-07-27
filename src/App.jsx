@@ -12,7 +12,7 @@ function AutoUpdateChecker() {
   useEffect(() => {
     const checkVersion = async () => {
       try {
-        const response = await fetch('/version.json?t=' + Date.now());
+        const response = await fetch('./version.json?t=' + Date.now());
         if (response.ok) {
           const data = await response.json();
           if (currentVersion && currentVersion !== data.version) {
