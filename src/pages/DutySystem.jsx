@@ -589,7 +589,7 @@ export default function DutySystem({ profile, avatarUrl }) {
                   return (
                     <tr key={log.id}>
                       <td>{formatDateString(log.clock_in)}</td>
-                      <td>{new Date(log.clock_out).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</td>
+                      <td>{formatDateString(log.clock_out)}</td>
                       <td>{log.total_break_minutes}</td>
                       <td style={{ fontWeight: 600 }}>{formattedTime}</td>
                     </tr>
