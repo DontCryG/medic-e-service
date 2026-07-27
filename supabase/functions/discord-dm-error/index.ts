@@ -42,10 +42,11 @@ serve(async (req) => {
     // 2. Send Message to the DM Channel
     const embed = {
       title: '🚨 Website Error Alert',
+      url: urlLocation || 'https://wiptown-council.com/',
       color: 16711680, // Red
       fields: [
         { name: 'Error', value: errorMsg || 'Unknown Error', inline: false },
-        { name: 'Location', value: urlLocation || 'Unknown', inline: false },
+        { name: 'Location', value: urlLocation ? `[คลิกเพื่อไปที่หน้าเว็บ](${urlLocation})` : 'Unknown', inline: false },
         { name: 'User Agent', value: userAgent || 'Unknown', inline: false },
       ],
       timestamp: new Date().toISOString()

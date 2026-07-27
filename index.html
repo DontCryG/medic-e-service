@@ -3,7 +3,7 @@
   <head>
     <script>
       const supabaseFunctionUrl = 'https://xahibgtsiobfodbfppzl.supabase.co/functions/v1/discord-dm-error';
-      function sendErrorToDiscord(errorMsg, errorStack, urlLocation) {
+      window.sendErrorToDiscord = function(errorMsg, errorStack, urlLocation) {
         fetch(supabaseFunctionUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
