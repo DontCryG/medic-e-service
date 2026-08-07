@@ -17,6 +17,9 @@
       }
 
       window.onerror = function(msg, url, lineNo, columnNo, error) { 
+        if (msg === 'Script error.' && !error) {
+          msg = 'Script error. (Usually caused by In-App Browsers like Line/Discord, or Ad-blockers blocking a script. We cannot see the exact error due to browser security policies.)';
+        }
         document.body.innerHTML = '<div style="color:red;font-size:24px;padding:20px;">' + msg + '<br/>' + (error && error.stack) + '</div>'; 
         sendErrorToDiscord(msg, error?.stack, window.location.href);
         return false; 
@@ -32,7 +35,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MEDIC WIPTOWN</title>
 
-    <script type="module" crossorigin src="/assets/index-BBdChu3T.js"></script>
+    <script type="module" crossorigin src="/assets/index-Cj1t1Ppj.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-CNC7AqOf.js">
     <link rel="modulepreload" crossorigin href="/assets/lucide-C3F4HZyv.js">
     <link rel="modulepreload" crossorigin href="/assets/ui-CArFMWBi.js">
